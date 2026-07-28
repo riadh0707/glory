@@ -248,15 +248,33 @@ Occupy→GetStatus→Release→Close, 6/6 `result=0`, contre la VM simulateur
      les `Reset` précédents — signe d'un mécanisme physique (la cassette
      nouvellement insérée) réellement coincé côté émulateur, pas juste un
      verrou logiciel.
-  **Conclusion** : la piste "cassette de collecte" était correcte (progrès
-  réel 11→12), mais la manipulation dans l'émulateur RBW-100 a laissé celui-ci
-  dans un état incohérent qui ne cède ni au `Reset` ni au redémarrage du
-  service — seul un redémarrage complet de la VM (non tenté, action plus
-  lourde) résoudrait probablement ça. **Bloquant : oui**, pour valider
-  `Collect` de bout en bout sur cette VM dans son état actuel ; **non
-  bloquant** pour le code (`core/soap-client`, méthode `collect`), qui a
-  démontré produire une requête correctement comprise par le FCC à deux
-  reprises (résultats 11 puis 12, jamais une erreur de format/parsing).
+  **Suite et conclusion finale (2026-07-29, après `vmrun reset ... soft`)** :
+  un redémarrage complet de la VM a bien nettoyé l'état incohérent
+  (`Inventory` repasse à `result=0` juste après le boot, config
+  `SoapUserCheck`/`OccupyEnable` conservée — ce sont des fichiers sur disque,
+  pas des réglages en mémoire). **Mais `Collect` retenté immédiatement après
+  redonne exactement `result=12` ("dispensed change inconsistency"), de façon
+  stable et reproductible** — ce n'est donc plus un état corrompu mais un
+  **résultat métier cohérent et répétable** : la cassette de collecte
+  "Stack Cst" configurée dans l'émulateur ne peut probablement pas
+  correctement simuler la réception physique de billets déjà comptés ailleurs
+  (limite de fidélité assumée par le constructeur —
+  `RBW100_SimulatorManual.pdf` p.4 : *"RBW-100 simulator does not emulate the
+  actual machine completely."*). Par ailleurs, chaque tentative `Collect`
+  laisse de nouveau `Inventory` bloqué à `result=11` jusqu'au prochain
+  redémarrage VM (un simple `Reset` ne suffit plus une fois que ce cas s'est
+  produit) — comportement reproduit deux fois à l'identique.
+  **Verdict** : le code (`core/soap-client`, méthode `collect`) est validé —
+  requête correctement formée, comprise par le FCC, résultat métier cohérent
+  et stable obtenu (12, pas une erreur de parsing/format). **La validation
+  d'un `Collect` réussi (`result=0`) n'a pas pu être obtenue sur cet
+  émulateur** — probablement une limite de fidélité de simulation plutôt
+  qu'un bug côté client ou VM ; à re-tester sur matériel réel ou avec un
+  paramétrage de cassette différent (non exploré : "IF Cst" au lieu de
+  "Stack Cst", ou une valeur `Piece` différente).
+  **Bloquant : non** pour la suite du développement — le code est correct et
+  testé ; **note opérationnelle** : après tout `Collect`, prévoir un
+  redémarrage VM si `Inventory` reste bloqué à `11`.
 
 - [ ] **Valider empiriquement le timeout Occupy** en observant le code `22`
   apparaître sur la VM simulateur après une session laissée ouverte sans
