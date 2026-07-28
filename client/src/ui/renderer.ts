@@ -18,6 +18,11 @@ interface GloryClientApi {
   startCashin(): Promise<TransactionResult>;
   endCashin(): Promise<TransactionResult>;
   change(amount: string): Promise<TransactionResult>;
+  startReplenishEntrance(): Promise<TransactionResult>;
+  endReplenishEntrance(): Promise<TransactionResult>;
+  lockUnit(): Promise<TransactionResult>;
+  unlockUnit(): Promise<TransactionResult>;
+  inventory(): Promise<{ ok: boolean; message: string; raw?: unknown; state: SessionState }>;
   onLogLine(callback: (line: string) => void): void;
   onEvent(callback: (line: string) => void): void;
 }
@@ -64,6 +69,11 @@ window.addEventListener("DOMContentLoaded", () => {
   const endCashinBtn = document.getElementById("btn-end-cashin") as HTMLButtonElement;
   const changeBtn = document.getElementById("btn-change") as HTMLButtonElement;
   const amountInput = document.getElementById("input-amount") as HTMLInputElement;
+  const startReplenishBtn = document.getElementById("btn-start-replenish") as HTMLButtonElement;
+  const endReplenishBtn = document.getElementById("btn-end-replenish") as HTMLButtonElement;
+  const lockBtn = document.getElementById("btn-lock") as HTMLButtonElement;
+  const unlockBtn = document.getElementById("btn-unlock") as HTMLButtonElement;
+  const inventoryBtn = document.getElementById("btn-inventory") as HTMLButtonElement;
 
   window.api.onLogLine((line) => appendLine(logEl, line, classifyLogLine(line)));
   window.api.onEvent((line) => appendLine(eventsEl, line));
@@ -118,5 +128,44 @@ window.addEventListener("DOMContentLoaded", () => {
     appendLine(logEl, `[UI] Encaisser (Change, ${amount}) → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
     setStatePill(result.state);
     changeBtn.disabled = false;
+  });
+
+  startReplenishBtn.addEventListener("click", async () => {
+    startReplenishBtn.disabled = true;
+    const result = await window.api.startReplenishEntrance();
+    appendLine(logEl, `[UI] Démarrer remplissage → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
+    setStatePill(result.state);
+    startReplenishBtn.disabled = false;
+  });
+
+  endReplenishBtn.addEventListener("click", async () => {
+    endReplenishBtn.disabled = true;
+    const result = await window.api.endReplenishEntrance();
+    appendLine(logEl, `[UI] Terminer remplissage → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
+    setStatePill(result.state);
+    endReplenishBtn.disabled = false;
+  });
+
+  lockBtn.addEventListener("click", async () => {
+    lockBtn.disabled = true;
+    const result = await window.api.lockUnit();
+    appendLine(logEl, `[UI] Verrouiller → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
+    setStatePill(result.state);
+    lockBtn.disabled = false;
+  });
+
+  unlockBtn.addEventListener("click", async () => {
+    unlockBtn.disabled = true;
+    const result = await window.api.unlockUnit();
+    appendLine(logEl, `[UI] Déverrouiller → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
+    setStatePill(result.state);
+    unlockBtn.disabled = false;
+  });
+
+  inventoryBtn.addEventListener("click", async () => {
+    const result = await window.api.inventory();
+    appendLine(logEl, `[UI] Inventaire → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
+    statusEl.textContent = JSON.stringify(result.raw ?? {}, null, 2);
+    setStatePill(result.state);
   });
 });

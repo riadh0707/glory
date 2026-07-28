@@ -10,6 +10,11 @@ export const IpcChannels = {
   SessionStartCashin: "session:start-cashin",
   SessionEndCashin: "session:end-cashin",
   SessionChange: "session:change",
+  SessionStartReplenishEntrance: "session:start-replenish-entrance",
+  SessionEndReplenishEntrance: "session:end-replenish-entrance",
+  SessionLockUnit: "session:lock-unit",
+  SessionUnlockUnit: "session:unlock-unit",
+  SessionInventory: "session:inventory",
   LogLine: "log:line",
   EventReceived: "event:received",
 } as const;

@@ -257,6 +257,99 @@ async function handleChange(amount: string): Promise<TransactionResult> {
   }
 }
 
+async function handleStartReplenishEntrance(): Promise<TransactionResult> {
+  if (!soapClient || !sessionId) {
+    return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
+  }
+  try {
+    stateMachine.assertCanTransact();
+    const result = await soapClient.startReplenishmentFromEntrance(sessionId);
+    sendLog(`StartReplenishmentFromEntrance → result ${result.resultDescription}`);
+    historyStore.record("soap-response", "StartReplenishmentFromEntranceOperation", result);
+    return { ok: result.result === 0, message: result.resultDescription, state: stateMachine.getState() };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    sendLog(`[ERREUR] ${message}`);
+    return { ok: false, message, state: stateMachine.getState() };
+  }
+}
+
+async function handleEndReplenishEntrance(): Promise<TransactionResult> {
+  if (!soapClient || !sessionId) {
+    return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
+  }
+  try {
+    stateMachine.assertCanTransact();
+    const result = await soapClient.endReplenishmentFromEntrance(sessionId);
+    const message = `${result.resultDescription} — espèces : ${JSON.stringify(result.cash ?? "aucune")}`;
+    sendLog(`EndReplenishmentFromEntrance → result ${message}`);
+    historyStore.record("soap-response", "EndReplenishmentFromEntranceOperation", result);
+    return { ok: result.result === 0, message, state: stateMachine.getState() };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    sendLog(`[ERREUR] ${message}`);
+    return { ok: false, message, state: stateMachine.getState() };
+  }
+}
+
+async function handleLockUnit(): Promise<TransactionResult> {
+  if (!soapClient || !sessionId) {
+    return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
+  }
+  try {
+    stateMachine.assertCanTransact();
+    const result = await soapClient.lockUnit(sessionId, 1);
+    sendLog(`LockUnit(RBW-100) → result ${result.resultDescription}`);
+    historyStore.record("soap-response", "LockUnitOperation", result);
+    return { ok: result.result === 0, message: result.resultDescription, state: stateMachine.getState() };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    sendLog(`[ERREUR] ${message}`);
+    return { ok: false, message, state: stateMachine.getState() };
+  }
+}
+
+async function handleUnlockUnit(): Promise<TransactionResult> {
+  if (!soapClient || !sessionId) {
+    return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
+  }
+  try {
+    stateMachine.assertCanTransact();
+    const result = await soapClient.unlockUnit(sessionId, 1);
+    sendLog(`UnlockUnit(RBW-100) → result ${result.resultDescription}`);
+    historyStore.record("soap-response", "UnLockUnitOperation", result);
+    return { ok: result.result === 0, message: result.resultDescription, state: stateMachine.getState() };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    sendLog(`[ERREUR] ${message}`);
+    return { ok: false, message, state: stateMachine.getState() };
+  }
+}
+
+interface InventoryResult {
+  ok: boolean;
+  message: string;
+  raw?: unknown;
+  state: SessionState;
+}
+
+async function handleInventory(): Promise<InventoryResult> {
+  if (!soapClient || !sessionId) {
+    return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
+  }
+  try {
+    stateMachine.assertCanTransact();
+    const result = await soapClient.inventory(sessionId, 0);
+    sendLog(`Inventory → result ${result.resultDescription}`);
+    historyStore.record("soap-response", "InventoryOperation", result);
+    return { ok: result.result === 0, message: result.resultDescription, raw: result.raw, state: stateMachine.getState() };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    sendLog(`[ERREUR] ${message}`);
+    return { ok: false, message, state: stateMachine.getState() };
+  }
+}
+
 function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 900,
@@ -287,6 +380,15 @@ ipcMain.handle(IpcChannels.SessionEndCashin, async (_event: IpcMainInvokeEvent) 
 ipcMain.handle(IpcChannels.SessionChange, async (_event: IpcMainInvokeEvent, amount: string) =>
   handleChange(amount)
 );
+ipcMain.handle(IpcChannels.SessionStartReplenishEntrance, async (_event: IpcMainInvokeEvent) =>
+  handleStartReplenishEntrance()
+);
+ipcMain.handle(IpcChannels.SessionEndReplenishEntrance, async (_event: IpcMainInvokeEvent) =>
+  handleEndReplenishEntrance()
+);
+ipcMain.handle(IpcChannels.SessionLockUnit, async (_event: IpcMainInvokeEvent) => handleLockUnit());
+ipcMain.handle(IpcChannels.SessionUnlockUnit, async (_event: IpcMainInvokeEvent) => handleUnlockUnit());
+ipcMain.handle(IpcChannels.SessionInventory, async (_event: IpcMainInvokeEvent) => handleInventory());
 
 app.whenReady().then(createWindow);
 

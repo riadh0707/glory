@@ -191,6 +191,34 @@ Occupy→GetStatus→Release→Close, 6/6 `result=0`, contre la VM simulateur
   toujours non testé en combinaison avec `Change` dans la même session — non
   bloquant, cas d'usage distinct.
 
+- [x] **`Inventory`, `LockUnit`, `UnlockUnit` validés en conditions réelles le
+  2026-07-28** (`result=0` pour les trois). `Inventory` a renvoyé un
+  inventaire réel et détaillé (stocks par cassette, `CashUnits`) confirmant
+  que les 12 billets EUR 500 déposés lors des tests `StartCashin`/`Change`
+  précédents sont bien suivis en stock — bonne preuve que le pipeline
+  dépôt→stock fonctionne de bout en bout.
+
+- [ ] **`StartReplenishmentFromEntrance`/`EndReplenishmentFromEntrance`
+  échouent avec `result=11` ("exclusive error")** sur une session fraîche
+  (Open→Occupy→StartReplenishment directement, sans dépôt physique pendant
+  l'appel). **Hypothèse** (non confirmée) : même schéma que `StartCashin`
+  avant correctif — nécessite probablement un dépôt physique pendant la
+  fenêtre `StartReplenishmentFromEntrance`→`EndReplenishmentFromEntrance`,
+  par la même méthode que pour `StartCashin`/`EndCashin`/`Change` (dialogue
+  "Set bill/coin dialog for Entrance" des émulateurs, voir
+  `development-notes.md`). **Non testé avec un dépôt réel dans cette passe**
+  (temps non alloué) — **Bloquant : oui**, pour valider le remplissage de
+  bout en bout, **non bloquant** pour la mécanique SOAP (code écrit et
+  compile, suit exactement le même schéma que StartCashin/EndCashin déjà
+  validés).
+
+- [ ] **`CollectOperation` codé (`core/soap-client`) mais jamais testé contre
+  la VM.** Nécessite une liste de dénominations exactes en paramètre (aucune
+  valeur "collecter tout" documentée dans l'IF Spec — voir la docstring
+  `CollectDenomination`) — pas encore essayé avec les 12 billets EUR 500
+  actuellement en stock (visibles via `Inventory`, voir ci-dessus), qui
+  seraient un candidat naturel pour un premier test réel.
+
 - [ ] **Valider empiriquement le timeout Occupy** en observant le code `22`
   apparaître sur la VM simulateur après une session laissée ouverte sans
   activité.

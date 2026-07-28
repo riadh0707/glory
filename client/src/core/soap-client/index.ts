@@ -66,6 +66,21 @@ function extractResultAttribute(response: { attributes?: Record<string, unknown>
   );
 }
 
+/** Une ligne de dénomination pour `CollectOperation` — reprend exactement la
+ * structure `<Denomination cc="EUR" fv="100" devid="2"><Piece>1</Piece>
+ * <Status>0</Status></Denomination>` de l'exemple IF Spec p.82. Aucune valeur
+ * "collecter tout" n'est documentée dans l'IF Spec (les sections lues à ce
+ * jour n'en montrent aucune) — le WSDL exige `Cash` avec au moins une
+ * dénomination explicite (`minOccurs="1"`), donc l'appelant doit toujours
+ * lister ce qu'il veut collecter plutôt que de s'appuyer sur un raccourci
+ * "tout" non confirmé. */
+export interface CollectDenomination {
+  cc: string;
+  fv: string;
+  devid: string;
+  piece: number;
+}
+
 export interface RegisterEventParams {
   sessionId: string;
   /** URL du destinataire d'événements. Pour le mode TCP brut (voir
@@ -345,6 +360,222 @@ export class FccSoapClient {
       { SeqNo: string; SessionID: string; Amount: string },
       { attributes?: Record<string, unknown>; Cash?: unknown }
     >("ChangeOperation", { SeqNo: this.nextSeqNo(), SessionID: sessionId, Amount: amount });
+    const result = extractResultAttribute(response);
+    return { result, resultDescription: describeResultCode(result), cash: response.Cash };
+  }
+
+  /**
+   * Démarre un réapprovisionnement par l'entrée (le client dépose des
+   * espèces sans transaction de vente, ex. fond de caisse). Réf.
+   * docs/soap-operations.md, ligne 40 ("StartReplenishmentFromEntranceOperation
+   * | Démarre un réapprovisionnement par l'entrée"). Champs requête : WSDL
+   * BrueBoxService.wsdl:1456-1462 (Id?, SeqNo, SessionID?).
+   */
+  async startReplenishmentFromEntrance(sessionId: string): Promise<SimpleResult> {
+    const response = await this.call<
+      { SeqNo: string; SessionID: string },
+      { attributes?: Record<string, unknown> }
+    >("StartReplenishmentFromEntranceOperation", { SeqNo: this.nextSeqNo(), SessionID: sessionId });
+    const result = extractResultAttribute(response);
+    return { result, resultDescription: describeResultCode(result) };
+  }
+
+  /**
+   * Termine un réapprovisionnement par l'entrée et restitue les espèces
+   * comptées. Réf. docs/soap-operations.md, ligne 41. Champs requête : WSDL
+   * BrueBoxService.wsdl:1477-1483 (Id?, SeqNo, SessionID?). Réponse contient
+   * `Cash` (détail réel, comme EndCashin — voir sa docstring pour la mise en
+   * garde sur `ManualDeposit`, présent aussi ici mais non fiable pour le
+   * montant physiquement compté).
+   */
+  async endReplenishmentFromEntrance(
+    sessionId: string
+  ): Promise<SimpleResult & { manualDeposit: string | undefined; cash: unknown }> {
+    const response = await this.call<
+      { SeqNo: string; SessionID: string },
+      { attributes?: Record<string, unknown>; ManualDeposit?: string; Cash?: unknown }
+    >("EndReplenishmentFromEntranceOperation", { SeqNo: this.nextSeqNo(), SessionID: sessionId });
+    const result = extractResultAttribute(response);
+    return {
+      result,
+      resultDescription: describeResultCode(result),
+      manualDeposit: response.ManualDeposit,
+      cash: response.Cash,
+    };
+  }
+
+  /**
+   * Démarre un réapprovisionnement par cassette (recharge directe d'une
+   * cassette, sans passer par l'entrée). Réf. docs/soap-operations.md, ligne
+   * 42. Champs requête : WSDL BrueBoxService.wsdl:1524-1531 (Id?, SeqNo,
+   * SessionID?, Option? [RefillOptionType, attribut `type` — signification
+   * exacte non extraite de l'IF Spec dans cette passe, omis ici car
+   * optionnel]).
+   */
+  async startReplenishmentFromCassette(sessionId: string): Promise<SimpleResult> {
+    const response = await this.call<
+      { SeqNo: string; SessionID: string },
+      { attributes?: Record<string, unknown> }
+    >("StartReplenishmentFromCassetteOperation", { SeqNo: this.nextSeqNo(), SessionID: sessionId });
+    const result = extractResultAttribute(response);
+    return { result, resultDescription: describeResultCode(result) };
+  }
+
+  /**
+   * Termine un réapprovisionnement par cassette. Réf.
+   * docs/soap-operations.md, ligne 43. Champs requête : WSDL
+   * BrueBoxService.wsdl:1546-1552 (Id?, SeqNo, SessionID?). Réponse contient
+   * `Cash` (requis, contrairement aux autres opérations de ce groupe).
+   */
+  async endReplenishmentFromCassette(sessionId: string): Promise<SimpleResult & { cash: unknown }> {
+    const response = await this.call<
+      { SeqNo: string; SessionID: string },
+      { attributes?: Record<string, unknown>; Cash?: unknown }
+    >("EndReplenishmentFromCassetteOperation", { SeqNo: this.nextSeqNo(), SessionID: sessionId });
+    const result = extractResultAttribute(response);
+    return { result, resultDescription: describeResultCode(result), cash: response.Cash };
+  }
+
+  /**
+   * Verrouille physiquement une unité (porte/trappe). Réf.
+   * docs/soap-operations.md, ligne 37. Champs requête : WSDL
+   * BrueBoxService.wsdl:1576-1583 (Id?, SeqNo, SessionID?, Option [requis,
+   * attribut `type` : 1=RBW-100(FrontDoor)/RBW-150(UpperUnit), 2=RCW-100(COFB),
+   * 3=RBW-200UL(UpperUnit) — IF Spec p.139]).
+   *
+   * `unitType` défaut `1` (RBW-100, le modèle du prototype — voir
+   * docs/models.md, CI-10).
+   */
+  async lockUnit(sessionId: string, unitType: 1 | 2 | 3 = 1): Promise<SimpleResult> {
+    const response = await this.call<
+      { SeqNo: string; SessionID: string; Option: { attributes: { type: number } } },
+      { attributes?: Record<string, unknown> }
+    >("LockUnitOperation", {
+      SeqNo: this.nextSeqNo(),
+      SessionID: sessionId,
+      Option: { attributes: { type: unitType } },
+    });
+    const result = extractResultAttribute(response);
+    return { result, resultDescription: describeResultCode(result) };
+  }
+
+  /**
+   * Déverrouille physiquement une unité (porte/trappe), pour retrait manuel.
+   * Réf. docs/soap-operations.md, ligne 38. Champs requête : WSDL
+   * BrueBoxService.wsdl:1605-1613 (Id?, SeqNo, SessionID?, Option [requis,
+   * mêmes valeurs `type` que LockUnit — IF Spec p.137], `Delay` explicitement
+   * marqué "Do not use this element" dans le WSDL — jamais envoyé ici).
+   */
+  async unlockUnit(sessionId: string, unitType: 1 | 2 | 3 = 1): Promise<SimpleResult> {
+    const response = await this.call<
+      { SeqNo: string; SessionID: string; Option: { attributes: { type: number } } },
+      { attributes?: Record<string, unknown> }
+    >("UnLockUnitOperation", {
+      SeqNo: this.nextSeqNo(),
+      SessionID: sessionId,
+      Option: { attributes: { type: unitType } },
+    });
+    const result = extractResultAttribute(response);
+    return { result, resultDescription: describeResultCode(result) };
+  }
+
+  /**
+   * Ouvre le couvercle de sortie (retrait de billets catégorie 2/3
+   * détectés). Réf. docs/soap-operations.md, ligne 39. Champs requête : WSDL
+   * BrueBoxService.wsdl:1635-1641 (Id?, SeqNo, SessionID?).
+   */
+  async openExitCover(sessionId: string): Promise<SimpleResult> {
+    const response = await this.call<
+      { SeqNo: string; SessionID: string },
+      { attributes?: Record<string, unknown> }
+    >("OpenExitCoverOperation", { SeqNo: this.nextSeqNo(), SessionID: sessionId });
+    const result = extractResultAttribute(response);
+    return { result, resultDescription: describeResultCode(result) };
+  }
+
+  /** Ferme le couvercle de sortie. Symétrique de `openExitCover`. Réf.
+   * docs/soap-operations.md, ligne 39. WSDL BrueBoxService.wsdl:1656-1662. */
+  async closeExitCover(sessionId: string): Promise<SimpleResult> {
+    const response = await this.call<
+      { SeqNo: string; SessionID: string },
+      { attributes?: Record<string, unknown> }
+    >("CloseExitCoverOperation", { SeqNo: this.nextSeqNo(), SessionID: sessionId });
+    const result = extractResultAttribute(response);
+    return { result, resultDescription: describeResultCode(result) };
+  }
+
+  /**
+   * État des stocks par dénomination. Réf. docs/soap-operations.md, ligne 30
+   * ("InventoryOperation | État des stocks par dénomination"). Champs
+   * requête : WSDL BrueBoxService.wsdl (InventoryRequestType — Id?, SeqNo,
+   * SessionID?, Option [requis, attribut `type` : 0=Tout (défaut, =1+2+3),
+   * 1=inventaire dispositif (hors capture bin), 2=nombre de pièces
+   * distribuables, 3=nombre de pièces en cassette — IF Spec p.65]).
+   */
+  async inventory(sessionId: string, scope: 0 | 1 | 2 | 3 = 0): Promise<SimpleResult & { raw: unknown }> {
+    const response = await this.call<
+      { SeqNo: string; SessionID: string; Option: { attributes: { type: number } } },
+      { attributes?: Record<string, unknown> }
+    >("InventoryOperation", {
+      SeqNo: this.nextSeqNo(),
+      SessionID: sessionId,
+      Option: { attributes: { type: scope } },
+    });
+    const result = extractResultAttribute(response);
+    return { result, resultDescription: describeResultCode(result), raw: response };
+  }
+
+  /**
+   * Vidage de cassette (collect). Réf. docs/soap-operations.md, ligne 33
+   * ("CollectOperation | Vidage cassette"). Champs requête : WSDL
+   * BrueBoxService.wsdl:719-732 (CollectRequestType — Id?, SeqNo, SessionID?,
+   * Option [requis, attribut `type` : 0=vers cassette, 1=vers fente de
+   * sortie (pièces), 2=vers fente de sortie (billets), 3=vers fente de
+   * sortie (les deux) — IF Spec p.80], Mix?, IFCassette?,
+   * RequireVerification?, Partial?, Cash [requis, attribut `type`=5
+   * "Denomination control" dans l'exemple IF Spec p.82], COFBClearOption?).
+   *
+   * **Aucune valeur "collecter tout" documentée** — voir `CollectDenomination`.
+   * L'appelant doit toujours fournir la liste exacte des dénominations et
+   * quantités à collecter (`denominations`), comme dans l'exemple IF Spec
+   * p.82. `collectionTarget` correspond à `Option.type` (défaut 0 = vers
+   * cassette). `Mix`/`IFCassette`/`RequireVerification`/`Partial`/
+   * `COFBClearOption` sont omis (tous optionnels, hors périmètre de ce
+   * sprint).
+   */
+  async collect(
+    sessionId: string,
+    denominations: CollectDenomination[],
+    collectionTarget: 0 | 1 | 2 | 3 = 0
+  ): Promise<SimpleResult & { cash: unknown }> {
+    const response = await this.call<
+      {
+        SeqNo: string;
+        SessionID: string;
+        Option: { attributes: { type: number } };
+        Cash: {
+          attributes: { type: number };
+          Denomination: Array<{
+            attributes: { cc: string; fv: string; devid: string };
+            Piece: number;
+            Status: number;
+          }>;
+        };
+      },
+      { attributes?: Record<string, unknown>; Cash?: unknown }
+    >("CollectOperation", {
+      SeqNo: this.nextSeqNo(),
+      SessionID: sessionId,
+      Option: { attributes: { type: collectionTarget } },
+      Cash: {
+        attributes: { type: 5 },
+        Denomination: denominations.map((d) => ({
+          attributes: { cc: d.cc, fv: d.fv, devid: d.devid },
+          Piece: d.piece,
+          Status: 0,
+        })),
+      },
+    });
     const result = extractResultAttribute(response);
     return { result, resultDescription: describeResultCode(result), cash: response.Cash };
   }

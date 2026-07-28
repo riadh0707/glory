@@ -13,6 +13,11 @@ contextBridge.exposeInMainWorld("api", {
   startCashin: () => ipcRenderer.invoke(IpcChannels.SessionStartCashin),
   endCashin: () => ipcRenderer.invoke(IpcChannels.SessionEndCashin),
   change: (amount: string) => ipcRenderer.invoke(IpcChannels.SessionChange, amount),
+  startReplenishEntrance: () => ipcRenderer.invoke(IpcChannels.SessionStartReplenishEntrance),
+  endReplenishEntrance: () => ipcRenderer.invoke(IpcChannels.SessionEndReplenishEntrance),
+  lockUnit: () => ipcRenderer.invoke(IpcChannels.SessionLockUnit),
+  unlockUnit: () => ipcRenderer.invoke(IpcChannels.SessionUnlockUnit),
+  inventory: () => ipcRenderer.invoke(IpcChannels.SessionInventory),
   onLogLine: (callback: (line: string) => void) => {
     ipcRenderer.on(IpcChannels.LogLine, (_event, line: string) => callback(line));
   },
