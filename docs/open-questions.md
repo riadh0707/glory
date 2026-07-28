@@ -212,12 +212,28 @@ Occupy→GetStatus→Release→Close, 6/6 `result=0`, contre la VM simulateur
   compile, suit exactement le même schéma que StartCashin/EndCashin déjà
   validés).
 
-- [ ] **`CollectOperation` codé (`core/soap-client`) mais jamais testé contre
-  la VM.** Nécessite une liste de dénominations exactes en paramètre (aucune
-  valeur "collecter tout" documentée dans l'IF Spec — voir la docstring
-  `CollectDenomination`) — pas encore essayé avec les 12 billets EUR 500
-  actuellement en stock (visibles via `Inventory`, voir ci-dessus), qui
-  seraient un candidat naturel pour un premier test réel.
+- [ ] **`CollectOperation` testé le 2026-07-29 contre les 12 billets EUR 500
+  réellement en stock — échoue avec `result=11` ("exclusive error"), de façon
+  reproductible même après un `Reset` explicite** (qui confirme bien
+  l'appareil "prêt", `st=1000`, donc ce n'est pas un état résiduel comme
+  StartCashin l'était avant correctif). La réponse contient
+  `Cash[0].attributes = {type:"8", note_destination:"CollectionUnit",
+  coin_destination:"COFB"}` — cohérent avec l'IF Spec p.83 ("type 8 = Collect
+  to COFB/COFT") : la demande est bien comprise, mais la destination
+  physique ("CollectionUnit") n'existe probablement pas dans l'état actuel de
+  l'émulateur. **Piste identifiée, non testée** : le manuel
+  `RBW100_SimulatorManual.pdf` (p.15-18) décrit une **"Collection Door
+  Operation"** et une **"Change Cassette Operation"** dans la fenêtre
+  "Operation" de l'émulateur (bouton "Door Set" pour ouvrir la porte de
+  collecte, "IF Cst"/"Stack Cst" pour définir le type de cassette) — jamais
+  utilisées jusqu'ici (seul le dialogue "Entrance" pour les billets a été
+  exploré). Il est probable que `Collect` nécessite cette cassette de
+  collecte configurée au préalable dans l'émulateur, par analogie avec
+  StartCashin/Change qui nécessitaient un dépôt réel pendant l'appel.
+  **Bloquant : oui**, pour valider le vidage de cassette de bout en bout,
+  **non bloquant** pour la mécanique SOAP (requête/réponse correctement
+  formées et comprises par le FCC, juste refusées faute de cassette de
+  collecte physique/émulée disponible).
 
 - [ ] **Valider empiriquement le timeout Occupy** en observant le code `22`
   apparaître sur la VM simulateur après une session laissée ouverte sans
