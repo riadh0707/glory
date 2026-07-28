@@ -198,19 +198,27 @@ Occupy→GetStatus→Release→Close, 6/6 `result=0`, contre la VM simulateur
   précédents sont bien suivis en stock — bonne preuve que le pipeline
   dépôt→stock fonctionne de bout en bout.
 
-- [ ] **`StartReplenishmentFromEntrance`/`EndReplenishmentFromEntrance`
-  échouent avec `result=11` ("exclusive error")** sur une session fraîche
-  (Open→Occupy→StartReplenishment directement, sans dépôt physique pendant
-  l'appel). **Hypothèse** (non confirmée) : même schéma que `StartCashin`
-  avant correctif — nécessite probablement un dépôt physique pendant la
-  fenêtre `StartReplenishmentFromEntrance`→`EndReplenishmentFromEntrance`,
-  par la même méthode que pour `StartCashin`/`EndCashin`/`Change` (dialogue
-  "Set bill/coin dialog for Entrance" des émulateurs, voir
-  `development-notes.md`). **Non testé avec un dépôt réel dans cette passe**
-  (temps non alloué) — **Bloquant : oui**, pour valider le remplissage de
-  bout en bout, **non bloquant** pour la mécanique SOAP (code écrit et
-  compile, suit exactement le même schéma que StartCashin/EndCashin déjà
-  validés).
+- [x] ~~**`StartReplenishmentFromEntrance`/`EndReplenishmentFromEntrance`
+  échouaient avec `result=11`**~~ **VALIDÉ le 2026-07-29** avec un vrai dépôt
+  (2 billets EUR 500 + 5 pièces de 2 EUR insérés via les dialogues "Entrance"
+  des émulateurs RBW-100/RCW-100) : `EndReplenishmentFromEntrance` a réussi
+  (`result=0`) avec `Cash.Denomination` correctement peuplé pour les deux
+  dispositifs (billets **et** pièces) — même mécanique de détection que
+  `StartCashin`/`Change`, confirmée pour le remplissage. Après coup,
+  `Status`/`Inventory` confirment l'appareil propre (`st=1000`,
+  `Inventory` → `result=0`).
+  **Point non résolu (mineur)** : `StartReplenishmentFromEntrance` a échoué
+  une fois avec `result=11` juste avant ce succès (sur une tentative
+  précédente où l'insertion n'avait apparemment pas été détectée par
+  `EndReplenishmentFromEntrance`, `Cash` vide) — puis a de nouveau échoué au
+  redémarrage du cycle suivant, alors que `EndReplenishmentFromEntrance`
+  appelé juste après a quand même réussi et récupéré tout ce qui avait été
+  déposé entre-temps. Hypothèse non confirmée : `StartReplenishmentFromEntrance`
+  échoue si un dépôt est déjà en attente à l'entrée d'une tentative
+  précédente non finalisée (comportement plausible, pas vérifié). **Non
+  bloquant** — `EndReplenishmentFromEntrance` seul suffit à récupérer le
+  dépôt même quand `Start` échoue, donc la fonctionnalité reste utilisable en
+  pratique.
 
 - [ ] **`CollectOperation` testé le 2026-07-29 contre les 12 billets EUR 500
   réellement en stock — échoue avec `result=11` ("exclusive error"), de façon
