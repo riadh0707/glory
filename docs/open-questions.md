@@ -227,13 +227,36 @@ Occupy→GetStatus→Release→Close, 6/6 `result=0`, contre la VM simulateur
   "Operation" de l'émulateur (bouton "Door Set" pour ouvrir la porte de
   collecte, "IF Cst"/"Stack Cst" pour définir le type de cassette) — jamais
   utilisées jusqu'ici (seul le dialogue "Entrance" pour les billets a été
-  exploré). Il est probable que `Collect` nécessite cette cassette de
-  collecte configurée au préalable dans l'émulateur, par analogie avec
-  StartCashin/Change qui nécessitaient un dépôt réel pendant l'appel.
-  **Bloquant : oui**, pour valider le vidage de cassette de bout en bout,
-  **non bloquant** pour la mécanique SOAP (requête/réponse correctement
-  formées et comprises par le FCC, juste refusées faute de cassette de
-  collecte physique/émulée disponible).
+  exploré). **Suite le 2026-07-29** : piste creusée jusqu'au bout —
+  1. `UnlockUnit(type=1)` appelé via SOAP pour libérer le verrou électronique
+     (le manuel RBW100 précise : "The electronic lock cannot be operated from
+     this simulator. Please request to operate from CI-10.") → `result=0`.
+  2. "Door Set" cliqué dans l'émulateur (ouvre la porte de collecte) →
+     `GetStatus` a montré `DevStatus[devid=1].st` passer à `9100` (nouveau
+     code non documenté, probablement "porte ouverte").
+  3. "Stack Cst" cliqué (insère une cassette de collecte).
+  4. "Door Set" re-cliqué pour refermer → `st` repasse à `1000`.
+  5. `Collect` retenté → **`result` change de `11` à `12`** ("dispensed
+     change inconsistency") — la précondition de cassette est donc bien la
+     bonne piste, la requête progresse réellement.
+  6. Mais ensuite, `Inventory` et `Collect` restent bloqués à `result=11`,
+     **même après un `Reset` explicite ET un redémarrage complet du service
+     FCC** (`systemctl restart fccx.service`) — chose jamais observée
+     jusqu'ici (tous les blocages précédents cédaient à un simple `Reset`).
+     Le log FCC (`GLOG_BrueBoxService.log`) confirme : ce `Reset` a mis
+     **24 secondes** en interne à répondre, contre quasi-instantané pour tous
+     les `Reset` précédents — signe d'un mécanisme physique (la cassette
+     nouvellement insérée) réellement coincé côté émulateur, pas juste un
+     verrou logiciel.
+  **Conclusion** : la piste "cassette de collecte" était correcte (progrès
+  réel 11→12), mais la manipulation dans l'émulateur RBW-100 a laissé celui-ci
+  dans un état incohérent qui ne cède ni au `Reset` ni au redémarrage du
+  service — seul un redémarrage complet de la VM (non tenté, action plus
+  lourde) résoudrait probablement ça. **Bloquant : oui**, pour valider
+  `Collect` de bout en bout sur cette VM dans son état actuel ; **non
+  bloquant** pour le code (`core/soap-client`, méthode `collect`), qui a
+  démontré produire une requête correctement comprise par le FCC à deux
+  reprises (résultats 11 puis 12, jamais une erreur de format/parsing).
 
 - [ ] **Valider empiriquement le timeout Occupy** en observant le code `22`
   apparaître sur la VM simulateur après une session laissée ouverte sans

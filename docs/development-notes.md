@@ -117,10 +117,25 @@ voir **[open-questions.md](open-questions.md)** — non dupliquée ici.
     6. Si un appel SOAP bloque l'appareil dans un état incohérent (ex. un
        `Change` resté en attente puis interrompu côté client), un `Reset`
        (`ResetOperation`, session Occupied) suffit à le ramener à l'état prêt.
-    - **Non résolu** : comment simuler l'insertion d'un billet/pièce dans ces
-      émulateurs — aucun contrôle d'interface évident trouvé, et
-      l'automatisation par capture d'écran s'est révélée impossible dans cet
-      environnement (voir `open-questions.md`).
+    - **Résolu (voir `open-questions.md`)** : insertion de billet/pièce via le
+      dialogue "Set bill/coin dialog for Entrance", ouvert en cliquant la zone
+      "Entrance" de la fenêtre "Operation" de chaque émulateur
+      (`RBW100_SimulatorManual.pdf`/`RCW100_SimulatorManual.pdf`, jamais lus
+      avant d'en avoir besoin — toujours consulter ces manuels dédiés avant
+      de suspecter un bug côté client SOAP quand un appel échoue de façon
+      répétée sur simulateur).
+    - **Piège découvert (2026-07-29) — manipuler la porte/cassette de
+      collecte du RBW-100 via l'émulateur est risqué et potentiellement
+      irréversible sans redémarrage VM.** Séquence
+      UnlockUnit→"Door Set"→"Stack Cst"→"Door Set" (pour tester `Collect`) a
+      laissé l'émulateur dans un état où `Inventory`/`Collect` échouent en
+      permanence avec `result=11`, résistant à `Reset` ET à
+      `systemctl restart fccx.service` (les deux avaient toujours suffi
+      jusque-là). Nouveau code `DevStatus.st="9100"` observé (probablement
+      "porte ouverte", non documenté dans l'IF Spec lu à ce jour). **Avant de
+      reproduire cette manipulation, envisager un snapshot VMware de la VM**
+      (`vmrun snapshot`) pour pouvoir revenir en arrière sans tout
+      reconfigurer (SoapUserCheck, OccupyEnable, etc.).
 
 ## Contradictions de documentation (résolues ou non)
 
