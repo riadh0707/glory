@@ -26,7 +26,7 @@ Légende colonne **Détail** :
 | `ChangeOperation` | Encaissement + rendu de monnaie | ✅ | Occupy | Codes: 6,9,10,12,13,40,41,43,44,96,99,100 — voir `error-codes.md` |
 | `ChangeCancelOperation` | Annule une opération Change en cours | ✅ | Change en cours | — |
 | `StartCashinOperation` | Démarre un cycle d'encaissement | ✅ | Occupy | Suivi de `EndCashin` ou `CashinCancel` |
-| `EndCashinOperation` | Termine un cycle d'encaissement | ✅ | `StartCashin` en cours | `TransactionId` livré par événement, pas systématiquement dans la réponse synchrone |
+| `EndCashinOperation` | Termine un cycle d'encaissement | ✅ | `StartCashin` en cours | `TransactionId` livré par événement, pas systématiquement dans la réponse synchrone. **Le montant réellement compté est dans `Cash.Denomination`, PAS dans `ManualDeposit`** (qui reste à 0 même avec un vrai dépôt — c'est un champ distinct pour la saisie manuelle via `UpdateManualDepositTotal`) — vérifié empiriquement le 2026-07-28 sur simulateur avec un billet réellement inséré |
 | `CashinCancelOperation` | Annule un cycle d'encaissement en cours | ✅ | `StartCashin` en cours | — |
 | `CashoutOperation` | Distribution seule (sans encaissement préalable) | ✅ | Occupy | Mêmes codes de distribution que Change |
 | `InventoryOperation` | État des stocks par dénomination | ✅ | Session | Appelé en routine au démarrage (`Sequence Spec §3.2`) |

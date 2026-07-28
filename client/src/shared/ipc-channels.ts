@@ -7,6 +7,9 @@ export const IpcChannels = {
   SessionConnect: "session:connect",
   SessionStatus: "session:status",
   SessionDisconnect: "session:disconnect",
+  SessionStartCashin: "session:start-cashin",
+  SessionEndCashin: "session:end-cashin",
+  SessionChange: "session:change",
   LogLine: "log:line",
   EventReceived: "event:received",
 } as const;

@@ -92,6 +92,36 @@ voir **[open-questions.md](open-questions.md)** — non dupliquée ici.
      Open→RegisterEvent→Occupy→GetStatus→Release→Close, 6/6 `result=0`
      (`client/src/scripts/verify-session-cycle.ts`).
 
+10. **Procédure pour démarrer les émulateurs RBW-100/RCW-100** (à refaire à
+    chaque nouvelle session de travail — ni la VM ni Windows ne les relancent
+    automatiquement) :
+    1. Extraire un des zips `Emulator/Device Emulator/RBW-100/RBW-100_Release_*.zip`
+       (choisir la devise/variante adaptée — EUR utilisé ici, cohérent avec la
+       config EUR de la VM trouvée dans `GloryCo.xml`).
+    2. Dans le XML de config de chaque émulateur (`RBWXSimConfiguration.xml`,
+       `RCWXSimConfiguration.xml`), mettre `POWER_ON_CONTROL SWITCH="ON"`
+       (défaut `"OFF"` — évite un clic manuel de mise sous tension à chaque
+       lancement). **Modification appliquée directement dans le fichier
+       vendeur `Emulator/Device Emulator/RCW-100/RCWXSimConfiguration.xml`** —
+       à savoir si le SDK est re-copié depuis une source propre.
+    3. `Unblock-File` sur les deux `.exe` (marqués Zone.Identifier "téléchargé
+       d'Internet" par Windows, ce qui bloque leur lancement silencieusement).
+    4. Lancer `RBWXSim.exe` et `RCWXSim.exe` — ils écoutent respectivement sur
+       les ports TCP **50000** et **50001** côté hôte Windows.
+    5. Le FCC (VM) est déjà configuré pour s'y connecter automatiquement sur
+       `192.168.0.1:50000`/`:50001` (`/usr/local/glory/device/GloryCo.xml`,
+       aucune modification nécessaire côté VM) — si la connexion ne se fait
+       pas seule, `systemctl restart fccx.service` sur la VM force une
+       reconnexion (`Get-NetTCPConnection -LocalPort 50000,50001` côté
+       Windows doit passer à l'état `Established`).
+    6. Si un appel SOAP bloque l'appareil dans un état incohérent (ex. un
+       `Change` resté en attente puis interrompu côté client), un `Reset`
+       (`ResetOperation`, session Occupied) suffit à le ramener à l'état prêt.
+    - **Non résolu** : comment simuler l'insertion d'un billet/pièce dans ces
+      émulateurs — aucun contrôle d'interface évident trouvé, et
+      l'automatisation par capture d'écran s'est révélée impossible dans cet
+      environnement (voir `open-questions.md`).
+
 ## Contradictions de documentation (résolues ou non)
 
 | Contradiction apparente | Statut | Détail |

@@ -195,6 +195,68 @@ async function handleDisconnect(): Promise<DisconnectResult> {
   }
 }
 
+interface TransactionResult {
+  ok: boolean;
+  message: string;
+  state: SessionState;
+}
+
+async function handleStartCashin(): Promise<TransactionResult> {
+  if (!soapClient || !sessionId) {
+    return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
+  }
+  try {
+    stateMachine.assertCanTransact();
+    const result = await soapClient.startCashin(sessionId);
+    sendLog(`StartCashin → result ${result.resultDescription}`);
+    historyStore.record("soap-response", "StartCashinOperation", result);
+    return { ok: result.result === 0, message: result.resultDescription, state: stateMachine.getState() };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    sendLog(`[ERREUR] ${message}`);
+    return { ok: false, message, state: stateMachine.getState() };
+  }
+}
+
+async function handleEndCashin(): Promise<TransactionResult> {
+  if (!soapClient || !sessionId) {
+    return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
+  }
+  try {
+    stateMachine.assertCanTransact();
+    const result = await soapClient.endCashin(sessionId);
+    // `manualDeposit` n'est pas le montant physiquement compté (voir
+    // core/soap-client, docstring endCashin) — le détail réel est dans `cash`.
+    const message = `${result.resultDescription} — espèces comptées : ${JSON.stringify(result.cash ?? "aucune")}`;
+    sendLog(`EndCashin → result ${message}`);
+    historyStore.record("soap-response", "EndCashinOperation", result);
+    return { ok: result.result === 0, message, state: stateMachine.getState() };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    sendLog(`[ERREUR] ${message}`);
+    return { ok: false, message, state: stateMachine.getState() };
+  }
+}
+
+async function handleChange(amount: string): Promise<TransactionResult> {
+  if (!soapClient || !sessionId) {
+    return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
+  }
+  try {
+    stateMachine.assertCanTransact();
+    sendLog(`Change(${amount}) → en attente du dépôt client (appel bloquant, voir docs/open-questions.md)...`);
+    const result = await soapClient.change(sessionId, amount);
+    const message = `${result.resultDescription} — espèces : ${JSON.stringify(result.cash ?? "aucune")}`;
+    sendLog(`Change(${amount}) → result ${message}`);
+    historyStore.record("soap-response", "ChangeOperation", result);
+    return { ok: result.result === 0, message, state: stateMachine.getState() };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    sendLog(`[ERREUR] ${message}`);
+    return { ok: false, message, state: stateMachine.getState() };
+  }
+}
+
 function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 900,
@@ -220,6 +282,11 @@ function createWindow(): void {
 ipcMain.handle(IpcChannels.SessionConnect, async (_event: IpcMainInvokeEvent) => handleConnect());
 ipcMain.handle(IpcChannels.SessionStatus, async (_event: IpcMainInvokeEvent) => handleStatus());
 ipcMain.handle(IpcChannels.SessionDisconnect, async (_event: IpcMainInvokeEvent) => handleDisconnect());
+ipcMain.handle(IpcChannels.SessionStartCashin, async (_event: IpcMainInvokeEvent) => handleStartCashin());
+ipcMain.handle(IpcChannels.SessionEndCashin, async (_event: IpcMainInvokeEvent) => handleEndCashin());
+ipcMain.handle(IpcChannels.SessionChange, async (_event: IpcMainInvokeEvent, amount: string) =>
+  handleChange(amount)
+);
 
 app.whenReady().then(createWindow);
 

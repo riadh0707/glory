@@ -251,4 +251,101 @@ export class FccSoapClient {
     const result = extractResultAttribute(response);
     return { result, resultDescription: describeResultCode(result) };
   }
+
+  /**
+   * Démarre un cycle d'encaissement (ouvre l'accepteur billets/pièces).
+   * Réf. docs/soap-operations.md, ligne 28 ("StartCashinOperation | Démarre
+   * un cycle d'encaissement"). Champs requête : WSDL
+   * BrueBoxService.wsdl:306-314 (StartCashinRequestType — Id?, SeqNo,
+   * SessionID?, Option? [attribut `type` : 0=Both, 1=Bill, 2=Coin — IF Spec
+   * p.51-52], ForeignCurrency?).
+   *
+   * `deviceType` correspond à `Option.type` (défaut 0 = "Both", accepte
+   * billets et pièces) ; `ForeignCurrency` est omis (optionnel, non couvert
+   * par ce sprint).
+   */
+  async startCashin(sessionId: string, deviceType: 0 | 1 | 2 = 0): Promise<SimpleResult> {
+    const response = await this.call<
+      { SeqNo: string; SessionID: string; Option: { attributes: { type: number } } },
+      { attributes?: Record<string, unknown> }
+    >("StartCashinOperation", {
+      SeqNo: this.nextSeqNo(),
+      SessionID: sessionId,
+      Option: { attributes: { type: deviceType } },
+    });
+    const result = extractResultAttribute(response);
+    return { result, resultDescription: describeResultCode(result) };
+  }
+
+  /**
+   * Termine un cycle d'encaissement et restitue le détail des espèces
+   * réellement comptées. Réf. docs/soap-operations.md, ligne 29
+   * ("EndCashinOperation | Termine un cycle d'encaissement"). Champs
+   * requête : WSDL BrueBoxService.wsdl:329-336 (EndCashinRequestType — Id?,
+   * SeqNo, SessionID?, Option? [attribut `type` : 0=acquisition normale de
+   * l'inventaire, 1=accélérée — IF Spec p.54]). Renvoie `result=11 "exclusive
+   * error"` si aucun `StartCashin` n'était en cours (IF Spec p.54, "Except
+   * the device is in the middle of the cash in transaction, returns
+   * exclusive error").
+   *
+   * **Correction empirique (2026-07-28)** : `ManualDeposit` n'est PAS le
+   * montant physiquement compté — le WSDL le documente comme "Manual handing
+   * amount by UpdateManualDepositTotal" (une saisie manuelle distincte, hors
+   * périmètre de ce sprint) et il reste à `0` même avec un vrai billet
+   * inséré dans l'émulateur (testé RBWXSim, un billet EUR ajouté via son
+   * dialogue "Set bill dialog for Entrance"). **Le détail réel du dépôt
+   * physique est dans `Cash.Denomination`** (`cc`, `fv`, `rev`, `devid` en
+   * attributs ; `Piece`, `Status` en éléments) — confirmé peuplé
+   * correctement dans ce même test. `cash` ci-dessous expose cette structure
+   * brute (non typée finement — `Denomination` peut être un objet unique ou
+   * un tableau selon le nombre de dénominations, particularité de la lib
+   * `soap` non normalisée ici).
+   */
+  async endCashin(
+    sessionId: string
+  ): Promise<SimpleResult & { manualDeposit: string | undefined; cash: unknown }> {
+    const response = await this.call<
+      { SeqNo: string; SessionID: string },
+      { attributes?: Record<string, unknown>; ManualDeposit?: string; Cash?: unknown }
+    >("EndCashinOperation", { SeqNo: this.nextSeqNo(), SessionID: sessionId });
+    const result = extractResultAttribute(response);
+    return {
+      result,
+      resultDescription: describeResultCode(result),
+      manualDeposit: response.ManualDeposit,
+      cash: response.Cash,
+    };
+  }
+
+  /**
+   * Encaissement + rendu de monnaie en un seul appel — opération autonome et
+   * **bloquante**, sans besoin de StartCashin/EndCashin préalable (résolu
+   * empiriquement le 2026-07-28 — voir docs/open-questions.md). Réf.
+   * docs/soap-operations.md, ligne 26 ("ChangeOperation | Encaissement +
+   * rendu de monnaie"). Champs requête : WSDL BrueBoxService.wsdl:251-261
+   * (ChangeRequestType — Id?, SeqNo, SessionID?, Amount [requis, montant de
+   * la vente], Option?, Cash?, ForeignCurrency?).
+   *
+   * **`Change` attend le dépôt physique du client pendant l'appel HTTP
+   * lui-même** — vérifié empiriquement : une réponse a mis 55 secondes à
+   * arriver, le temps qu'un billet soit inséré manuellement dans
+   * l'émulateur. L'appelant (main.ts, UI) doit prévoir un timeout HTTP long
+   * (pas de valeur courte type 10-30s) et une UX "en attente de paiement",
+   * pas un simple spinner bref.
+   *
+   * `Cash`/`Option`/`ForeignCurrency` sont omis en requête (tous optionnels)
+   * — ce sprint ne couvre que le cas simple "montant de vente unique,
+   * dénominations libres côté client". Codes retour spécifiques : voir
+   * docs/error-codes.md (6, 9, 10, 12, 13, 40, 41, 43, 44, 96, 99, 100) —
+   * `10` "change shortage" confirmé reproductible si les cassettes de
+   * distribution ne peuvent pas rendre la monnaie due.
+   */
+  async change(sessionId: string, amount: string): Promise<SimpleResult & { cash: unknown }> {
+    const response = await this.call<
+      { SeqNo: string; SessionID: string; Amount: string },
+      { attributes?: Record<string, unknown>; Cash?: unknown }
+    >("ChangeOperation", { SeqNo: this.nextSeqNo(), SessionID: sessionId, Amount: amount });
+    const result = extractResultAttribute(response);
+    return { result, resultDescription: describeResultCode(result), cash: response.Cash };
+  }
 }

@@ -5,10 +5,19 @@
  */
 type SessionState = "Closed" | "Open" | "Occupied" | "Released";
 
+interface TransactionResult {
+  ok: boolean;
+  message: string;
+  state: SessionState;
+}
+
 interface GloryClientApi {
   connect(): Promise<{ ok: boolean; message: string; state: SessionState }>;
   status(): Promise<{ ok: boolean; message: string; raw?: unknown; state: SessionState }>;
   disconnect(): Promise<{ ok: boolean; message: string; state: SessionState }>;
+  startCashin(): Promise<TransactionResult>;
+  endCashin(): Promise<TransactionResult>;
+  change(amount: string): Promise<TransactionResult>;
   onLogLine(callback: (line: string) => void): void;
   onEvent(callback: (line: string) => void): void;
 }
@@ -51,6 +60,10 @@ window.addEventListener("DOMContentLoaded", () => {
   const connectBtn = document.getElementById("btn-connect") as HTMLButtonElement;
   const statusBtn = document.getElementById("btn-status") as HTMLButtonElement;
   const disconnectBtn = document.getElementById("btn-disconnect") as HTMLButtonElement;
+  const startCashinBtn = document.getElementById("btn-start-cashin") as HTMLButtonElement;
+  const endCashinBtn = document.getElementById("btn-end-cashin") as HTMLButtonElement;
+  const changeBtn = document.getElementById("btn-change") as HTMLButtonElement;
+  const amountInput = document.getElementById("input-amount") as HTMLInputElement;
 
   window.api.onLogLine((line) => appendLine(logEl, line, classifyLogLine(line)));
   window.api.onEvent((line) => appendLine(eventsEl, line));
@@ -76,5 +89,34 @@ window.addEventListener("DOMContentLoaded", () => {
     appendLine(logEl, `[UI] Déconnecter → ${result.message}`, "tag-ui");
     setStatePill(result.state);
     disconnectBtn.disabled = false;
+  });
+
+  startCashinBtn.addEventListener("click", async () => {
+    startCashinBtn.disabled = true;
+    const result = await window.api.startCashin();
+    appendLine(logEl, `[UI] Démarrer encaissement → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
+    setStatePill(result.state);
+    startCashinBtn.disabled = false;
+  });
+
+  endCashinBtn.addEventListener("click", async () => {
+    endCashinBtn.disabled = true;
+    const result = await window.api.endCashin();
+    appendLine(logEl, `[UI] Terminer encaissement → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
+    setStatePill(result.state);
+    endCashinBtn.disabled = false;
+  });
+
+  changeBtn.addEventListener("click", async () => {
+    const amount = amountInput.value.trim();
+    if (!amount) {
+      appendLine(logEl, "[UI] Encaisser (Change) → montant requis", "tag-error");
+      return;
+    }
+    changeBtn.disabled = true;
+    const result = await window.api.change(amount);
+    appendLine(logEl, `[UI] Encaisser (Change, ${amount}) → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
+    setStatePill(result.state);
+    changeBtn.disabled = false;
   });
 });
