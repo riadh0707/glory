@@ -1,0 +1,80 @@
+/**
+ * Script du renderer, compilé sans système de module (tsconfig.renderer.json)
+ * et chargé via une balise <script> classique — pas besoin de bundler pour
+ * cette UI. N'a accès qu'à `window.api`, exposé par src/main/preload.ts.
+ */
+type SessionState = "Closed" | "Open" | "Occupied" | "Released";
+
+interface GloryClientApi {
+  connect(): Promise<{ ok: boolean; message: string; state: SessionState }>;
+  status(): Promise<{ ok: boolean; message: string; raw?: unknown; state: SessionState }>;
+  disconnect(): Promise<{ ok: boolean; message: string; state: SessionState }>;
+  onLogLine(callback: (line: string) => void): void;
+  onEvent(callback: (line: string) => void): void;
+}
+
+interface Window {
+  api: GloryClientApi;
+}
+
+function appendLine(container: HTMLElement, line: string, cssClass?: string): void {
+  const row = document.createElement("div");
+  row.className = `log-line${cssClass ? ` ${cssClass}` : ""}`;
+  const ts = document.createElement("span");
+  ts.className = "ts";
+  ts.textContent = new Date().toLocaleTimeString();
+  row.appendChild(ts);
+  row.appendChild(document.createTextNode(line));
+  container.appendChild(row);
+  container.scrollTop = container.scrollHeight;
+}
+
+function classifyLogLine(line: string): string | undefined {
+  if (line.startsWith("[ERREUR]") || line.includes("Échec")) return "tag-error";
+  if (line.startsWith("[UI]")) return "tag-ui";
+  if (line.startsWith("[SOAP →]")) return "dir-req";
+  if (line.startsWith("[SOAP ←]")) return "dir-res";
+  return undefined;
+}
+
+function setStatePill(state: SessionState): void {
+  const pill = document.getElementById("state-pill") as HTMLSpanElement;
+  const label = document.getElementById("state-label") as HTMLSpanElement;
+  pill.className = `status-pill state-${state}`;
+  label.textContent = state;
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  const logEl = document.getElementById("log") as HTMLDivElement;
+  const eventsEl = document.getElementById("events") as HTMLDivElement;
+  const statusEl = document.getElementById("status-output") as HTMLPreElement;
+  const connectBtn = document.getElementById("btn-connect") as HTMLButtonElement;
+  const statusBtn = document.getElementById("btn-status") as HTMLButtonElement;
+  const disconnectBtn = document.getElementById("btn-disconnect") as HTMLButtonElement;
+
+  window.api.onLogLine((line) => appendLine(logEl, line, classifyLogLine(line)));
+  window.api.onEvent((line) => appendLine(eventsEl, line));
+
+  connectBtn.addEventListener("click", async () => {
+    connectBtn.disabled = true;
+    const result = await window.api.connect();
+    appendLine(logEl, `[UI] Connecter → ${result.message}`, "tag-ui");
+    setStatePill(result.state);
+    connectBtn.disabled = false;
+  });
+
+  statusBtn.addEventListener("click", async () => {
+    const result = await window.api.status();
+    appendLine(logEl, `[UI] Statut → ${result.message}`, "tag-ui");
+    statusEl.textContent = JSON.stringify(result.raw ?? {}, null, 2);
+    setStatePill(result.state);
+  });
+
+  disconnectBtn.addEventListener("click", async () => {
+    disconnectBtn.disabled = true;
+    const result = await window.api.disconnect();
+    appendLine(logEl, `[UI] Déconnecter → ${result.message}`, "tag-ui");
+    setStatePill(result.state);
+    disconnectBtn.disabled = false;
+  });
+});

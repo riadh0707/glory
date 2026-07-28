@@ -1,0 +1,17 @@
+# SDK constructeur Glory (fourni, volumineux, non versionné — ~5,3 Go)
+/App/
+/Doc/
+/Emulator/
+/*.wsdl
+/*.pdf
+/Manual.txt
+
+# Node / build (client/)
+client/node_modules/
+client/dist/
+client/data/
+client/*.log
+
+# OS
+Thumbs.db
+.DS_Store
