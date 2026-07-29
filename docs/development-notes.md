@@ -321,6 +321,50 @@ Windows, et `.deb` nécessite `fpm` (Ruby), absent de Windows. Solution
 retenue : `.github/workflows/build-client.yml`, qui construit Windows et
 Linux chacun sur son runner natif (déclenchement manuel ou tag `v*`).
 
+## Système de licence (2026-07-29)
+
+Architecture : `license-server/` (Cloudflare Worker + Workers KV, voir son
+README.md pour le déploiement/la gestion des clés) + `client/src/core/license/`
+(vérification côté client). Le client Electron **doit** contacter le serveur
+de licence en ligne à **chaque lancement** (pas de mode hors-ligne/grâce —
+demande explicite du client) : `main.ts` charge d'abord `license.html`
+(écran d'activation) et ne charge `index.html` (l'app réelle) qu'après
+validation réussie via `gateOnLicense()`. Licence stockée localement
+(`userData/license.json`) seulement pour préremplir la revérification
+suivante, jamais pour contourner l'appel réseau.
+
+**Bug trouvé en testant** (pas juste en supposant que ça marche) : le module
+`core/license` utilisait initialement `https.request` en dur pour appeler le
+serveur de vérification. Fonctionne contre le Worker déployé (toujours en
+`https://`), mais échoue silencieusement (timeout → "network-error") contre
+un serveur de test local (`wrangler dev`, en `http://127.0.0.1:8787`) — le
+module `https` de Node ne sait pas parler HTTP en clair. Remplacé par
+`axios` (déjà une dépendance du projet, utilisée par `core/soap-client`),
+qui gère les deux protocoles de façon transparente.
+
+**Piège d'environnement local** : voir `license-server/README.md`,
+section "Développement local" — `wrangler dev` dans cet environnement précis
+n'injecte pas correctement `.dev.vars` dans `env` (probablement lié à la
+détection "AI agent" par Wrangler), cassant les routes admin protégées par
+`ADMIN_TOKEN` en test local uniquement. Contourné en testant `/verify`
+(le seul endpoint dont dépend le client) via des enregistrements insérés
+directement en KV local (`wrangler kv key put --local`). N'affecte pas le
+déploiement réel (`wrangler secret put` fonctionne normalement en
+production).
+
+**Validé réel** (contre un `wrangler dev` local, KV peuplé manuellement) :
+écran d'activation bloque sans clé ; clé inconnue rejetée avec message clair ;
+clé valide → accès à l'app + licence stockée ; serveur injoignable au
+lancement suivant (même avec licence stockée valide) → accès bloqué avec
+message clair et bouton "Réessayer" ; "Réessayer" une fois le serveur
+de nouveau joignable → débloque sans re-saisir la clé.
+
+**Reste à faire** : déployer le Worker pour de vrai (compte Cloudflare du
+client, voir `license-server/README.md`) et mettre à jour
+`LICENSE_SERVER_URL` dans `main.ts` avec l'URL réelle avant toute
+distribution au client final — la valeur actuelle est un placeholder
+(`https://glory-fcc-license-server.example.workers.dev`, ne répond à rien).
+
 ## Backlog — opérations SOAP potentiellement à ajouter plus tard
 
 État au 2026-07-29 : 33 des 53 opérations du WSDL sont implémentées dans

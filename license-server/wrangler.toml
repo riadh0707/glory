@@ -1,0 +1,10 @@
+name = "glory-fcc-license-server"
+main = "src/index.js"
+compatibility_date = "2025-01-01"
+
+# Namespace Workers KV pour stocker les licences (clé de licence -> JSON
+# {clientName, expiresAt, revoked}). L'id réel est rempli après création du
+# namespace (`wrangler kv namespace create LICENSES`) — voir README.md.
+[[kv_namespaces]]
+binding = "LICENSES"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"

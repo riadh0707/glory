@@ -7,6 +7,7 @@ import { EventListener } from "../core/event-listener";
 import { HistoryStore } from "../core/history-store";
 import { getModelConfig, isConfirmedModel } from "../core/model-adapter";
 import { generateDiagnosticReport, DiagnosticReportEnvironment } from "../core/diagnostic-report";
+import { recheckStoredLicense, verifyAndStoreLicense, readStoredLicense, LicenseCheckResult } from "../core/license";
 
 // Modèle actif : CI-10, seule instance dont l'endpoint a été vérifié
 // empiriquement (docs/architecture.md). CI-10X/CI-50 sont déclarés dans
@@ -18,6 +19,18 @@ const ACTIVE_MODEL_ID = "CI-10";
 const DEVICE_NAME = "glory-fcc-client";
 const USER_ID = "posadmin";
 const USER_PWD = "";
+
+/**
+ * URL du serveur de vérification de licence (Cloudflare Worker, voir
+ * `license-server/`). **À remplacer par l'URL réelle après déploiement**
+ * (`wrangler deploy` affiche l'URL `https://<nom>.<compte>.workers.dev`) —
+ * surchargeable sans recompiler via la variable d'environnement
+ * `GLORY_LICENSE_SERVER_URL`, pratique pour pointer vers un Worker de test
+ * (`wrangler dev`, généralement `http://127.0.0.1:8787`) pendant le
+ * développement.
+ */
+const LICENSE_SERVER_URL =
+  process.env.GLORY_LICENSE_SERVER_URL || "https://glory-fcc-license-server.example.workers.dev";
 
 // Nom affiché par l'OS (menu Démarrer/barre des tâches Windows, launcher
 // Linux) — sans ça, Electron utilise par défaut le nom `package.json` en
@@ -721,6 +734,85 @@ function handleRendererError(context: string, message: string, stack: string | u
   historyStore.record("error", `renderer:${context}`, { message, stack });
 }
 
+/** Dernier résultat de vérification de licence connu du processus main —
+ * lu par le handler IPC `license:get-status` (l'écran d'activation ne
+ * relance pas la vérification réseau lui-même à l'ouverture, il affiche ce
+ * qui a déjà été déterminé par `gateOnLicense()`). */
+let lastLicenseCheck: LicenseCheckResult | null = null;
+
+function loadMainApp(): void {
+  mainWindow?.loadFile(path.join(__dirname, "..", "ui", "index.html"));
+}
+
+function loadLicenseScreen(): void {
+  mainWindow?.loadFile(path.join(__dirname, "..", "ui", "license.html"));
+}
+
+/**
+ * Vérifie la licence en ligne et charge l'écran approprié. Appelée au
+ * démarrage de l'app et après chaque tentative d'activation/nouvelle
+ * vérification réussie depuis l'écran de licence. **Aucun mode hors-ligne** :
+ * si le serveur de licence est injoignable, l'accès est refusé (choix
+ * explicite du client — voir docs/development-notes.md) ; l'écran
+ * d'activation affiche alors un message clair avec un bouton "Réessayer"
+ * plutôt qu'un échec silencieux.
+ */
+async function gateOnLicense(): Promise<void> {
+  lastLicenseCheck = await recheckStoredLicense(LICENSE_SERVER_URL, DATA_DIR);
+  historyStore.record("app-lifecycle", "license-check", lastLicenseCheck);
+  if (lastLicenseCheck.status === "valid") {
+    loadMainApp();
+  } else {
+    loadLicenseScreen();
+  }
+}
+
+interface LicenseStatusResponse {
+  /** "checking" : `gateOnLicense()` n'a pas encore renvoyé de résultat (page
+   * tout juste chargée, appel réseau en cours) — distinct de "invalid" pour
+   * que l'écran de licence ne flashe pas un message d'erreur avant que le
+   * vrai résultat soit connu (il poll ce statut jusqu'à ce qu'il change). */
+  status: LicenseCheckResult["status"] | "checking";
+  reason?: string;
+  expiresAt?: string;
+  clientName?: string | null;
+  /** Renseigné uniquement si une licence était déjà stockée localement —
+   * permet à l'écran d'activation de proposer "Réessayer" (revérifier la
+   * même clé) plutôt que de forcer une nouvelle saisie. */
+  hasStoredKey: boolean;
+}
+
+function handleLicenseGetStatus(): LicenseStatusResponse {
+  const stored = readStoredLicense(DATA_DIR);
+  const check = lastLicenseCheck;
+  return {
+    status: check?.status ?? "checking",
+    reason: check && "reason" in check ? check.reason : undefined,
+    expiresAt: check && "expiresAt" in check ? check.expiresAt : (stored?.expiresAt ?? undefined),
+    clientName: check?.status === "valid" ? check.record.clientName : stored?.clientName,
+    hasStoredKey: stored !== null,
+  };
+}
+
+/** Revérifie en ligne la clé déjà stockée (bouton "Réessayer" de l'écran de
+ * licence — utile après une coupure réseau temporaire, sans re-saisir la
+ * clé). Charge l'app principale en cas de succès. */
+async function handleLicenseRetry(): Promise<LicenseStatusResponse> {
+  await gateOnLicense();
+  return handleLicenseGetStatus();
+}
+
+/** Valide et active une nouvelle clé saisie par l'utilisateur. Charge l'app
+ * principale en cas de succès. */
+async function handleLicenseActivate(key: string): Promise<LicenseStatusResponse> {
+  lastLicenseCheck = await verifyAndStoreLicense(LICENSE_SERVER_URL, DATA_DIR, key.trim());
+  historyStore.record("app-lifecycle", "license-activate", lastLicenseCheck);
+  if (lastLicenseCheck.status === "valid") {
+    loadMainApp();
+  }
+  return handleLicenseGetStatus();
+}
+
 function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 900,
@@ -745,7 +837,11 @@ function createWindow(): void {
       sandbox: false,
     },
   });
-  mainWindow.loadFile(path.join(__dirname, "..", "ui", "index.html"));
+  // Écran de vérification (spinner) le temps du premier appel réseau —
+  // évite une fenêtre blanche pendant que gateOnLicense() attend la
+  // réponse du serveur de licence.
+  loadLicenseScreen();
+  void gateOnLicense();
 }
 
 ipcMain.handle(IpcChannels.SessionConnect, async (_event: IpcMainInvokeEvent) => handleConnect());
@@ -800,6 +896,11 @@ ipcMain.handle(
   IpcChannels.DiagnosticReportRendererError,
   async (_event: IpcMainInvokeEvent, context: string, message: string, stack: string | undefined) =>
     handleRendererError(context, message, stack)
+);
+ipcMain.handle(IpcChannels.LicenseGetStatus, async (_event: IpcMainInvokeEvent) => handleLicenseGetStatus());
+ipcMain.handle(IpcChannels.LicenseRetry, async (_event: IpcMainInvokeEvent) => handleLicenseRetry());
+ipcMain.handle(IpcChannels.LicenseActivate, async (_event: IpcMainInvokeEvent, key: string) =>
+  handleLicenseActivate(key)
 );
 
 historyStore.record("app-lifecycle", "start", {

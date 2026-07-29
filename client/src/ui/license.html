@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<title>Glory FCC Client — Activation</title>
+<link rel="stylesheet" href="./styles.css" />
+<style>
+  body {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .license-card {
+    width: 420px;
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 28px 28px 24px 28px;
+  }
+  .license-card h1 {
+    font-size: 16px;
+    margin: 0 0 4px 0;
+  }
+  .license-card p.sub {
+    margin: 0 0 20px 0;
+    font-size: 12.5px;
+    color: var(--ink-dim);
+  }
+  .license-status {
+    font-size: 13px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    background: var(--mono-bg);
+    color: var(--ink-dim);
+  }
+  .license-status.error {
+    background: var(--bad-bg);
+    color: var(--bad);
+  }
+  .license-status.checking {
+    background: var(--mono-bg);
+    color: var(--ink-dim);
+  }
+  .license-card .controls {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+</style>
+</head>
+<body>
+<div class="license-card">
+  <h1>Glory FCC Client</h1>
+  <p class="sub">Activation requise — une connexion internet est nécessaire.</p>
+  <div id="license-status" class="license-status checking">Vérification en cours…</div>
+  <div class="controls">
+    <label for="input-license-key" class="field-label">Clé de licence</label>
+    <input id="input-license-key" type="text" placeholder="GLORY-XXXX-XXXX-XXXX-XXXX" />
+    <button id="btn-activate" class="primary">Activer</button>
+    <button id="btn-retry" class="secondary" style="display:none;">Réessayer</button>
+  </div>
+</div>
+<script src="./license.js"></script>
+</body>
+</html>

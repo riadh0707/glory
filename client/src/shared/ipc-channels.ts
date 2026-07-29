@@ -31,6 +31,9 @@ export const IpcChannels = {
   SessionReturnCash: "session:return-cash",
   DiagnosticGenerateReport: "diagnostic:generate-report",
   DiagnosticReportRendererError: "diagnostic:report-renderer-error",
+  LicenseGetStatus: "license:get-status",
+  LicenseRetry: "license:retry",
+  LicenseActivate: "license:activate",
   LogLine: "log:line",
   EventReceived: "event:received",
 } as const;

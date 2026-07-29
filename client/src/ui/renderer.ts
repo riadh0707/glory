@@ -3,49 +3,8 @@
  * et chargé via une balise <script> classique — pas besoin de bundler pour
  * cette UI. N'a accès qu'à `window.api`, exposé par src/main/preload.ts.
  */
-type SessionState = "Closed" | "Open" | "Occupied" | "Released";
-
-interface TransactionResult {
-  ok: boolean;
-  message: string;
-  state: SessionState;
-}
-
-interface GloryClientApi {
-  connect(): Promise<{ ok: boolean; message: string; state: SessionState }>;
-  status(): Promise<{ ok: boolean; message: string; raw?: unknown; state: SessionState }>;
-  disconnect(): Promise<{ ok: boolean; message: string; state: SessionState }>;
-  startCashin(): Promise<TransactionResult>;
-  endCashin(): Promise<TransactionResult>;
-  change(amount: string): Promise<TransactionResult>;
-  startReplenishEntrance(): Promise<TransactionResult>;
-  endReplenishEntrance(): Promise<TransactionResult>;
-  lockUnit(): Promise<TransactionResult>;
-  unlockUnit(): Promise<TransactionResult>;
-  inventory(): Promise<{ ok: boolean; message: string; raw?: unknown; state: SessionState }>;
-  openExitCover(): Promise<TransactionResult>;
-  closeExitCover(): Promise<TransactionResult>;
-  romVersion(): Promise<{ ok: boolean; message: string; raw?: unknown; state: SessionState }>;
-  adjustTime(): Promise<TransactionResult>;
-  getSettingFile(fileName: string): Promise<{ ok: boolean; message: string; raw?: unknown; state: SessionState }>;
-  enableDenom(params: { cc: string; fv: string; devid: string }): Promise<TransactionResult>;
-  disableDenom(params: { cc: string; fv: string; devid: string }): Promise<TransactionResult>;
-  setExchangeRate(params: { from: string; to: string; rate: string }): Promise<TransactionResult>;
-  reset(): Promise<TransactionResult>;
-  cashinCancel(): Promise<TransactionResult>;
-  changeCancel(): Promise<TransactionResult>;
-  replenishEntranceCancel(): Promise<TransactionResult>;
-  cashout(params: { cc: string; fv: string; devid: string; piece: number }): Promise<TransactionResult>;
-  returnCash(): Promise<TransactionResult>;
-  generateDiagnosticReport(): Promise<{ ok: boolean; message: string; jsonPath?: string; markdownPath?: string }>;
-  reportRendererError(context: string, message: string, stack: string | undefined): Promise<void>;
-  onLogLine(callback: (line: string) => void): void;
-  onEvent(callback: (line: string) => void): void;
-}
-
-interface Window {
-  api: GloryClientApi;
-}
+// Types partagés (SessionState, TransactionResult, GloryClientApi,
+// Window.api) déclarés dans global.d.ts — voir ce fichier pour la raison.
 
 function appendLine(container: HTMLElement, line: string, cssClass?: string): void {
   const row = document.createElement("div");
