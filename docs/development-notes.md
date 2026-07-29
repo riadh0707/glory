@@ -136,6 +136,19 @@ voir **[open-questions.md](open-questions.md)** — non dupliquée ici.
       reproduire cette manipulation, envisager un snapshot VMware de la VM**
       (`vmrun snapshot`) pour pouvoir revenir en arrière sans tout
       reconfigurer (SoapUserCheck, OccupyEnable, etc.).
+    - **Règle de sécurité pour le code client, issue du scénario "billet
+      catégorie 2/3" (2026-07-29, voir `open-questions.md`)** : après tout
+      appel qui peut détecter une anomalie physique (`StartCashin`,
+      `EndCashin`, `Change`...), **toujours relire `GetStatus` avant
+      d'enchaîner sur l'opération de clôture normale**. Sur ce simulateur,
+      appeler `EndCashin` alors que `Status.Code` indiquait déjà une erreur
+      (billet cat.2/3 détecté) a bloqué la session indéfiniment, puis a
+      empêché `OpenExitCover` de fonctionner (même sur une session neuve),
+      puis a fait bloquer `Reset` lui-même — seul un redémarrage VM a permis
+      de s'en sortir. Le flux correct documenté (Sequence Spec §3.19) est
+      **`OpenExitCover` directement après détection d'erreur, jamais
+      `EndCashin`** — ne pas coder de logique qui appellerait `EndCashin`
+      sans vérifier l'état au préalable.
 
 ## Contradictions de documentation (résolues ou non)
 
