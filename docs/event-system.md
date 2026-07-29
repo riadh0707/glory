@@ -113,6 +113,45 @@ cohérents sur toute la plage 0-96, mais une éventuelle colonne de description
 associée (si elle existe dans le PDF original) n'a pas été extraite — seuls
 noms et numéros sont confirmés.
 
+## Catalogue `GlyCashierEvent` (IF Spec §3.58, p.200-216) — événements de niveau pilote
+
+Distinct de la "Event number table" (§10, p.242-243) déjà listée plus haut :
+c'est un **second catalogue**, plus détaillé, d'événements de niveau pilote
+("driver level event") propres à chaque unité (RBW-100/RCW-100/etc.),
+enveloppés dans `<BbxEventRequest><GlyCashierEvent devid="..." user="">
+(événement)</GlyCashierEvent></BbxEventRequest>`. Attribut `devid` : `1`
+(RBW-100/RZ-50/RBG-200/RBW-150/RBW-50), `2` (RCW-100/RCW-50) ; `user` est
+explicitement marqué **"unused"**. La section IF Spec liste ~30
+sous-événements (`eventWaitForRemoving`, `eventRemoved`,
+`eventCassetteInserted`, `eventCassetteChecked`, `eventStatusChange`,
+`eventEmpty`/`Low`/`Exist`/`High`/`Full`/`Missing`, `eventLogreadProgress`,
+`eventRequireVerifyDenomination`, `eventWaitForOpening`/`eventOpened`/
+`eventClosed`/`eventLocked`, `eventDepositCategoryInfo`...) — non
+retranscrite intégralement ici (hors périmètre de cette passe), seuls ceux
+**observés empiriquement** en testant l'application réelle sont détaillés :
+
+- **`eventStatusChange`** (IF Spec §3.58.1.7, p.207) — notifie un changement
+  du statut de l'unité. Corps : `<DeviceStatusID>N</DeviceStatusID>`, table
+  de valeurs **distincte** de `DevStatus.st` (voir `soap-operations.md`/
+  `models.md`) : `0`=STATUS_INTERNAL_ERROR, `1`=STATUS_IDLE,
+  `2`=STATUS_COUNTING, `3`=STATUS_USING_OWN, `4`=STATUS_BUSY,
+  `5`=STATUS_ERROR, `6`=STATUS_ERROR_COMMUNICATION,
+  `7`=STATUS_DLL_INITIALIZE_BUSY. Observé le 2026-07-29 juste après
+  `StartCashinOperation` avec `DeviceStatusID=3` (STATUS_USING_OWN) sur
+  `devid=1`.
+- **`eventWaitForOpening`** (IF Spec §3.58.1.26, p.216) — « notified of door
+  opening wait state after the unit opened ». Corps :
+  `<DevicePositionId>N</DevicePositionId>`, une seule valeur documentée :
+  `1`=collection door. Observé le 2026-07-29 juste après `ResetOperation`
+  sur `devid=1`.
+- **`eventLogreadProgress`** (IF Spec §3.58.1.19, p.213) — déjà repéré
+  empiriquement dans une passe précédente (voir plus bas), confirmé
+  maintenant par l'IF Spec : « The progress of the log lead is notified »,
+  corps `<totalsize>`/`<sentsize>`. Sa présence non sollicitée dans le flux
+  (observée après un simple `RomVersionOperation`) est donc cohérente avec
+  une lecture de log en arrière-plan côté FCC, indépendante de l'appel du
+  client — pas une anomalie.
+
 ## Confirmation empirique (2026-07-29) — le canal TCP échoue quasi toute réponse SOAP
 
 En testant l'application Electron réelle (pas un script isolé) avec le canal
