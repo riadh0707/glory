@@ -164,6 +164,47 @@ voir **[open-questions.md](open-questions.md)** — non dupliquée ici.
       `RCWXSim.exe` concerné sur l'hôte. Cette combinaison a résolu un
       deuxième blocage identique sans nécessiter de reboot VM complet.
 
+## Bugs UI corrigés (2026-07-29)
+
+Les cartes de `ui/index.html` ont été ajoutées incrémentalement session après
+session (Session, Encaissement, Remplissage, Supervision, Annulation,
+Dénominations...) sans jamais revérifier le CSS de layout — à ~7 cartes, deux
+bugs visuels sont apparus, diagnostiqués via capture d'écran réelle (CDP
+`Page.captureScreenshot`, pas une supposition) :
+
+1. **`.col-left` n'avait pas de scroll.** Avec `display:flex;flex-direction:
+   column` et `.card{min-height:0}` mais sans hauteur totale suffisante, le
+   navigateur réduisait (flex-shrink) chaque carte en dessous de la hauteur de
+   son propre contenu — le contenu (boutons, labels) débordait alors
+   visuellement de sa carte et chevauchait la carte suivante, au lieu de
+   simplement dépasser proprement. **Correctif** : `.col-left{overflow-y:auto}`
+   + `.card{flex-shrink:0}` par défaut (les cartes gardent leur taille
+   naturelle, la colonne défile) ; la carte "Statut (JSON)", seule à devoir
+   remplir l'espace restant, utilise la nouvelle classe `.card--fill` au lieu
+   d'un style inline `flex:1`.
+2. **`.events-panel{flex:none;height:180px}` écrasait `.log-panel` à une
+   hauteur quasi nulle** sur une fenêtre basse (`.col-right` trop petite pour
+   180px fixes + le reste) — le texte du titre "Journal" débordait visible­ment
+   de sa boîte de 2px. **Correctif** : les deux panneaux ont maintenant un
+   `min-height` (90px) et peuvent rétrécir l'un vers l'autre au lieu que l'un
+   soit rigide et l'autre écrasé ; `.col-right` a aussi gagné `overflow-y:auto`
+   en filet de sécurité.
+
+**Nettoyage associé** : tous les styles inline `style="..."` répétés sur les
+`<input>`/`<label>`/lignes de champs (ajoutés au fil des sessions, jamais
+factorisés) ont été remplacés par des classes CSS (`.field-label`,
+`.field-row`, `input[type="text"]` global) — en plus de la cohérence visuelle,
+ça corrige un second problème de redimensionnement : les inputs en ligne
+(`.field-row`) n'avaient pas `min-width:0`, donc plusieurs champs côte à côte
+pouvaient forcer la carte (et la fenêtre) à s'élargir au lieu de rétrécir
+proprement.
+
+**Validé** aux tailles 320×600, 500×400, 900×650 (défaut) et 1400×900 via
+`Emulation.setDeviceMetricsOverride` (CDP) — plus aucun débordement horizontal
+ou vertical au niveau de la page (`document.body.scrollHeight`/`scrollWidth`
+== `window.innerHeight`/`innerWidth` dans les quatre cas), fonctionnalité
+(Connecter/Déconnecter) revérifiée intacte après le changement de CSS.
+
 ## Contradictions de documentation (résolues ou non)
 
 | Contradiction apparente | Statut | Détail |
@@ -218,6 +259,37 @@ développement.)
 - **Ne pas répliquer les exemples `App/PosSimple` tels quels** : ils sont
   fournis comme preuve de consommation du WSDL, pas comme base de code à
   industrialiser (Windows/.NET Framework legacy pour la plupart).
+
+## Backlog — opérations SOAP potentiellement à ajouter plus tard
+
+État au 2026-07-29 : 33 des 53 opérations du WSDL sont implémentées dans
+`core/soap-client` (session, paiement/annulation, remplissage, collecte,
+déverrouillage, supervision/diagnostic, gestion des dénominations — tout ce
+que le client a explicitement demandé). Les 20 restantes n'ont **pas** été
+implémentées car hors du périmètre exprimé jusqu'ici — listées ici pour
+référence future, à activer sur demande explicite plutôt que par anticipation :
+
+- **Déploiement / configuration machine** (impact machine potentiellement
+  large, à traiter avec prudence) : `StartDownloadOperation` (déploiement
+  paquet langue/devise), `UpdateCheckOperation`, `UpdateSettingFileOperation`,
+  `GetSettingFileOperation` variantes d'écriture, `LanguageChangeOperation`,
+  `AutoRebootChangeOperation`, `UpdateDeviceCassetteSettingOperation`,
+  `UserSettingOperation` (création/suppression d'utilisateurs FCC).
+- **Redémarrage/alimentation** : `PowerControlOperation` (reboot/arrêt du
+  FCC — codé pour reference dans `soap-operations.md` mais jamais appelé
+  contre la VM, effet destructif évident).
+- **Diagnostics avancés** : `StartLogreadOperation` (lecture logs
+  techniques), `GetLastResponseOperation` (rejeu dernière réponse),
+  `RASSpecialAPIOperation` (fonction non identifiée), `RefreshSalesTotalOperation`,
+  `UpdateManualDepositTotalOperation`.
+- **Cassette scellée** : `StartSealingOperation` (RBW-150 uniquement,
+  IF Spec).
+- **Événements** : `UnRegisterEventOperation` (symétrique de RegisterEvent,
+  jamais nécessaire dans ce prototype qui garde une seule destination
+  active toute la session), `EventNotificationStatusOperation`,
+  `EventOfflineRecoveryOperation` (réservé CI-Server).
+- **Explicitement exclu, pas juste différé** : `CounterClearOperation` —
+  marqué "*** Do not use this Method ***" dans le WSDL lui-même.
 
 ## Points à vérifier avant le matériel réel
 

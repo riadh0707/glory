@@ -137,6 +137,10 @@ main {
   flex-direction: column;
   gap: 16px;
   min-height: 0;
+  overflow-y: auto;
+  /* Reserve room for the scrollbar so it doesn't sit flush against card
+     borders/shadows — avoids content jumping against the rail on resize. */
+  padding-right: 4px;
 }
 
 .col-right {
@@ -144,6 +148,7 @@ main {
   flex-direction: column;
   gap: 16px;
   min-height: 0;
+  overflow-y: auto;
 }
 
 .card {
@@ -154,6 +159,20 @@ main {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  /* Cards keep their natural content height and never get squeezed by
+     flexbox — .col-left scrolls instead. Without this, too many cards for
+     the window height caused flex-shrink to compress every card below its
+     content size, and the overflowing content visually overlapped the next
+     card (observed 2026-07-29 once the left column grew past ~6 cards). */
+  flex-shrink: 0;
+}
+
+/* The one card meant to fill remaining vertical space (Statut JSON) opts
+   back into growing/shrinking instead of the fixed-height default above. */
+.card--fill {
+  flex: 1 1 auto;
+  min-height: 120px;
+  flex-shrink: 1;
 }
 
 .card > h2 {
@@ -215,6 +234,43 @@ button.danger:hover:not(:disabled) {
   background: var(--bad-bg);
 }
 
+.field-label {
+  font-size: 12px;
+  color: var(--ink-dim);
+  margin-top: 4px;
+}
+
+.field-row {
+  display: flex;
+  gap: 6px;
+}
+
+input[type="text"] {
+  font-family: Consolas, "Cascadia Mono", monospace;
+  font-size: 13px;
+  padding: 8px;
+  border-radius: 7px;
+  border: 1px solid var(--rule);
+  background: var(--mono-bg);
+  color: var(--ink);
+  /* width:100% lets a standalone input fill its .controls column; inside a
+     .field-row, flex:1 + min-width:0 lets it shrink below its intrinsic
+     content width instead of forcing the row (and the whole card) wider
+     than the window — the other resize bug: 3-4 inputs side by side would
+     otherwise overflow the card on a narrow window. */
+  width: 100%;
+  min-width: 0;
+}
+
+.field-row input[type="text"] {
+  flex: 1;
+}
+
+input[type="text"]:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
 pre#status-output {
   margin: 0;
   padding: 12px 14px;
@@ -227,8 +283,8 @@ pre#status-output {
 }
 
 .log-panel {
-  flex: 1;
-  min-height: 0;
+  flex: 1 1 120px;
+  min-height: 90px;
 }
 
 .log-body {
@@ -263,6 +319,11 @@ pre#status-output {
 }
 
 .events-panel {
-  height: 180px;
-  flex: none;
+  /* Prefers 180px but shrinks down to 90px before .log-panel gives up any
+     more of its own space — previously flex:none (no shrink at all) meant
+     this panel stayed rigid at 180px and crushed .log-panel to near-zero
+     height on short windows, with the "Journal" heading text visibly
+     bleeding out of its collapsed box. */
+  flex: 0 1 180px;
+  min-height: 90px;
 }
