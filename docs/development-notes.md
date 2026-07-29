@@ -137,18 +137,32 @@ voir **[open-questions.md](open-questions.md)** — non dupliquée ici.
       (`vmrun snapshot`) pour pouvoir revenir en arrière sans tout
       reconfigurer (SoapUserCheck, OccupyEnable, etc.).
     - **Règle de sécurité pour le code client, issue du scénario "billet
-      catégorie 2/3" (2026-07-29, voir `open-questions.md`)** : après tout
-      appel qui peut détecter une anomalie physique (`StartCashin`,
-      `EndCashin`, `Change`...), **toujours relire `GetStatus` avant
-      d'enchaîner sur l'opération de clôture normale**. Sur ce simulateur,
-      appeler `EndCashin` alors que `Status.Code` indiquait déjà une erreur
-      (billet cat.2/3 détecté) a bloqué la session indéfiniment, puis a
-      empêché `OpenExitCover` de fonctionner (même sur une session neuve),
-      puis a fait bloquer `Reset` lui-même — seul un redémarrage VM a permis
-      de s'en sortir. Le flux correct documenté (Sequence Spec §3.19) est
-      **`OpenExitCover` directement après détection d'erreur, jamais
-      `EndCashin`** — ne pas coder de logique qui appellerait `EndCashin`
-      sans vérifier l'état au préalable.
+      catégorie 2/3" (2026-07-29, retesté et tranché le même jour — voir
+      `open-questions.md`)** : après tout appel qui peut détecter une
+      anomalie physique (`StartCashin`, `EndCashin`, `Change`...), **toujours
+      relire `GetStatus` avant d'enchaîner sur l'opération de clôture
+      normale**, et si `Status.Code` ∈ {6, 13, 24, 30} (erreur/billet
+      cat.2-3/attente de retrait), **ne jamais appeler `EndCashin` ni
+      `CashinCancel`** — les deux ont été confirmés bloquer indéfiniment le
+      simulateur dans cet état (pas spécifique à `EndCashin`, retest avec
+      `CashinCancelOperation` reproduit le même hang). Le flux correct
+      documenté (Sequence Spec §3.19) est `OpenExitCover` directement après
+      détection d'erreur ; sur ce simulateur, même cet appel échoue
+      proprement avec `result=11` (pas de hang) sans jamais réussir — limite
+      de fidélité du simulateur RBW-100, cohérente avec le disclaimer déjà
+      documenté pour `Collect`. **Si `OpenExitCover` échoue à cet état, ne
+      pas insister avec d'autres opérations de clôture** : escalader vers une
+      intervention manuelle plutôt que de risquer un blocage matériel qui,
+      lui, peut nécessiter un redémarrage.
+    - **Découverte sur la récupération d'un blocage RBW-100 (2026-07-29)** :
+      un redémarrage complet de la VM **ne suffit pas toujours** à nettoyer
+      un état bloqué — `RBWXSim.exe`/`RCWXSim.exe` tournent comme processus
+      **hôte** (Windows), séparés de la VM, et conservent leur état interne
+      (ex. un billet resté "coincé") à travers un reboot VM. Récupération
+      fiable observée : (1) `systemctl restart fccx.service` sur la VM via
+      SSH, **puis** (2) tuer et relancer le process `RBWXSim.exe`/
+      `RCWXSim.exe` concerné sur l'hôte. Cette combinaison a résolu un
+      deuxième blocage identique sans nécessiter de reboot VM complet.
 
 ## Contradictions de documentation (résolues ou non)
 

@@ -312,47 +312,62 @@ Occupy→GetStatus→Release→Close, 6/6 `result=0`, contre la VM simulateur
   "Money Handling Dialog" (non tenté, section 3-3 des manuels simulateur) —
   non exploré faute de temps, non bloquant pour la suite.
 
-- [ ] **Scénario "billet catégorie 2/3" (Sequence Spec §3.19) testé le
-  2026-07-29 — bloqué dans un état irrécupérable via SOAP, nécessitant un
-  redémarrage VM.** Procédure suivie : `StartCashin` → insertion d'un billet
-  avec `Cat=2` (contrefaçon) via le dialogue "Set bill dialog for Entrance"
-  de l'émulateur RBW (au lieu de `Cat=4` "Fit" utilisé jusqu'ici) →
-  `GetStatus` confirme la détection : `Status.Code` passe à `6` (nouveau code
-  machine, probablement "erreur"), `DevStatus[RBW].st` passe à `2050`
-  (nouveau code dispositif, jamais vu, probablement "billet cat.2/3 bloqué à
-  la sortie").
-  **Erreur méthodologique identifiée** : `EndCashin` a été appelé à ce stade
-  par réflexe — **erreur, le flux documenté (IF Spec/Sequence Spec §3.19
-  outline) ne mentionne PAS `EndCashin` dans cette situation** : "1. FCC
-  notifies error and stop process. 2. **Open exit cover.** 3. Remove
-  category notes from exit. 4. Recover from error by executing reset from
-  POS." — `EndCashin` est absent de cette liste. Résultat : `EndCashin` est
-  resté bloqué indéfiniment (>2 min, jamais de réponse).
-  **Conséquence en cascade** : après avoir arrêté le client (`EndCashin`
-  toujours potentiellement actif côté serveur), `OpenExitCover` a échoué
-  avec `result=11` — y compris sur une **session complètement fraîche**
-  (Release/Close proprement effectués, nouveau Open/Occupy), prouvant que le
-  blocage est **au niveau de l'appareil**, pas de la session. `Reset` — le
-  mécanisme de récupération habituellement fiable pour tous les blocages
-  précédents — **a lui-même bloqué indéfiniment** (jamais vu jusqu'ici,
-  même `Reset` a toujours répondu en quelques secondes à 24s maximum).
-  **Seul un redémarrage complet de la VM a permis de sortir de cet état.**
-  **Conclusion** : soit (a) appeler `EndCashin` pendant un blocage cat.2/3
-  met le simulateur dans un état dont même `Reset` ne peut sortir — auquel
-  cas **ne jamais appeler `EndCashin` après une détection cat.2/3, suivre
-  strictement `OpenExitCover` en premier** comme documenté ; soit (b) le
-  scénario cat.2/3 lui-même n'est pas correctement simulé par ce simulateur
-  RBW-100 (limite de fidélité, comme `Collect`). **Non retesté en suivant
-  l'ordre strictement correct (`OpenExitCover` immédiatement après détection,
-  sans `EndCashin`) faute de temps** — à refaire pour trancher entre (a) et
-  (b).
-  **Bloquant : oui**, pour valider ce scénario de bout en bout ; **non
-  bloquant** pour le développement général — `OpenExitCover`/`CloseExitCover`
-  sont déjà validés en usage normal (voir plus haut), seul le scénario
-  d'erreur cat.2/3 spécifique reste incertain. **Règle de sécurité à retenir
-  pour le code client** : ne jamais appeler `EndCashin` si `GetStatus` révèle
-  un état d'erreur inhabituel (`Status.Code` ≠ valeurs connues) — vérifier le
-  statut avant d'enchaîner sur la clôture d'un cash-in.
+- [x] ~~**Scénario "billet catégorie 2/3" (Sequence Spec §3.19)**~~ **Retesté
+  le 2026-07-29 en suivant strictement l'ordre documenté (sans `EndCashin`) —
+  conclusion (b) confirmée : c'est une limite de fidélité du simulateur
+  RBW-100, pas un problème côté client/`EndCashin`.**
+
+  Table de référence trouvée pendant l'investigation (IF Spec p.39/254,
+  "Device status" — corrige les hypothèses précédentes) :
+  `DevStatus.st` : `1000`=STATE_IDLE, `1500`=STATE_IDLE_OCCUPY,
+  `2000`=STATE_DEPOSIT_BUSY, `2050`=STATE_DEPOSIT_COUNTING (pas "billet
+  bloqué à la sortie" comme précédemment supposé), `5000`=STATE_RESET,
+  `9100`=STATE_BUSY (pas "porte ouverte" comme précédemment supposé),
+  `9200`=STATE_ERROR, `9300`=STATE_COM_ERROR, `9400`=STATE_WAIT_FOR_RESET.
+  Et `Status.Code` (IF Spec p.180/254, §3.51 StatusChangeNotification) :
+  `3`=Waiting insertion of cash, `6`=Waiting removal of cash in reject,
+  `8`=Resetting, `13`=Error, `24`=Counted category2 note, `30`=Waiting for
+  Error recovery.
+
+  **Retest propre (sans `EndCashin`)** : `StartCashin` → insertion `Cat=2` →
+  `GetStatus` se stabilise à `Status.Code=6` ("Waiting removal of cash in
+  reject"), `DevStatus[RBW].st=2050` (STATE_DEPOSIT_COUNTING) — état stable
+  et reproductible, confirmé stable sur >1 min de polling sans évoluer vers
+  `Code=13`/`30`. **`OpenExitCoverOperation` appelé directement à cet état
+  (aucun `EndCashin` entre les deux) → `result=11` (exclusive error),
+  réponse rapide (~100ms), pas de hang.** Retenté plusieurs fois après
+  attente, même résultat stable.
+  **Test complémentaire** : `CashinCancelOperation` (IF Spec §3.6, "Cancel
+  Cash in Request" — distincte d'`EndCashin`, documentée valide uniquement
+  "in the middle of cash-in transaction") tentée à ce même état →
+  **bloquée indéfiniment (timeout 30s), exactement comme `EndCashin` lors du
+  premier essai.**
+  **Conclusion définitive** : le blocage n'est **pas spécifique à
+  `EndCashin`** — toute opération qui tente de clore/annuler la transaction
+  de cash-in pendant un état "billet cat.2/3 détecté" fait planter le
+  simulateur RBW-100 indéfiniment. `OpenExitCoverOperation` seul (sans
+  clôture) ne bloque jamais, mais ne réussit pas non plus (`result=11`
+  systématique). C'est cohérent avec le disclaimer déjà documenté pour
+  `Collect` : "RBW-100 simulator does not emulate the actual machine
+  completely" — limite de fidélité du simulateur, pas un bug du client.
+  **Découverte clé sur la récupération** : après un blocage, un redémarrage
+  VM seul ne suffit **pas** à nettoyer l'état — l'émulateur RBWXSim.exe
+  tourne comme process **hôte** (Windows), séparé de la VM, et garde le
+  billet coincé en mémoire même après reboot VM. La récupération fiable est :
+  (1) `systemctl restart fccx.service` sur la VM (SSH), **puis** (2) tuer et
+  relancer le process `RBWXSim.exe` sur l'hôte. Cette combinaison a suffi à
+  retrouver un état propre (`st=1000` sur les deux devices) sans nécessiter
+  de reboot VM complet lors du deuxième blocage.
+  **Bloquant : non** pour le développement général — `OpenExitCover`/
+  `CloseExitCover` restent validés en usage normal (voir plus haut) ;
+  seul le succès complet du scénario d'erreur cat.2/3 (`OpenExitCover`
+  réussissant réellement) n'a pas pu être obtenu sur ce simulateur. **Règle
+  de sécurité à retenir pour le code client** : ne jamais appeler
+  `EndCashin` NI `CashinCancel` si `GetStatus` révèle un état d'erreur
+  inhabituel (`Status.Code` ∈ {6, 13, 24, 30}) — appeler `OpenExitCover`
+  directement, et si celui-ci échoue aussi, ne pas insister avec d'autres
+  opérations de clôture : escalader vers une intervention manuelle
+  (redémarrage service/émulateur) plutôt que de risquer un blocage matériel.
 
 - [ ] **Valider empiriquement le timeout Occupy** en observant le code `22`
   apparaître sur la VM simulateur après une session laissée ouverte sans
