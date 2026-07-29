@@ -22,6 +22,11 @@ const USER_PWD = "";
 const DATA_DIR = path.join(__dirname, "..", "..", "data");
 const APP_STARTED_AT = new Date().toISOString();
 
+// Nom affiché par l'OS (menu Démarrer/barre des tâches Windows, launcher
+// Linux) — sans ça, Electron utilise par défaut le nom `package.json` en
+// kebab-case ("glory-fcc-client") dans certains contextes système.
+app.setName("Glory FCC Client");
+
 let mainWindow: BrowserWindow | null = null;
 const historyStore = new HistoryStore(path.join(DATA_DIR, "glory-client.db"));
 const stateMachine = new SessionStateMachine();
@@ -704,6 +709,11 @@ function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 900,
     height: 650,
+    // .png fonctionne comme icône de fenêtre/taskbar sur Windows et Linux en
+    // exécution (dev comme empaqueté) ; l'icône .ico dédiée
+    // (build/icon.ico) sert uniquement à l'exécutable/l'installeur Windows
+    // (configuration electron-builder, voir docs/development-notes.md).
+    icon: path.join(__dirname, "..", "..", "build", "icon.png"),
     webPreferences: {
       preload: path.join(__dirname, "..", "main", "preload.js"),
       // contextIsolation reste la vraie barrière de sécurité (le renderer ne
