@@ -15,6 +15,13 @@ interface TransactionResult {
   state: SessionState;
 }
 
+interface FccConnectionConfig {
+  soapEndpoint: string;
+  rejectUnauthorized: boolean;
+  eventTcpPort: number;
+  callbackIp: string;
+}
+
 type LicenseStatus = "checking" | "valid" | "invalid" | "network-error";
 
 interface LicenseStatusResponse {
@@ -56,6 +63,8 @@ interface GloryClientApi {
   licenseGetStatus(): Promise<LicenseStatusResponse>;
   licenseRetry(): Promise<LicenseStatusResponse>;
   licenseActivate(key: string): Promise<LicenseStatusResponse>;
+  fccConfigGet(): Promise<FccConnectionConfig>;
+  fccConfigSave(config: FccConnectionConfig): Promise<FccConnectionConfig>;
   onLogLine(callback: (line: string) => void): void;
   onEvent(callback: (line: string) => void): void;
 }

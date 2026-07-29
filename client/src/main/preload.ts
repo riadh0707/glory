@@ -42,6 +42,8 @@ contextBridge.exposeInMainWorld("api", {
   licenseGetStatus: () => ipcRenderer.invoke(IpcChannels.LicenseGetStatus),
   licenseRetry: () => ipcRenderer.invoke(IpcChannels.LicenseRetry),
   licenseActivate: (key: string) => ipcRenderer.invoke(IpcChannels.LicenseActivate, key),
+  fccConfigGet: () => ipcRenderer.invoke(IpcChannels.FccConfigGet),
+  fccConfigSave: (config: unknown) => ipcRenderer.invoke(IpcChannels.FccConfigSave, config),
   onLogLine: (callback: (line: string) => void) => {
     ipcRenderer.on(IpcChannels.LogLine, (_event, line: string) => callback(line));
   },

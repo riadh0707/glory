@@ -21,6 +21,22 @@
   <main>
     <div class="col-left">
       <div class="card">
+        <h2>Connexion au FCC</h2>
+        <div class="controls">
+          <label for="input-soap-endpoint" class="field-label">Adresse du FCC (URL SOAP)</label>
+          <input id="input-soap-endpoint" type="text" placeholder="https://192.168.1.50/axis2/services/BrueBoxService" />
+          <label for="input-callback-ip" class="field-label">Adresse IP de cette machine (vue par le FCC)</label>
+          <input id="input-callback-ip" type="text" placeholder="192.168.1.10" />
+          <label for="input-event-port" class="field-label">Port TCP événements (généralement 55561)</label>
+          <input id="input-event-port" type="text" inputmode="numeric" placeholder="55561" />
+          <label class="field-label" style="display:flex; align-items:center; gap:6px; margin-top:2px;">
+            <input id="input-reject-unauthorized" type="checkbox" style="width:auto;" />
+            Exiger un certificat TLS valide (décocher si certificat auto-signé)
+          </label>
+        </div>
+      </div>
+
+      <div class="card">
         <h2>Session</h2>
         <div class="controls">
           <button id="btn-connect" class="primary">Connecter</button>

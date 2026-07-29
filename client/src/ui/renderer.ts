@@ -75,9 +75,23 @@ window.addEventListener("DOMContentLoaded", () => {
   const cashoutDevidInput = document.getElementById("input-cashout-devid") as HTMLInputElement;
   const cashoutPieceInput = document.getElementById("input-cashout-piece") as HTMLInputElement;
   const generateReportBtn = document.getElementById("btn-generate-report") as HTMLButtonElement;
+  const soapEndpointInput = document.getElementById("input-soap-endpoint") as HTMLInputElement;
+  const callbackIpInput = document.getElementById("input-callback-ip") as HTMLInputElement;
+  const eventPortInput = document.getElementById("input-event-port") as HTMLInputElement;
+  const rejectUnauthorizedInput = document.getElementById("input-reject-unauthorized") as HTMLInputElement;
 
   window.api.onLogLine((line) => appendLine(logEl, line, classifyLogLine(line)));
   window.api.onEvent((line) => appendLine(eventsEl, line));
+
+  // Préremplit les champs de connexion avec la config actuelle (valeurs par
+  // défaut de model-adapter/ci-10.ts, ou la dernière config sauvegardée dans
+  // userData/fcc-config.json — voir core/fcc-config).
+  void window.api.fccConfigGet().then((config) => {
+    soapEndpointInput.value = config.soapEndpoint;
+    callbackIpInput.value = config.callbackIp;
+    eventPortInput.value = String(config.eventTcpPort);
+    rejectUnauthorizedInput.checked = config.rejectUnauthorized;
+  });
 
   /**
    * Capture globale des erreurs renderer (exceptions JS synchrones et
@@ -123,6 +137,17 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   guardedClick(connectBtn, "Connecter", async () => {
+    // Sauvegarde la config de connexion saisie AVANT de se connecter — le
+    // processus main la relit à chaque appel de connect() (voir
+    // core/fcc-config, main.ts handleConnect). Permet de pointer vers un
+    // vrai FCC sans reconstruire l'app.
+    const eventTcpPort = Number(eventPortInput.value.trim()) || 55561;
+    await window.api.fccConfigSave({
+      soapEndpoint: soapEndpointInput.value.trim(),
+      callbackIp: callbackIpInput.value.trim(),
+      eventTcpPort,
+      rejectUnauthorized: rejectUnauthorizedInput.checked,
+    });
     const result = await window.api.connect();
     appendLine(logEl, `[UI] Connecter → ${result.message}`, "tag-ui");
     setStatePill(result.state);

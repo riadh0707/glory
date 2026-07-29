@@ -34,6 +34,8 @@ export const IpcChannels = {
   LicenseGetStatus: "license:get-status",
   LicenseRetry: "license:retry",
   LicenseActivate: "license:activate",
+  FccConfigGet: "fcc-config:get",
+  FccConfigSave: "fcc-config:save",
   LogLine: "log:line",
   EventReceived: "event:received",
 } as const;

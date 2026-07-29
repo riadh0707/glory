@@ -8,6 +8,7 @@ import { HistoryStore } from "../core/history-store";
 import { getModelConfig, isConfirmedModel } from "../core/model-adapter";
 import { generateDiagnosticReport, DiagnosticReportEnvironment } from "../core/diagnostic-report";
 import { recheckStoredLicense, verifyAndStoreLicense, readStoredLicense, LicenseCheckResult } from "../core/license";
+import { loadFccConfig, saveFccConfig, FccConnectionConfig } from "../core/fcc-config";
 
 // Modèle actif : CI-10, seule instance dont l'endpoint a été vérifié
 // empiriquement (docs/architecture.md). CI-10X/CI-50 sont déclarés dans
@@ -122,6 +123,16 @@ async function handleConnect(): Promise<ConnectResult> {
     return { ok: false, message, state: stateMachine.getState() };
   }
 
+  // Surchargé par userData/fcc-config.json si présent (voir
+  // core/fcc-config) — nécessaire pour pointer vers un FCC réel plutôt que
+  // la VM simulateur du SDK (valeurs par défaut de model-adapter/ci-10.ts).
+  const connConfig: FccConnectionConfig = loadFccConfig(DATA_DIR, {
+    soapEndpoint: modelConfig.soapEndpoint,
+    rejectUnauthorized: modelConfig.tls.rejectUnauthorized,
+    eventTcpPort: modelConfig.eventListener.tcpPort,
+    callbackIp: "192.168.0.1",
+  });
+
   try {
     stateMachine.assertCanOpen();
 
@@ -129,7 +140,7 @@ async function handleConnect(): Promise<ConnectResult> {
     // sprint), pour être prêt à recevoir dès que le FCC commence à émettre.
     eventListener = new EventListener({
       mode: modelConfig.eventListener.mode,
-      tcpPort: modelConfig.eventListener.tcpPort,
+      tcpPort: connConfig.eventTcpPort,
       logger: (source, raw) => {
         const line = `[TCP EVENT] ${source} ${raw}`;
         sendLog(line);
@@ -138,11 +149,11 @@ async function handleConnect(): Promise<ConnectResult> {
       },
     });
     await eventListener.start();
-    sendLog(`Écouteur TCP démarré sur le port ${modelConfig.eventListener.tcpPort}.`);
+    sendLog(`Écouteur TCP démarré sur le port ${connConfig.eventTcpPort}.`);
 
     soapClient = await FccSoapClient.create({
-      endpoint: modelConfig.soapEndpoint,
-      rejectUnauthorized: modelConfig.tls.rejectUnauthorized,
+      endpoint: connConfig.soapEndpoint,
+      rejectUnauthorized: connConfig.rejectUnauthorized,
       logger: (direction, operation, payload) => {
         const line = `[SOAP ${direction === "request" ? "→" : "←"}] ${operation} ${JSON.stringify(payload)}`;
         sendLog(line);
@@ -167,16 +178,13 @@ async function handleConnect(): Promise<ConnectResult> {
     // connexion TCP retour vers ce port (docs/event-system.md). `127.0.0.1`
     // NE FONCTIONNE PAS — vérifié empiriquement le 2026-07-28 : le FCC est
     // une machine distincte (même en VM), donc 127.0.0.1 y désigne le FCC
-    // lui-même, jamais la caisse. Il faut l'IP réelle de la caisse sur le
-    // réseau partagé avec le FCC — pour la VM simulateur (192.168.0.0/24),
-    // c'est l'adresse de l'hôte de développement sur ce sous-réseau
-    // (192.168.0.1, voir docs/architecture.md). À rendre configurable pour un
-    // déploiement multi-machine (actuellement en dur, cas mono-poste de dev).
-    const CAISSE_IP_ON_FCC_SUBNET = "192.168.0.1";
+    // lui-même, jamais la caisse. Configurable via connConfig.callbackIp
+    // (userData/fcc-config.json, voir core/fcc-config) — sur un déploiement
+    // réel, c'est l'IP de CETTE machine sur le même réseau que le FCC.
     const registerResult = await soapClient.registerEvent({
       sessionId,
-      url: CAISSE_IP_ON_FCC_SUBNET,
-      port: modelConfig.eventListener.tcpPort,
+      url: connConfig.callbackIp,
+      port: connConfig.eventTcpPort,
     });
     sendLog(`RegisterEvent → result ${registerResult.resultDescription}`);
 
@@ -690,6 +698,29 @@ async function handleReturnCash(): Promise<TransactionResult> {
   }
 }
 
+function currentFccConfig(): FccConnectionConfig {
+  const modelConfig = getModelConfig(ACTIVE_MODEL_ID);
+  return loadFccConfig(DATA_DIR, {
+    soapEndpoint: isConfirmedModel(modelConfig) ? (modelConfig.soapEndpoint ?? "") : "",
+    rejectUnauthorized: isConfirmedModel(modelConfig) ? modelConfig.tls.rejectUnauthorized : true,
+    eventTcpPort: isConfirmedModel(modelConfig) ? modelConfig.eventListener.tcpPort : 55561,
+    callbackIp: "192.168.0.1",
+  });
+}
+
+function handleFccConfigGet(): FccConnectionConfig {
+  return currentFccConfig();
+}
+
+function handleFccConfigSave(config: FccConnectionConfig): FccConnectionConfig {
+  saveFccConfig(DATA_DIR, config);
+  sendLog(
+    `[UI] Configuration FCC enregistrée → endpoint=${config.soapEndpoint} callbackIp=${config.callbackIp} eventPort=${config.eventTcpPort} rejectUnauthorized=${config.rejectUnauthorized}`
+  );
+  historyStore.record("app-lifecycle", "fcc-config-save", config);
+  return config;
+}
+
 interface DiagnosticReportResponse {
   ok: boolean;
   message: string;
@@ -901,6 +932,10 @@ ipcMain.handle(IpcChannels.LicenseGetStatus, async (_event: IpcMainInvokeEvent) 
 ipcMain.handle(IpcChannels.LicenseRetry, async (_event: IpcMainInvokeEvent) => handleLicenseRetry());
 ipcMain.handle(IpcChannels.LicenseActivate, async (_event: IpcMainInvokeEvent, key: string) =>
   handleLicenseActivate(key)
+);
+ipcMain.handle(IpcChannels.FccConfigGet, async (_event: IpcMainInvokeEvent) => handleFccConfigGet());
+ipcMain.handle(IpcChannels.FccConfigSave, async (_event: IpcMainInvokeEvent, config: FccConnectionConfig) =>
+  handleFccConfigSave(config)
 );
 
 historyStore.record("app-lifecycle", "start", {
