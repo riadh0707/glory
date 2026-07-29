@@ -29,6 +29,8 @@ export const IpcChannels = {
   SessionReplenishEntranceCancel: "session:replenish-entrance-cancel",
   SessionCashout: "session:cashout",
   SessionReturnCash: "session:return-cash",
+  DiagnosticGenerateReport: "diagnostic:generate-report",
+  DiagnosticReportRendererError: "diagnostic:report-renderer-error",
   LogLine: "log:line",
   EventReceived: "event:received",
 } as const;

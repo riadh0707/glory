@@ -37,6 +37,8 @@ interface GloryClientApi {
   replenishEntranceCancel(): Promise<TransactionResult>;
   cashout(params: { cc: string; fv: string; devid: string; piece: number }): Promise<TransactionResult>;
   returnCash(): Promise<TransactionResult>;
+  generateDiagnosticReport(): Promise<{ ok: boolean; message: string; jsonPath?: string; markdownPath?: string }>;
+  reportRendererError(context: string, message: string, stack: string | undefined): Promise<void>;
   onLogLine(callback: (line: string) => void): void;
   onEvent(callback: (line: string) => void): void;
 }
@@ -113,133 +115,171 @@ window.addEventListener("DOMContentLoaded", () => {
   const cashoutFvInput = document.getElementById("input-cashout-fv") as HTMLInputElement;
   const cashoutDevidInput = document.getElementById("input-cashout-devid") as HTMLInputElement;
   const cashoutPieceInput = document.getElementById("input-cashout-piece") as HTMLInputElement;
+  const generateReportBtn = document.getElementById("btn-generate-report") as HTMLButtonElement;
 
   window.api.onLogLine((line) => appendLine(logEl, line, classifyLogLine(line)));
   window.api.onEvent((line) => appendLine(eventsEl, line));
 
-  connectBtn.addEventListener("click", async () => {
-    connectBtn.disabled = true;
+  /**
+   * Capture globale des erreurs renderer (exceptions JS synchrones et
+   * promesses rejetées non gérées) — sans ça, un bug purement UI ne laisse
+   * aucune trace exploitable (voir docs/development-notes.md, incident du
+   * 2026-07-29 : un clic rapide sur "Déconnecter" laissait le bouton bloqué
+   * sans qu'aucune ligne d'erreur n'apparaisse nulle part). Remonté au
+   * processus main pour atterrir dans le même rapport de diagnostic que les
+   * erreurs SOAP.
+   */
+  window.addEventListener("error", (event) => {
+    void window.api.reportRendererError("window.onerror", event.message, event.error?.stack);
+  });
+  window.addEventListener("unhandledrejection", (event) => {
+    const reason = event.reason;
+    const message = reason instanceof Error ? reason.message : String(reason);
+    const stack = reason instanceof Error ? reason.stack : undefined;
+    void window.api.reportRendererError("unhandledrejection", message, stack);
+  });
+
+  /**
+   * Enveloppe chaque clic : désactive le bouton, exécute `fn`, le
+   * réactive TOUJOURS (`finally`) même si `fn` lève une exception — avant
+   * ce correctif (2026-07-29), une exception dans un handler laissait le
+   * bouton désactivé indéfiniment et l'erreur n'était visible nulle part
+   * (ni dans le journal, ni dans un rapport). L'erreur est maintenant
+   * affichée ET remontée au processus main pour le rapport de diagnostic.
+   */
+  function guardedClick(btn: HTMLButtonElement, label: string, fn: () => Promise<void>): void {
+    btn.addEventListener("click", async () => {
+      btn.disabled = true;
+      try {
+        await fn();
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        const stack = err instanceof Error ? err.stack : undefined;
+        appendLine(logEl, `[ERREUR] (UI) ${label} : ${message}`, "tag-error");
+        void window.api.reportRendererError(label, message, stack);
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  }
+
+  guardedClick(connectBtn, "Connecter", async () => {
     const result = await window.api.connect();
     appendLine(logEl, `[UI] Connecter → ${result.message}`, "tag-ui");
     setStatePill(result.state);
-    connectBtn.disabled = false;
   });
 
   statusBtn.addEventListener("click", async () => {
-    const result = await window.api.status();
-    appendLine(logEl, `[UI] Statut → ${result.message}`, "tag-ui");
-    statusEl.textContent = JSON.stringify(result.raw ?? {}, null, 2);
-    setStatePill(result.state);
+    try {
+      const result = await window.api.status();
+      appendLine(logEl, `[UI] Statut → ${result.message}`, "tag-ui");
+      statusEl.textContent = JSON.stringify(result.raw ?? {}, null, 2);
+      setStatePill(result.state);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      appendLine(logEl, `[ERREUR] (UI) Statut : ${message}`, "tag-error");
+      void window.api.reportRendererError("Statut", message, err instanceof Error ? err.stack : undefined);
+    }
   });
 
-  disconnectBtn.addEventListener("click", async () => {
-    disconnectBtn.disabled = true;
+  guardedClick(disconnectBtn, "Déconnecter", async () => {
     const result = await window.api.disconnect();
     appendLine(logEl, `[UI] Déconnecter → ${result.message}`, "tag-ui");
     setStatePill(result.state);
-    disconnectBtn.disabled = false;
   });
 
-  startCashinBtn.addEventListener("click", async () => {
-    startCashinBtn.disabled = true;
+  guardedClick(startCashinBtn, "Démarrer encaissement", async () => {
     const result = await window.api.startCashin();
     appendLine(logEl, `[UI] Démarrer encaissement → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
     setStatePill(result.state);
-    startCashinBtn.disabled = false;
   });
 
-  endCashinBtn.addEventListener("click", async () => {
-    endCashinBtn.disabled = true;
+  guardedClick(endCashinBtn, "Terminer encaissement", async () => {
     const result = await window.api.endCashin();
     appendLine(logEl, `[UI] Terminer encaissement → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
     setStatePill(result.state);
-    endCashinBtn.disabled = false;
   });
 
-  changeBtn.addEventListener("click", async () => {
+  guardedClick(changeBtn, "Encaisser (Change)", async () => {
     const amount = amountInput.value.trim();
     if (!amount) {
       appendLine(logEl, "[UI] Encaisser (Change) → montant requis", "tag-error");
       return;
     }
-    changeBtn.disabled = true;
     const result = await window.api.change(amount);
     appendLine(logEl, `[UI] Encaisser (Change, ${amount}) → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
     setStatePill(result.state);
-    changeBtn.disabled = false;
   });
 
-  startReplenishBtn.addEventListener("click", async () => {
-    startReplenishBtn.disabled = true;
+  guardedClick(startReplenishBtn, "Démarrer remplissage", async () => {
     const result = await window.api.startReplenishEntrance();
     appendLine(logEl, `[UI] Démarrer remplissage → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
     setStatePill(result.state);
-    startReplenishBtn.disabled = false;
   });
 
-  endReplenishBtn.addEventListener("click", async () => {
-    endReplenishBtn.disabled = true;
+  guardedClick(endReplenishBtn, "Terminer remplissage", async () => {
     const result = await window.api.endReplenishEntrance();
     appendLine(logEl, `[UI] Terminer remplissage → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
     setStatePill(result.state);
-    endReplenishBtn.disabled = false;
   });
 
-  lockBtn.addEventListener("click", async () => {
-    lockBtn.disabled = true;
+  guardedClick(lockBtn, "Verrouiller", async () => {
     const result = await window.api.lockUnit();
     appendLine(logEl, `[UI] Verrouiller → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
     setStatePill(result.state);
-    lockBtn.disabled = false;
   });
 
-  unlockBtn.addEventListener("click", async () => {
-    unlockBtn.disabled = true;
+  guardedClick(unlockBtn, "Déverrouiller", async () => {
     const result = await window.api.unlockUnit();
     appendLine(logEl, `[UI] Déverrouiller → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
     setStatePill(result.state);
-    unlockBtn.disabled = false;
   });
 
   inventoryBtn.addEventListener("click", async () => {
-    const result = await window.api.inventory();
-    appendLine(logEl, `[UI] Inventaire → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
-    statusEl.textContent = JSON.stringify(result.raw ?? {}, null, 2);
-    setStatePill(result.state);
+    try {
+      const result = await window.api.inventory();
+      appendLine(logEl, `[UI] Inventaire → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
+      statusEl.textContent = JSON.stringify(result.raw ?? {}, null, 2);
+      setStatePill(result.state);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      appendLine(logEl, `[ERREUR] (UI) Inventaire : ${message}`, "tag-error");
+      void window.api.reportRendererError("Inventaire", message, err instanceof Error ? err.stack : undefined);
+    }
   });
 
-  openExitCoverBtn.addEventListener("click", async () => {
-    openExitCoverBtn.disabled = true;
+  guardedClick(openExitCoverBtn, "Ouvrir couvercle sortie", async () => {
     const result = await window.api.openExitCover();
     appendLine(logEl, `[UI] Ouvrir couvercle sortie → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
     setStatePill(result.state);
-    openExitCoverBtn.disabled = false;
   });
 
-  closeExitCoverBtn.addEventListener("click", async () => {
-    closeExitCoverBtn.disabled = true;
+  guardedClick(closeExitCoverBtn, "Fermer couvercle sortie", async () => {
     const result = await window.api.closeExitCover();
     appendLine(logEl, `[UI] Fermer couvercle sortie → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
     setStatePill(result.state);
-    closeExitCoverBtn.disabled = false;
   });
 
   romVersionBtn.addEventListener("click", async () => {
-    const result = await window.api.romVersion();
-    appendLine(logEl, `[UI] Versions firmware → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
-    statusEl.textContent = JSON.stringify(result.raw ?? {}, null, 2);
-    setStatePill(result.state);
+    try {
+      const result = await window.api.romVersion();
+      appendLine(logEl, `[UI] Versions firmware → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
+      statusEl.textContent = JSON.stringify(result.raw ?? {}, null, 2);
+      setStatePill(result.state);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      appendLine(logEl, `[ERREUR] (UI) Versions firmware : ${message}`, "tag-error");
+      void window.api.reportRendererError("Versions firmware", message, err instanceof Error ? err.stack : undefined);
+    }
   });
 
-  adjustTimeBtn.addEventListener("click", async () => {
-    adjustTimeBtn.disabled = true;
+  guardedClick(adjustTimeBtn, "Régler date/heure", async () => {
     const result = await window.api.adjustTime();
     appendLine(logEl, `[UI] Régler date/heure (heure système) → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
     setStatePill(result.state);
-    adjustTimeBtn.disabled = false;
   });
 
-  getSettingFileBtn.addEventListener("click", async () => {
+  guardedClick(getSettingFileBtn, "Lire fichier config", async () => {
     const fileName = settingFileNameInput.value.trim();
     if (!fileName) {
       appendLine(logEl, "[UI] Lire fichier config → nom de fichier requis", "tag-error");
@@ -262,27 +302,23 @@ window.addEventListener("DOMContentLoaded", () => {
     return { cc, fv, devid };
   }
 
-  enableDenomBtn.addEventListener("click", async () => {
+  guardedClick(enableDenomBtn, "Autoriser dénomination", async () => {
     const params = readDenomInputs();
     if (!params) return;
-    enableDenomBtn.disabled = true;
     const result = await window.api.enableDenom(params);
     appendLine(logEl, `[UI] Autoriser dénomination (${params.cc} ${params.fv}) → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
     setStatePill(result.state);
-    enableDenomBtn.disabled = false;
   });
 
-  disableDenomBtn.addEventListener("click", async () => {
+  guardedClick(disableDenomBtn, "Interdire dénomination", async () => {
     const params = readDenomInputs();
     if (!params) return;
-    disableDenomBtn.disabled = true;
     const result = await window.api.disableDenom(params);
     appendLine(logEl, `[UI] Interdire dénomination (${params.cc} ${params.fv}) → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
     setStatePill(result.state);
-    disableDenomBtn.disabled = false;
   });
 
-  setExchangeRateBtn.addEventListener("click", async () => {
+  guardedClick(setExchangeRateBtn, "Taux de change", async () => {
     const from = exchangeFromInput.value.trim();
     const to = exchangeToInput.value.trim();
     const rate = exchangeRateInput.value.trim();
@@ -290,55 +326,43 @@ window.addEventListener("DOMContentLoaded", () => {
       appendLine(logEl, "[UI] Taux de change → devise source/cible/taux requis", "tag-error");
       return;
     }
-    setExchangeRateBtn.disabled = true;
     const result = await window.api.setExchangeRate({ from, to, rate });
     appendLine(logEl, `[UI] Taux de change (${from}→${to}=${rate}) → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
     setStatePill(result.state);
-    setExchangeRateBtn.disabled = false;
   });
 
-  resetBtn.addEventListener("click", async () => {
-    resetBtn.disabled = true;
+  guardedClick(resetBtn, "Reset", async () => {
     appendLine(logEl, "[UI] Reset → en cours (peut prendre jusqu'à ~30s)...", "tag-ui");
     const result = await window.api.reset();
     appendLine(logEl, `[UI] Reset → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
     setStatePill(result.state);
-    resetBtn.disabled = false;
   });
 
-  cashinCancelBtn.addEventListener("click", async () => {
-    cashinCancelBtn.disabled = true;
+  guardedClick(cashinCancelBtn, "Annuler encaissement", async () => {
     const result = await window.api.cashinCancel();
     appendLine(logEl, `[UI] Annuler encaissement → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
     setStatePill(result.state);
-    cashinCancelBtn.disabled = false;
   });
 
-  changeCancelBtn.addEventListener("click", async () => {
-    changeCancelBtn.disabled = true;
+  guardedClick(changeCancelBtn, "Annuler Change en attente", async () => {
     const result = await window.api.changeCancel();
     appendLine(logEl, `[UI] Annuler Change (en attente) → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
     setStatePill(result.state);
-    changeCancelBtn.disabled = false;
   });
 
-  replenishCancelBtn.addEventListener("click", async () => {
-    replenishCancelBtn.disabled = true;
+  guardedClick(replenishCancelBtn, "Annuler remplissage (entrée)", async () => {
     const result = await window.api.replenishEntranceCancel();
     appendLine(logEl, `[UI] Annuler remplissage (entrée) → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
     setStatePill(result.state);
-    replenishCancelBtn.disabled = false;
   });
 
-  returnCashBtn.addEventListener("click", async () => {
-    returnCashBtn.disabled = true;
+  guardedClick(returnCashBtn, "Renvoyer pièces", async () => {
     const result = await window.api.returnCash();
     appendLine(logEl, `[UI] Renvoyer pièces (hopper→sortie) → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
     setStatePill(result.state);
-    returnCashBtn.disabled = false;
   });
 
-  cashoutBtn.addEventListener("click", async () => {
+  guardedClick(cashoutBtn, "Cashout", async () => {
     const cc = cashoutCcInput.value.trim();
     const fv = cashoutFvInput.value.trim();
     const devid = cashoutDevidInput.value.trim();
@@ -347,10 +371,13 @@ window.addEventListener("DOMContentLoaded", () => {
       appendLine(logEl, "[UI] Cashout → cc/fv/devid/nombre de pièces requis", "tag-error");
       return;
     }
-    cashoutBtn.disabled = true;
     const result = await window.api.cashout({ cc, fv, devid, piece });
     appendLine(logEl, `[UI] Cashout (${cc} ${fv} x${piece}) → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
     setStatePill(result.state);
-    cashoutBtn.disabled = false;
+  });
+
+  guardedClick(generateReportBtn, "Générer rapport de diagnostic", async () => {
+    const result = await window.api.generateDiagnosticReport();
+    appendLine(logEl, `[UI] Rapport de diagnostic → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
   });
 });

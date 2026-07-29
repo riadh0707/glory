@@ -205,6 +205,40 @@ ou vertical au niveau de la page (`document.body.scrollHeight`/`scrollWidth`
 == `window.innerHeight`/`innerWidth` dans les quatre cas), fonctionnalité
 (Connecter/Déconnecter) revérifiée intacte après le changement de CSS.
 
+## Rapport de diagnostic (2026-07-29) — préparation du test sur matériel réel
+
+Objectif : quand le client testera contre un vrai FCC (pas la VM simulateur),
+il doit pouvoir signaler un problème sans avoir à décrire lui-même la
+séquence d'appels ou copier des logs à la main. Trois ajouts pour ça :
+
+1. **Toute erreur est maintenant persistée**, pas seulement affichée. Avant
+   ce changement, les lignes `[ERREUR]` n'existaient que dans le panneau de
+   log de l'UI (perdues à la fermeture de l'app). `sendLog` (main.ts)
+   détecte le préfixe `[ERREUR]` et l'enregistre aussi dans `HistoryStore`
+   (nouveau type d'événement `error`).
+2. **Filets de sécurité pour les erreurs non anticipées**, à trois niveaux :
+   `process.on("uncaughtException"/"unhandledRejection")` côté main,
+   `window.onerror`/`unhandledrejection` côté renderer (remontés au main via
+   IPC `diagnostic:report-renderer-error`), et chaque handler de clic UI est
+   maintenant enveloppé (`guardedClick` dans `renderer.ts`) pour que le
+   bouton se réactive **toujours** (`finally`) même si son handler lève une
+   exception — corrige au passage la classe de bug rencontrée le 2026-07-29
+   sur `btn-disconnect` (bouton resté bloqué après une exception silencieuse,
+   aucune trace nulle part).
+3. **`core/diagnostic-report`** génère, sur demande (bouton "Générer rapport
+   de diagnostic", carte Session), deux fichiers dans
+   `client/data/reports/<horodatage>/` (dossier gitignored, jamais commité) :
+   `report.json` (export brut de tout l'historique `HistoryStore` — y
+   compris les sessions précédentes, la base SQLite persiste entre
+   lancements) et `report.md` (résumé lisible : environnement,
+   compteurs par opération/code résultat, liste chronologique des erreurs,
+   puis le journal complet). Testé réel : génère correctement un rapport de
+   450 événements avec extraction correcte des codes résultat (les réponses
+   SOAP sont journalisées **brutes** dans `HistoryStore` — `result` est sous
+   `attributes["n:result"]`, pas à plat — piège reproduit dans
+   `describeResultCode()`, la même astuce que `extractResultAttribute` dans
+   `core/soap-client`).
+
 ## Contradictions de documentation (résolues ou non)
 
 | Contradiction apparente | Statut | Détail |

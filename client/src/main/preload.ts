@@ -36,6 +36,9 @@ contextBridge.exposeInMainWorld("api", {
   cashout: (params: { cc: string; fv: string; devid: string; piece: number }) =>
     ipcRenderer.invoke(IpcChannels.SessionCashout, params),
   returnCash: () => ipcRenderer.invoke(IpcChannels.SessionReturnCash),
+  generateDiagnosticReport: () => ipcRenderer.invoke(IpcChannels.DiagnosticGenerateReport),
+  reportRendererError: (context: string, message: string, stack: string | undefined) =>
+    ipcRenderer.invoke(IpcChannels.DiagnosticReportRendererError, context, message, stack),
   onLogLine: (callback: (line: string) => void) => {
     ipcRenderer.on(IpcChannels.LogLine, (_event, line: string) => callback(line));
   },

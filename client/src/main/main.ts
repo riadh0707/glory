@@ -6,6 +6,7 @@ import { SessionStateMachine, SessionState } from "../core/session-state-machine
 import { EventListener } from "../core/event-listener";
 import { HistoryStore } from "../core/history-store";
 import { getModelConfig, isConfirmedModel } from "../core/model-adapter";
+import { generateDiagnosticReport, DiagnosticReportEnvironment } from "../core/diagnostic-report";
 
 // Modèle utilisé par ce prototype : la VM simulateur CI-10 du SDK, seule
 // instance dont l'endpoint a été vérifié empiriquement (docs/architecture.md).
@@ -18,21 +19,55 @@ const DEVICE_NAME = "glory-client-prototype";
 const USER_ID = "posadmin";
 const USER_PWD = "";
 
+const DATA_DIR = path.join(__dirname, "..", "..", "data");
+const APP_STARTED_AT = new Date().toISOString();
+
 let mainWindow: BrowserWindow | null = null;
-const historyStore = new HistoryStore(path.join(__dirname, "..", "..", "data", "glory-client.db"));
+const historyStore = new HistoryStore(path.join(DATA_DIR, "glory-client.db"));
 const stateMachine = new SessionStateMachine();
 
 let soapClient: FccSoapClient | null = null;
 let eventListener: EventListener | null = null;
 let sessionId: string | undefined;
 
+/**
+ * Toute ligne `[ERREUR]` est aussi persistée dans `historyStore` — avant ce
+ * changement (2026-07-29), les erreurs n'apparaissaient que dans le panneau
+ * de log de l'UI (perdues à la fermeture de l'app), jamais dans la base
+ * SQLite ni dans un export. Ajouté spécifiquement pour que le rapport de
+ * diagnostic (voir handleGenerateReport) capture aussi les échecs, pas
+ * seulement les succès SOAP — nécessaire pour diagnostiquer un problème
+ * rencontré par le client sur un FCC réel sans avoir à lui redemander une
+ * copie de son écran/log au moment exact de l'incident.
+ */
 function sendLog(line: string): void {
   mainWindow?.webContents.send(IpcChannels.LogLine, line);
+  if (line.startsWith("[ERREUR]")) {
+    historyStore.record("error", null, { message: line });
+  }
 }
 
 function sendEvent(line: string): void {
   mainWindow?.webContents.send(IpcChannels.EventReceived, line);
 }
+
+/**
+ * Filet de sécurité : capture toute exception qui échapperait aux try/catch
+ * des handlers individuels (bug non anticipé dans le code, pas seulement les
+ * échecs SOAP attendus) — sans ça, une exception non gérée dans le
+ * processus main tuerait l'app silencieusement sans laisser de trace
+ * exploitable pour le rapport de diagnostic.
+ */
+process.on("uncaughtException", (err) => {
+  sendLog(`[ERREUR] Exception non gérée (main) : ${err.message}`);
+  historyStore.record("error", "uncaughtException", { message: err.message, stack: err.stack });
+});
+process.on("unhandledRejection", (reason) => {
+  const message = reason instanceof Error ? reason.message : String(reason);
+  const stack = reason instanceof Error ? reason.stack : undefined;
+  sendLog(`[ERREUR] Promesse rejetée non gérée (main) : ${message}`);
+  historyStore.record("error", "unhandledRejection", { message, stack });
+});
 
 interface ConnectResult {
   ok: boolean;
@@ -621,6 +656,50 @@ async function handleReturnCash(): Promise<TransactionResult> {
   }
 }
 
+interface DiagnosticReportResponse {
+  ok: boolean;
+  message: string;
+  jsonPath?: string;
+  markdownPath?: string;
+}
+
+async function handleGenerateReport(): Promise<DiagnosticReportResponse> {
+  try {
+    const modelConfig = getModelConfig(ACTIVE_MODEL_ID);
+    const env: DiagnosticReportEnvironment = {
+      modelId: ACTIVE_MODEL_ID,
+      soapEndpoint: (isConfirmedModel(modelConfig) ? modelConfig.soapEndpoint : undefined) ?? undefined,
+      appStartedAt: APP_STARTED_AT,
+      reportGeneratedAt: new Date().toISOString(),
+      platform: `${process.platform} ${process.arch}`,
+      nodeVersion: process.version,
+    };
+    const events = historyStore.getAllEvents();
+    const result = generateDiagnosticReport(path.join(DATA_DIR, "reports"), env, events);
+    const message = `Rapport généré (${result.eventCount} événements, ${result.errorCount} erreurs) → ${result.markdownPath}`;
+    sendLog(`[UI] Rapport de diagnostic → ${message}`);
+    return { ok: true, message, jsonPath: result.jsonPath, markdownPath: result.markdownPath };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    sendLog(`[ERREUR] Génération du rapport de diagnostic : ${message}`);
+    return { ok: false, message };
+  }
+}
+
+/**
+ * Le renderer n'a pas accès à `historyStore` (processus séparé) — cette
+ * fonction lui donne un moyen de signaler ses propres erreurs (exceptions
+ * JS dans un handler de clic, promesse IPC rejetée côté UI) pour qu'elles
+ * atterrissent dans le même rapport de diagnostic que les erreurs SOAP.
+ * Sans ça, un bug purement UI (ex. celui rencontré le 2026-07-29 où un clic
+ * rapide sur "Déconnecter" laissait le bouton bloqué) resterait invisible
+ * dans tout export destiné au client.
+ */
+function handleRendererError(context: string, message: string, stack: string | undefined): void {
+  sendLog(`[ERREUR] (UI) ${context} : ${message}`);
+  historyStore.record("error", `renderer:${context}`, { message, stack });
+}
+
 function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 900,
@@ -690,10 +769,24 @@ ipcMain.handle(
     handleCashout(params)
 );
 ipcMain.handle(IpcChannels.SessionReturnCash, async (_event: IpcMainInvokeEvent) => handleReturnCash());
+ipcMain.handle(IpcChannels.DiagnosticGenerateReport, async (_event: IpcMainInvokeEvent) => handleGenerateReport());
+ipcMain.handle(
+  IpcChannels.DiagnosticReportRendererError,
+  async (_event: IpcMainInvokeEvent, context: string, message: string, stack: string | undefined) =>
+    handleRendererError(context, message, stack)
+);
+
+historyStore.record("app-lifecycle", "start", {
+  appStartedAt: APP_STARTED_AT,
+  modelId: ACTIVE_MODEL_ID,
+  platform: `${process.platform} ${process.arch}`,
+  nodeVersion: process.version,
+});
 
 app.whenReady().then(createWindow);
 
 app.on("window-all-closed", () => {
+  historyStore.record("app-lifecycle", "stop", { ts: new Date().toISOString() });
   historyStore.close();
   if (process.platform !== "darwin") {
     app.quit();
