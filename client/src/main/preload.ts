@@ -18,6 +18,8 @@ contextBridge.exposeInMainWorld("api", {
   lockUnit: () => ipcRenderer.invoke(IpcChannels.SessionLockUnit),
   unlockUnit: () => ipcRenderer.invoke(IpcChannels.SessionUnlockUnit),
   inventory: () => ipcRenderer.invoke(IpcChannels.SessionInventory),
+  openExitCover: () => ipcRenderer.invoke(IpcChannels.SessionOpenExitCover),
+  closeExitCover: () => ipcRenderer.invoke(IpcChannels.SessionCloseExitCover),
   onLogLine: (callback: (line: string) => void) => {
     ipcRenderer.on(IpcChannels.LogLine, (_event, line: string) => callback(line));
   },

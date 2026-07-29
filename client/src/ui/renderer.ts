@@ -23,6 +23,8 @@ interface GloryClientApi {
   lockUnit(): Promise<TransactionResult>;
   unlockUnit(): Promise<TransactionResult>;
   inventory(): Promise<{ ok: boolean; message: string; raw?: unknown; state: SessionState }>;
+  openExitCover(): Promise<TransactionResult>;
+  closeExitCover(): Promise<TransactionResult>;
   onLogLine(callback: (line: string) => void): void;
   onEvent(callback: (line: string) => void): void;
 }
@@ -74,6 +76,8 @@ window.addEventListener("DOMContentLoaded", () => {
   const lockBtn = document.getElementById("btn-lock") as HTMLButtonElement;
   const unlockBtn = document.getElementById("btn-unlock") as HTMLButtonElement;
   const inventoryBtn = document.getElementById("btn-inventory") as HTMLButtonElement;
+  const openExitCoverBtn = document.getElementById("btn-open-exit-cover") as HTMLButtonElement;
+  const closeExitCoverBtn = document.getElementById("btn-close-exit-cover") as HTMLButtonElement;
 
   window.api.onLogLine((line) => appendLine(logEl, line, classifyLogLine(line)));
   window.api.onEvent((line) => appendLine(eventsEl, line));
@@ -167,5 +171,21 @@ window.addEventListener("DOMContentLoaded", () => {
     appendLine(logEl, `[UI] Inventaire → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
     statusEl.textContent = JSON.stringify(result.raw ?? {}, null, 2);
     setStatePill(result.state);
+  });
+
+  openExitCoverBtn.addEventListener("click", async () => {
+    openExitCoverBtn.disabled = true;
+    const result = await window.api.openExitCover();
+    appendLine(logEl, `[UI] Ouvrir couvercle sortie → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
+    setStatePill(result.state);
+    openExitCoverBtn.disabled = false;
+  });
+
+  closeExitCoverBtn.addEventListener("click", async () => {
+    closeExitCoverBtn.disabled = true;
+    const result = await window.api.closeExitCover();
+    appendLine(logEl, `[UI] Fermer couvercle sortie → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
+    setStatePill(result.state);
+    closeExitCoverBtn.disabled = false;
   });
 });

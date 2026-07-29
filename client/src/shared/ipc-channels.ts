@@ -15,6 +15,8 @@ export const IpcChannels = {
   SessionLockUnit: "session:lock-unit",
   SessionUnlockUnit: "session:unlock-unit",
   SessionInventory: "session:inventory",
+  SessionOpenExitCover: "session:open-exit-cover",
+  SessionCloseExitCover: "session:close-exit-cover",
   LogLine: "log:line",
   EventReceived: "event:received",
 } as const;

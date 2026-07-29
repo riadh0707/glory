@@ -350,6 +350,40 @@ async function handleInventory(): Promise<InventoryResult> {
   }
 }
 
+async function handleOpenExitCover(): Promise<TransactionResult> {
+  if (!soapClient || !sessionId) {
+    return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
+  }
+  try {
+    stateMachine.assertCanTransact();
+    const result = await soapClient.openExitCover(sessionId);
+    sendLog(`OpenExitCover → result ${result.resultDescription}`);
+    historyStore.record("soap-response", "OpenExitCoverOperation", result);
+    return { ok: result.result === 0, message: result.resultDescription, state: stateMachine.getState() };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    sendLog(`[ERREUR] ${message}`);
+    return { ok: false, message, state: stateMachine.getState() };
+  }
+}
+
+async function handleCloseExitCover(): Promise<TransactionResult> {
+  if (!soapClient || !sessionId) {
+    return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
+  }
+  try {
+    stateMachine.assertCanTransact();
+    const result = await soapClient.closeExitCover(sessionId);
+    sendLog(`CloseExitCover → result ${result.resultDescription}`);
+    historyStore.record("soap-response", "CloseExitCoverOperation", result);
+    return { ok: result.result === 0, message: result.resultDescription, state: stateMachine.getState() };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    sendLog(`[ERREUR] ${message}`);
+    return { ok: false, message, state: stateMachine.getState() };
+  }
+}
+
 function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 900,
@@ -389,6 +423,8 @@ ipcMain.handle(IpcChannels.SessionEndReplenishEntrance, async (_event: IpcMainIn
 ipcMain.handle(IpcChannels.SessionLockUnit, async (_event: IpcMainInvokeEvent) => handleLockUnit());
 ipcMain.handle(IpcChannels.SessionUnlockUnit, async (_event: IpcMainInvokeEvent) => handleUnlockUnit());
 ipcMain.handle(IpcChannels.SessionInventory, async (_event: IpcMainInvokeEvent) => handleInventory());
+ipcMain.handle(IpcChannels.SessionOpenExitCover, async (_event: IpcMainInvokeEvent) => handleOpenExitCover());
+ipcMain.handle(IpcChannels.SessionCloseExitCover, async (_event: IpcMainInvokeEvent) => handleCloseExitCover());
 
 app.whenReady().then(createWindow);
 

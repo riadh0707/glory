@@ -55,8 +55,8 @@ Légende colonne **Détail** :
 | `EndReplenishmentFromCassetteOperation` | Termine un réapprovisionnement par cassette | ✅ | `StartReplenishmentFromCassette` en cours | — |
 | `LockUnitOperation` | Verrouille physiquement une unité/cassette | ✅ (usage) / 🟡 (params) | Session | `Sequence Spec §3.15` : Lock pour annuler un retrait de cassette |
 | `UnLockUnitOperation` | Déverrouille physiquement une unité/cassette | ✅ (usage) / 🟡 (params) | Session | Visible uniquement sur CI-10/CI-50 selon `Manual.txt` (doc tierce, non confirmé indépendamment pour CI-05/CI-10X — voir `models.md`) |
-| `OpenExitCoverOperation` | Ouvre le couvercle de sortie | ✅ (usage) / 🟡 (params) | Session | Utilisé pour retirer des billets catégorie 2/3 détectés (`Sequence Spec §3.19`) |
-| `CloseExitCoverOperation` | Ferme le couvercle de sortie | ✅ (usage) / 🟡 (params) | Session | Symétrique de `OpenExitCover` |
+| `OpenExitCoverOperation` | Ouvre le couvercle de sortie | ✅ | Session | Utilisé pour retirer des billets catégorie 2/3 détectés (`Sequence Spec §3.19`). Testé réel le 2026-07-29 : `result=0` |
+| `CloseExitCoverOperation` | Ferme le couvercle de sortie | ✅ | Session | Symétrique de `OpenExitCover`. Testé réel le 2026-07-29 : `result=0`, fait passer `DevStatus[RBW].st` à `1500` (= `STATE_IDLE_OCCUPY`, cohérent avec `session-lifecycle.md`) |
 | `EventOfflineRecoveryOperation` | Reprise après coupure (mode hors-ligne) | ⬜ | Session (probable) | Nom WSDL confirmé uniquement ; lié au `DestinationType=1 (Server)` de `RegisterEvent` qui « enables the function of offline recovery » (`IF Spec p.90`) — lien logique, pas de détail params |
 | `SetExchangeRateOperation` | Définit un taux de change | 🟡 | Session | Lié au Result 43 "exchange rate error" observé sur Change |
 | `RollbackOperation` | Annule/rétablit une opération | ⬜ | Session (probable) | Nom WSDL confirmé uniquement, sémantique non extraite |
