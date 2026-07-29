@@ -56,6 +56,20 @@
         </div>
       </div>
 
+      <div class="card">
+        <h2>Supervision / diagnostic</h2>
+        <div class="controls">
+          <button id="btn-rom-version" class="secondary">Versions firmware</button>
+          <button id="btn-adjust-time" class="secondary">Régler date/heure (= heure système)</button>
+          <label for="input-setting-filename" style="font-size:12px; color:var(--ink-dim); margin-top:4px;">
+            Nom du fichier de configuration
+          </label>
+          <input id="input-setting-filename" type="text" placeholder="ex. GloryCo.xml"
+                 style="padding:8px; border-radius:7px; border:1px solid var(--rule); background:var(--mono-bg); color:var(--ink); font-family:Consolas,monospace;" />
+          <button id="btn-get-setting-file" class="secondary">Lire fichier config</button>
+        </div>
+      </div>
+
       <div class="card" style="flex:1; min-height:0;">
         <h2>Statut (JSON)</h2>
         <pre id="status-output">—</pre>

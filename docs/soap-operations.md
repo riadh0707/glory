@@ -36,9 +36,9 @@ Légende colonne **Détail** :
 | `RegisterEventOperation` | Enregistre une destination d'événements | ✅ | Session | Voir `event-system.md` — jusqu'à 4 destinations |
 | `UnRegisterEventOperation` | Désenregistre une destination d'événements | ✅ | `RegisterEvent` préalable | Params: `Url`, `Port` (WSDL lignes 828-836) |
 | `EventNotificationStatusOperation` | Interroge le statut d'enregistrement événement | ✅ | Session | Retourne `Status` (type `EventNotificationStatusType`) |
-| `LoginUserOperation` | Enregistre un identifiant utilisateur | ✅ | Aucune | **« There is no authentication function »** (`IF Spec p.97`) — pas de vérification de mot de passe |
-| `LogoutUserOperation` | Déconnecte l'utilisateur | ✅ | `LoginUser` préalable | Params: `Id`, `SeqNo` uniquement (WSDL lignes 896-901) |
-| `RomVersionOperation` | Version firmware/matériel par sous-module | ✅ | Session | Sous-modules: RBW10/50/100/150/200, RCW8X/50/100/200, RZ50/100, RBG200, RBW100HVE200 (WSDL lignes 935-947) |
+| `LoginUserOperation` | Enregistre un identifiant utilisateur | ✅ | Aucune | **« There is no authentication function »** (`IF Spec p.97`) — pas de vérification de mot de passe. Testé réel le 2026-07-29 : `result=0` |
+| `LogoutUserOperation` | Déconnecte l'utilisateur | ✅ | `LoginUser` préalable | Params: `Id`, `SeqNo` uniquement (WSDL lignes 896-901). Testé réel le 2026-07-29 : `result=0` |
+| `RomVersionOperation` | Version firmware/matériel par sous-module | ✅ | Session | Sous-modules: RBW10/50/100/150/200, RCW8X/50/100/200, RZ50/100, RBG200, RBW100HVE200 (WSDL lignes 935-947). Testé réel le 2026-07-29 sur la VM (RBW100+RCW100 seulement présents, `CUTE="ISP-K05B Ver.18.30R1"`, `KERNEL="5.4.0-113-generic"`) : `result=0` |
 | `StartDownloadOperation` | Démarre le téléversement d'un paquet de config (langue/devise) | 🟡 | Session | Utilisé par `PackageCreator` pour déployer les `.tar.gz` — confirme un FCC sous OS Linux embarqué |
 | `StartLogreadOperation` | Démarre la lecture de logs techniques dispositif | ✅ (existence) / 🟡 (format) | Session | Logs techniques, **pas** un historique de transactions métier |
 | `UpdateManualDepositTotalOperation` | Met à jour un total de dépôt manuel | 🟡 | Session | Nom WSDL confirmé, sémantique détaillée non extraite |
@@ -47,7 +47,7 @@ Légende colonne **Détail** :
 | `EnableDenomOperation` | Active une dénomination | 🟡 | Session | Nom + requête WSDL confirmés, codes résultat non extraits |
 | `DisableDenomOperation` | Désactive une dénomination | 🟡 | Session | Symétrique de `EnableDenom` |
 | `PowerControlOperation` | Contrôle d'alimentation (reboot/arrêt) | 🟡 | Session | Correspond à "Power control, Option=1" pour Reboot (`Sequence Spec §3.21`, p.57) ; si CI-Server actif, synchronise les utilisateurs au redémarrage |
-| `AdjustTimeOperation` | Ajuste l'heure du FCC | ✅ (existence) / 🟡 (params) | Session | Utilisé à l'étape 2 du "Initial Process" (`Sequence Spec §3.2`) |
+| `AdjustTimeOperation` | Ajuste l'heure du FCC | ✅ | Session (Occupy requis — codes `3`/`5` "occupied by other"/"not occupied") | Utilisé à l'étape 2 du "Initial Process" (`Sequence Spec §3.2`). Params confirmés `IF Spec p.135` : `Date` (attrs `month`/`day`/`year`), `Time` (attrs `hour`/`minute`/`second`). Testé réel le 2026-07-29 (aligné sur l'heure système) : `result=0` |
 | `StartReplenishmentFromEntranceOperation` | Démarre un réapprovisionnement par l'entrée | ✅ | Occupy | `Sequence Spec §3.11` ; erreur = Result 40 (cassette invalide) |
 | `EndReplenishmentFromEntranceOperation` | Termine un réapprovisionnement par l'entrée | ✅ | `StartReplenishmentFromEntrance` en cours | — |
 | `ReplenishmentFromEntranceCancelOperation` | Annule un réapprovisionnement par l'entrée | ✅ (existence) | en cours | — |
@@ -69,7 +69,7 @@ Légende colonne **Détail** :
 | `UpdateCheckOperation` | Vérifie la disponibilité d'une mise à jour | ⬜ | Session (probable) | Nom WSDL confirmé uniquement |
 | `AutoRebootChangeOperation` | Modifie la configuration de redémarrage automatique | ⬜ | Session (probable) | Nom WSDL confirmé uniquement |
 | `LanguageChangeOperation` | Change la langue de l'interface machine | ⬜ | Session (probable) | Nom WSDL confirmé uniquement |
-| `GetSettingFileOperation` | Récupère un fichier de configuration | ⬜ | Session (probable) | Nom WSDL confirmé uniquement |
+| `GetSettingFileOperation` | Récupère un fichier de configuration | ✅ | Session | Params confirmés `IF Spec p.176` : `FileName` (requis, ex. `GloryCo.xml`) → réponse `SettingFile` (chaîne XML brute). Testé réel le 2026-07-29 avec `FileName="GloryCo.xml"` : `result=0`, contenu XML complet reçu (config des devices RBW100/RCW100 dont ports TCP, dénominations acceptées, seuils de cassette — recoupe/confirme le contenu déjà vu via SSH, voir `development-notes.md`) |
 | `UserSettingOperation` | Paramètre utilisateur (probable) | ⬜ | Session (probable) | Nom WSDL confirmé uniquement |
 
 ## Codes résultat génériques observés sur plusieurs opérations

@@ -384,6 +384,70 @@ async function handleCloseExitCover(): Promise<TransactionResult> {
   }
 }
 
+async function handleRomVersion(): Promise<InventoryResult> {
+  if (!soapClient || !sessionId) {
+    return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
+  }
+  try {
+    stateMachine.assertCanTransact();
+    const result = await soapClient.romVersion(sessionId);
+    sendLog(`RomVersion → result ${result.resultDescription}`);
+    historyStore.record("soap-response", "RomVersionOperation", result);
+    return { ok: result.result === 0, message: result.resultDescription, raw: result.raw, state: stateMachine.getState() };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    sendLog(`[ERREUR] ${message}`);
+    return { ok: false, message, state: stateMachine.getState() };
+  }
+}
+
+async function handleAdjustTime(): Promise<TransactionResult> {
+  if (!soapClient || !sessionId) {
+    return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
+  }
+  try {
+    stateMachine.assertCanTransact();
+    // Aligne le FCC sur l'heure système de la caisse — pas d'UI dédiée pour
+    // choisir une date/heure arbitraire dans ce sprint (voir docs/open-questions.md
+    // si un besoin de réglage manuel apparaît).
+    const now = new Date();
+    const result = await soapClient.adjustTime(
+      sessionId,
+      { month: now.getMonth() + 1, day: now.getDate(), year: now.getFullYear() },
+      { hour: now.getHours(), minute: now.getMinutes(), second: now.getSeconds() }
+    );
+    sendLog(`AdjustTime → result ${result.resultDescription}`);
+    historyStore.record("soap-response", "AdjustTimeOperation", result);
+    return { ok: result.result === 0, message: result.resultDescription, state: stateMachine.getState() };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    sendLog(`[ERREUR] ${message}`);
+    return { ok: false, message, state: stateMachine.getState() };
+  }
+}
+
+async function handleGetSettingFile(fileName: string): Promise<InventoryResult> {
+  if (!soapClient || !sessionId) {
+    return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
+  }
+  try {
+    stateMachine.assertCanTransact();
+    const result = await soapClient.getSettingFile(sessionId, fileName);
+    sendLog(`GetSettingFile(${fileName}) → result ${result.resultDescription}`);
+    historyStore.record("soap-response", "GetSettingFileOperation", result);
+    return {
+      ok: result.result === 0,
+      message: result.resultDescription,
+      raw: result.settingFile,
+      state: stateMachine.getState(),
+    };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    sendLog(`[ERREUR] ${message}`);
+    return { ok: false, message, state: stateMachine.getState() };
+  }
+}
+
 function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 900,
@@ -425,6 +489,11 @@ ipcMain.handle(IpcChannels.SessionUnlockUnit, async (_event: IpcMainInvokeEvent)
 ipcMain.handle(IpcChannels.SessionInventory, async (_event: IpcMainInvokeEvent) => handleInventory());
 ipcMain.handle(IpcChannels.SessionOpenExitCover, async (_event: IpcMainInvokeEvent) => handleOpenExitCover());
 ipcMain.handle(IpcChannels.SessionCloseExitCover, async (_event: IpcMainInvokeEvent) => handleCloseExitCover());
+ipcMain.handle(IpcChannels.SessionRomVersion, async (_event: IpcMainInvokeEvent) => handleRomVersion());
+ipcMain.handle(IpcChannels.SessionAdjustTime, async (_event: IpcMainInvokeEvent) => handleAdjustTime());
+ipcMain.handle(IpcChannels.SessionGetSettingFile, async (_event: IpcMainInvokeEvent, fileName: string) =>
+  handleGetSettingFile(fileName)
+);
 
 app.whenReady().then(createWindow);
 

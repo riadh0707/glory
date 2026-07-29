@@ -25,6 +25,9 @@ interface GloryClientApi {
   inventory(): Promise<{ ok: boolean; message: string; raw?: unknown; state: SessionState }>;
   openExitCover(): Promise<TransactionResult>;
   closeExitCover(): Promise<TransactionResult>;
+  romVersion(): Promise<{ ok: boolean; message: string; raw?: unknown; state: SessionState }>;
+  adjustTime(): Promise<TransactionResult>;
+  getSettingFile(fileName: string): Promise<{ ok: boolean; message: string; raw?: unknown; state: SessionState }>;
   onLogLine(callback: (line: string) => void): void;
   onEvent(callback: (line: string) => void): void;
 }
@@ -78,6 +81,10 @@ window.addEventListener("DOMContentLoaded", () => {
   const inventoryBtn = document.getElementById("btn-inventory") as HTMLButtonElement;
   const openExitCoverBtn = document.getElementById("btn-open-exit-cover") as HTMLButtonElement;
   const closeExitCoverBtn = document.getElementById("btn-close-exit-cover") as HTMLButtonElement;
+  const romVersionBtn = document.getElementById("btn-rom-version") as HTMLButtonElement;
+  const adjustTimeBtn = document.getElementById("btn-adjust-time") as HTMLButtonElement;
+  const getSettingFileBtn = document.getElementById("btn-get-setting-file") as HTMLButtonElement;
+  const settingFileNameInput = document.getElementById("input-setting-filename") as HTMLInputElement;
 
   window.api.onLogLine((line) => appendLine(logEl, line, classifyLogLine(line)));
   window.api.onEvent((line) => appendLine(eventsEl, line));
@@ -187,5 +194,32 @@ window.addEventListener("DOMContentLoaded", () => {
     appendLine(logEl, `[UI] Fermer couvercle sortie → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
     setStatePill(result.state);
     closeExitCoverBtn.disabled = false;
+  });
+
+  romVersionBtn.addEventListener("click", async () => {
+    const result = await window.api.romVersion();
+    appendLine(logEl, `[UI] Versions firmware → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
+    statusEl.textContent = JSON.stringify(result.raw ?? {}, null, 2);
+    setStatePill(result.state);
+  });
+
+  adjustTimeBtn.addEventListener("click", async () => {
+    adjustTimeBtn.disabled = true;
+    const result = await window.api.adjustTime();
+    appendLine(logEl, `[UI] Régler date/heure (heure système) → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
+    setStatePill(result.state);
+    adjustTimeBtn.disabled = false;
+  });
+
+  getSettingFileBtn.addEventListener("click", async () => {
+    const fileName = settingFileNameInput.value.trim();
+    if (!fileName) {
+      appendLine(logEl, "[UI] Lire fichier config → nom de fichier requis", "tag-error");
+      return;
+    }
+    const result = await window.api.getSettingFile(fileName);
+    appendLine(logEl, `[UI] Lire fichier config (${fileName}) → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
+    statusEl.textContent = typeof result.raw === "string" ? result.raw : JSON.stringify(result.raw ?? {}, null, 2);
+    setStatePill(result.state);
   });
 });

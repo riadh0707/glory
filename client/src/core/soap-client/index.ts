@@ -590,4 +590,103 @@ export class FccSoapClient {
     const result = extractResultAttribute(response);
     return { result, resultDescription: describeResultCode(result), cash: response.Cash };
   }
+
+  /**
+   * Enregistre un nom d'utilisateur auprès du FCC, **sans authentification**
+   * (IF Spec p.98, §3.15 : "There is no authentication function"). N'utilise
+   * PAS de SessionID (absent du WSDL pour cette requête — BrueBoxService.wsdl:875-881,
+   * LoginUserRequestType : Id?, SeqNo, User). L'IF Spec recommande explicitement
+   * `OpenOperation` à la place ("When you use Open Request, it is NOT necessary
+   * to use this method") — implémenté ici pour complétude/diagnostic, pas comme
+   * mécanisme d'auth principal. L'utilisateur spécial "glory" est explicitement
+   * proscrit ("Special User (glory) should not be used").
+   */
+  async loginUser(userId: string): Promise<SimpleResult> {
+    const response = await this.call<
+      { SeqNo: string; User: string },
+      { attributes?: Record<string, unknown> }
+    >("LoginUserOperation", { SeqNo: this.nextSeqNo(), User: userId });
+    const result = extractResultAttribute(response);
+    return { result, resultDescription: describeResultCode(result) };
+  }
+
+  /**
+   * Déconnecte l'utilisateur courant. Réf. IF Spec p.100, §3.16. Champs
+   * requête : WSDL BrueBoxService.wsdl:896-901 (LogoutUserRequestType — Id?,
+   * SeqNo seulement, pas de SessionID ni de User).
+   */
+  async logoutUser(): Promise<SimpleResult> {
+    const response = await this.call<
+      { SeqNo: string },
+      { attributes?: Record<string, unknown> }
+    >("LogoutUserOperation", { SeqNo: this.nextSeqNo() });
+    const result = extractResultAttribute(response);
+    return { result, resultDescription: describeResultCode(result) };
+  }
+
+  /**
+   * Récupère les versions firmware du FCC et des unités connectées
+   * (RBW-100/RCW-100/etc.). Réf. IF Spec p.100-101, §3.17. Champs requête :
+   * WSDL BrueBoxService.wsdl:916-922 (RomVersionRequestType — Id?, SeqNo,
+   * SessionID?). Réponse très large (un bloc par type d'unité possible,
+   * `RBW10`/`RCW8X`/`RZ50`/.../`RBW100`/`RCW100`/...) — exposée brute (`raw`)
+   * plutôt que typée finement, à l'image d'`inventory`, car seuls les blocs
+   * correspondant au matériel réellement connecté sont présents en pratique.
+   */
+  async romVersion(sessionId: string): Promise<SimpleResult & { raw: unknown }> {
+    const response = await this.call<
+      { SeqNo: string; SessionID: string },
+      { attributes?: Record<string, unknown> }
+    >("RomVersionOperation", { SeqNo: this.nextSeqNo(), SessionID: sessionId });
+    const result = extractResultAttribute(response);
+    return { result, resultDescription: describeResultCode(result), raw: response };
+  }
+
+  /**
+   * Règle la date/heure du FCC et des unités (RBW/RCW). Réf. IF Spec
+   * p.135-136, §3.30. Champs requête : WSDL BrueBoxService.wsdl:1419-1429
+   * (AdjustTimeRequestType — Id?, SeqNo, SessionID?, Date [requis, attributs
+   * `month`/`day`/`year`], Time [requis, attributs `hour`/`minute`/`second`]).
+   * Nécessite `Occupy` au préalable (codes retour incluent `3` "occupied by
+   * other" et `5` "not occupied", IF Spec p.136).
+   */
+  async adjustTime(
+    sessionId: string,
+    date: { month: number; day: number; year: number },
+    time: { hour: number; minute: number; second: number }
+  ): Promise<SimpleResult> {
+    const response = await this.call<
+      {
+        SeqNo: string;
+        SessionID: string;
+        Date: { attributes: { month: number; day: number; year: number } };
+        Time: { attributes: { hour: number; minute: number; second: number } };
+      },
+      { attributes?: Record<string, unknown> }
+    >("AdjustTimeOperation", {
+      SeqNo: this.nextSeqNo(),
+      SessionID: sessionId,
+      Date: { attributes: date },
+      Time: { attributes: time },
+    });
+    const result = extractResultAttribute(response);
+    return { result, resultDescription: describeResultCode(result) };
+  }
+
+  /**
+   * Récupère le contenu XML d'un fichier de configuration du FCC (ex.
+   * "GloryCo.xml", "FunctionSetting.xml" — noms observés empiriquement via
+   * SSH sur la VM, voir docs/development-notes.md). Réf. IF Spec p.176,
+   * §3.48. Champs requête : WSDL BrueBoxService.wsdl:2044-2051
+   * (GetSettingFileRequestType — Id?, SeqNo, SessionID?, FileName [requis]).
+   * Réponse contient `SettingFile` (chaîne XML brute, WSDL:2054-2063).
+   */
+  async getSettingFile(sessionId: string, fileName: string): Promise<SimpleResult & { settingFile: string | undefined }> {
+    const response = await this.call<
+      { SeqNo: string; SessionID: string; FileName: string },
+      { attributes?: Record<string, unknown>; SettingFile?: string }
+    >("GetSettingFileOperation", { SeqNo: this.nextSeqNo(), SessionID: sessionId, FileName: fileName });
+    const result = extractResultAttribute(response);
+    return { result, resultDescription: describeResultCode(result), settingFile: response.SettingFile };
+  }
 }

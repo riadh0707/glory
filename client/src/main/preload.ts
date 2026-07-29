@@ -20,6 +20,9 @@ contextBridge.exposeInMainWorld("api", {
   inventory: () => ipcRenderer.invoke(IpcChannels.SessionInventory),
   openExitCover: () => ipcRenderer.invoke(IpcChannels.SessionOpenExitCover),
   closeExitCover: () => ipcRenderer.invoke(IpcChannels.SessionCloseExitCover),
+  romVersion: () => ipcRenderer.invoke(IpcChannels.SessionRomVersion),
+  adjustTime: () => ipcRenderer.invoke(IpcChannels.SessionAdjustTime),
+  getSettingFile: (fileName: string) => ipcRenderer.invoke(IpcChannels.SessionGetSettingFile, fileName),
   onLogLine: (callback: (line: string) => void) => {
     ipcRenderer.on(IpcChannels.LogLine, (_event, line: string) => callback(line));
   },
