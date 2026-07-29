@@ -277,16 +277,27 @@ Occupy→GetStatus→Release→Close, 6/6 `result=0`, contre la VM simulateur
   et stable obtenu (12, pas une erreur de parsing/format). **La validation
   d'un `Collect` réussi (`result=0`) n'a pas pu être obtenue sur cet
   émulateur** — probablement une limite de fidélité de simulation plutôt
-  qu'un bug côté client ou VM ; à re-tester sur matériel réel ou avec un
-  paramétrage de cassette différent (non exploré : "IF Cst" au lieu de
-  "Stack Cst", ou une valeur `Piece` différente).
+  qu'un bug côté client ou VM.
+  **Contre-test le 2026-07-29** : l'hypothèse "cassette I/F au lieu de Stack"
+  (confirmée efficace pour `StartReplenishmentFromCassette`, voir l'entrée
+  suivante) a été spécifiquement retestée sur `Collect` avec exactement la
+  même cassette I/F déjà en place — **résultat strictement identique
+  (`result=12`)**. Le type de cassette de collecte n'est donc **pas** la
+  variable en cause pour `Collect` (contrairement à
+  `StartReplenishmentFromCassette`, où c'était bien le problème) — confirme
+  qu'il s'agit d'une limite de fidélité de simulation générale plutôt que
+  d'un paramétrage réparable. À re-tester uniquement sur matériel réel, ou
+  avec une valeur `Piece` différente (non exploré).
   **Bloquant : non** pour la suite du développement — le code est correct et
   testé ; **note opérationnelle** : après tout `Collect`, prévoir un
   redémarrage VM si `Inventory` reste bloqué à `11`.
 
 - [x] **`StartReplenishmentFromCassette`/`EndReplenishmentFromCassette`
   validés le 2026-07-29** — confirmation de l'hypothèse "IF Cst au lieu de
-  Stack Cst" formulée juste au-dessus pour `Collect`. Procédure : `UnlockUnit`
+  Stack Cst" (contrairement à `Collect` ci-dessus, où ce même changement de
+  cassette n'a rien changé — la précondition "cassette I/F" est donc
+  spécifique à `StartReplenishmentFromCassette`, documentée telle quelle par
+  l'IF Spec p.140, pas une règle générale du simulateur). Procédure : `UnlockUnit`
   (SOAP) → "Door Set" (émulateur) → **"IF Cst"** (pas "Stack Cst") →
   "Door Set" pour refermer. `StartReplenishmentFromCassette(type=0 "Both")` →
   `result=0` (succès — confirme la précondition "cassette I/F" de l'IF Spec
