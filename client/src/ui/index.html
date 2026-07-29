@@ -72,6 +72,24 @@
       </div>
 
       <div class="card">
+        <h2>Annulation / retour d'espèces</h2>
+        <div class="controls">
+          <button id="btn-cashin-cancel" class="secondary">Annuler encaissement (CashinCancel)</button>
+          <button id="btn-change-cancel" class="secondary">Annuler Change en attente</button>
+          <button id="btn-replenish-entrance-cancel" class="secondary">Annuler remplissage (entrée)</button>
+          <button id="btn-return-cash" class="secondary">Renvoyer pièces (hopper → sortie)</button>
+          <label for="input-cashout-cc" style="font-size:12px; color:var(--ink-dim); margin-top:4px;">Cashout : cc / fv / devid / pièces</label>
+          <div style="display:flex; gap:6px;">
+            <input id="input-cashout-cc" type="text" placeholder="EUR" style="flex:1; padding:8px; border-radius:7px; border:1px solid var(--rule); background:var(--mono-bg); color:var(--ink); font-family:Consolas,monospace;" />
+            <input id="input-cashout-fv" type="text" placeholder="1000" style="flex:1; padding:8px; border-radius:7px; border:1px solid var(--rule); background:var(--mono-bg); color:var(--ink); font-family:Consolas,monospace;" />
+            <input id="input-cashout-devid" type="text" placeholder="1" style="flex:1; padding:8px; border-radius:7px; border:1px solid var(--rule); background:var(--mono-bg); color:var(--ink); font-family:Consolas,monospace;" />
+            <input id="input-cashout-piece" type="text" inputmode="numeric" placeholder="1" style="flex:1; padding:8px; border-radius:7px; border:1px solid var(--rule); background:var(--mono-bg); color:var(--ink); font-family:Consolas,monospace;" />
+          </div>
+          <button id="btn-cashout" class="danger">Cashout (distribution manuelle, irréversible)</button>
+        </div>
+      </div>
+
+      <div class="card">
         <h2>Gestion des dénominations</h2>
         <div class="controls">
           <label for="input-denom-cc" style="font-size:12px; color:var(--ink-dim);">Devise (cc) / Valeur faciale (fv) / devid</label>

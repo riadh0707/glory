@@ -32,6 +32,11 @@ interface GloryClientApi {
   disableDenom(params: { cc: string; fv: string; devid: string }): Promise<TransactionResult>;
   setExchangeRate(params: { from: string; to: string; rate: string }): Promise<TransactionResult>;
   reset(): Promise<TransactionResult>;
+  cashinCancel(): Promise<TransactionResult>;
+  changeCancel(): Promise<TransactionResult>;
+  replenishEntranceCancel(): Promise<TransactionResult>;
+  cashout(params: { cc: string; fv: string; devid: string; piece: number }): Promise<TransactionResult>;
+  returnCash(): Promise<TransactionResult>;
   onLogLine(callback: (line: string) => void): void;
   onEvent(callback: (line: string) => void): void;
 }
@@ -99,6 +104,15 @@ window.addEventListener("DOMContentLoaded", () => {
   const exchangeToInput = document.getElementById("input-exchange-to") as HTMLInputElement;
   const exchangeRateInput = document.getElementById("input-exchange-rate") as HTMLInputElement;
   const resetBtn = document.getElementById("btn-reset") as HTMLButtonElement;
+  const cashinCancelBtn = document.getElementById("btn-cashin-cancel") as HTMLButtonElement;
+  const changeCancelBtn = document.getElementById("btn-change-cancel") as HTMLButtonElement;
+  const replenishCancelBtn = document.getElementById("btn-replenish-entrance-cancel") as HTMLButtonElement;
+  const returnCashBtn = document.getElementById("btn-return-cash") as HTMLButtonElement;
+  const cashoutBtn = document.getElementById("btn-cashout") as HTMLButtonElement;
+  const cashoutCcInput = document.getElementById("input-cashout-cc") as HTMLInputElement;
+  const cashoutFvInput = document.getElementById("input-cashout-fv") as HTMLInputElement;
+  const cashoutDevidInput = document.getElementById("input-cashout-devid") as HTMLInputElement;
+  const cashoutPieceInput = document.getElementById("input-cashout-piece") as HTMLInputElement;
 
   window.api.onLogLine((line) => appendLine(logEl, line, classifyLogLine(line)));
   window.api.onEvent((line) => appendLine(eventsEl, line));
@@ -290,5 +304,53 @@ window.addEventListener("DOMContentLoaded", () => {
     appendLine(logEl, `[UI] Reset → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
     setStatePill(result.state);
     resetBtn.disabled = false;
+  });
+
+  cashinCancelBtn.addEventListener("click", async () => {
+    cashinCancelBtn.disabled = true;
+    const result = await window.api.cashinCancel();
+    appendLine(logEl, `[UI] Annuler encaissement → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
+    setStatePill(result.state);
+    cashinCancelBtn.disabled = false;
+  });
+
+  changeCancelBtn.addEventListener("click", async () => {
+    changeCancelBtn.disabled = true;
+    const result = await window.api.changeCancel();
+    appendLine(logEl, `[UI] Annuler Change (en attente) → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
+    setStatePill(result.state);
+    changeCancelBtn.disabled = false;
+  });
+
+  replenishCancelBtn.addEventListener("click", async () => {
+    replenishCancelBtn.disabled = true;
+    const result = await window.api.replenishEntranceCancel();
+    appendLine(logEl, `[UI] Annuler remplissage (entrée) → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
+    setStatePill(result.state);
+    replenishCancelBtn.disabled = false;
+  });
+
+  returnCashBtn.addEventListener("click", async () => {
+    returnCashBtn.disabled = true;
+    const result = await window.api.returnCash();
+    appendLine(logEl, `[UI] Renvoyer pièces (hopper→sortie) → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
+    setStatePill(result.state);
+    returnCashBtn.disabled = false;
+  });
+
+  cashoutBtn.addEventListener("click", async () => {
+    const cc = cashoutCcInput.value.trim();
+    const fv = cashoutFvInput.value.trim();
+    const devid = cashoutDevidInput.value.trim();
+    const piece = Number(cashoutPieceInput.value.trim());
+    if (!cc || !fv || !devid || !piece) {
+      appendLine(logEl, "[UI] Cashout → cc/fv/devid/nombre de pièces requis", "tag-error");
+      return;
+    }
+    cashoutBtn.disabled = true;
+    const result = await window.api.cashout({ cc, fv, devid, piece });
+    appendLine(logEl, `[UI] Cashout (${cc} ${fv} x${piece}) → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
+    setStatePill(result.state);
+    cashoutBtn.disabled = false;
   });
 });

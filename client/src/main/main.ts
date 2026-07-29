@@ -533,6 +533,94 @@ async function handleReset(): Promise<TransactionResult> {
   }
 }
 
+async function handleCashinCancel(): Promise<TransactionResult> {
+  if (!soapClient || !sessionId) {
+    return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
+  }
+  try {
+    stateMachine.assertCanTransact();
+    const result = await soapClient.cashinCancel(sessionId);
+    const message = `${result.resultDescription} — espèces : ${JSON.stringify(result.cash ?? "aucune")}`;
+    sendLog(`CashinCancel → result ${message}`);
+    historyStore.record("soap-response", "CashinCancelOperation", result);
+    return { ok: result.result === 0, message, state: stateMachine.getState() };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    sendLog(`[ERREUR] ${message}`);
+    return { ok: false, message, state: stateMachine.getState() };
+  }
+}
+
+async function handleChangeCancel(): Promise<TransactionResult> {
+  if (!soapClient || !sessionId) {
+    return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
+  }
+  try {
+    stateMachine.assertCanTransact();
+    const result = await soapClient.changeCancel(sessionId, 0);
+    sendLog(`ChangeCancel → result ${result.resultDescription} (le résultat d'annulation réel arrive dans la réponse de l'appel Change en attente, avec result=1)`);
+    historyStore.record("soap-response", "ChangeCancelOperation", result);
+    return { ok: result.result === 0, message: result.resultDescription, state: stateMachine.getState() };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    sendLog(`[ERREUR] ${message}`);
+    return { ok: false, message, state: stateMachine.getState() };
+  }
+}
+
+async function handleReplenishEntranceCancel(): Promise<TransactionResult> {
+  if (!soapClient || !sessionId) {
+    return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
+  }
+  try {
+    stateMachine.assertCanTransact();
+    const result = await soapClient.replenishmentFromEntranceCancel(sessionId);
+    const message = `${result.resultDescription} — espèces : ${JSON.stringify(result.cash ?? "aucune")}`;
+    sendLog(`ReplenishmentFromEntranceCancel → result ${message}`);
+    historyStore.record("soap-response", "ReplenishmentFromEntranceCancelOperation", result);
+    return { ok: result.result === 0, message, state: stateMachine.getState() };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    sendLog(`[ERREUR] ${message}`);
+    return { ok: false, message, state: stateMachine.getState() };
+  }
+}
+
+async function handleCashout(params: { cc: string; fv: string; devid: string; piece: number }): Promise<TransactionResult> {
+  if (!soapClient || !sessionId) {
+    return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
+  }
+  try {
+    stateMachine.assertCanTransact();
+    const result = await soapClient.cashout(sessionId, [params]);
+    const message = `${result.resultDescription} — espèces : ${JSON.stringify(result.cash ?? "aucune")}`;
+    sendLog(`Cashout(${params.cc} ${params.fv} x${params.piece}) → result ${message}`);
+    historyStore.record("soap-response", "CashoutOperation", result);
+    return { ok: result.result === 0, message, state: stateMachine.getState() };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    sendLog(`[ERREUR] ${message}`);
+    return { ok: false, message, state: stateMachine.getState() };
+  }
+}
+
+async function handleReturnCash(): Promise<TransactionResult> {
+  if (!soapClient || !sessionId) {
+    return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
+  }
+  try {
+    stateMachine.assertCanTransact();
+    const result = await soapClient.returnCash(sessionId, 2);
+    sendLog(`ReturnCash(Coin) → result ${result.resultDescription}`);
+    historyStore.record("soap-response", "ReturnCashOperation", result);
+    return { ok: result.result === 0, message: result.resultDescription, state: stateMachine.getState() };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    sendLog(`[ERREUR] ${message}`);
+    return { ok: false, message, state: stateMachine.getState() };
+  }
+}
+
 function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 900,
@@ -591,6 +679,17 @@ ipcMain.handle(
     handleSetExchangeRate(params)
 );
 ipcMain.handle(IpcChannels.SessionReset, async (_event: IpcMainInvokeEvent) => handleReset());
+ipcMain.handle(IpcChannels.SessionCashinCancel, async (_event: IpcMainInvokeEvent) => handleCashinCancel());
+ipcMain.handle(IpcChannels.SessionChangeCancel, async (_event: IpcMainInvokeEvent) => handleChangeCancel());
+ipcMain.handle(IpcChannels.SessionReplenishEntranceCancel, async (_event: IpcMainInvokeEvent) =>
+  handleReplenishEntranceCancel()
+);
+ipcMain.handle(
+  IpcChannels.SessionCashout,
+  async (_event: IpcMainInvokeEvent, params: { cc: string; fv: string; devid: string; piece: number }) =>
+    handleCashout(params)
+);
+ipcMain.handle(IpcChannels.SessionReturnCash, async (_event: IpcMainInvokeEvent) => handleReturnCash());
 
 app.whenReady().then(createWindow);
 

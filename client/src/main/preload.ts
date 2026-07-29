@@ -30,6 +30,12 @@ contextBridge.exposeInMainWorld("api", {
   setExchangeRate: (params: { from: string; to: string; rate: string }) =>
     ipcRenderer.invoke(IpcChannels.SessionSetExchangeRate, params),
   reset: () => ipcRenderer.invoke(IpcChannels.SessionReset),
+  cashinCancel: () => ipcRenderer.invoke(IpcChannels.SessionCashinCancel),
+  changeCancel: () => ipcRenderer.invoke(IpcChannels.SessionChangeCancel),
+  replenishEntranceCancel: () => ipcRenderer.invoke(IpcChannels.SessionReplenishEntranceCancel),
+  cashout: (params: { cc: string; fv: string; devid: string; piece: number }) =>
+    ipcRenderer.invoke(IpcChannels.SessionCashout, params),
+  returnCash: () => ipcRenderer.invoke(IpcChannels.SessionReturnCash),
   onLogLine: (callback: (line: string) => void) => {
     ipcRenderer.on(IpcChannels.LogLine, (_event, line: string) => callback(line));
   },

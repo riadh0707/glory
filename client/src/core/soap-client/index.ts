@@ -691,6 +691,153 @@ export class FccSoapClient {
   }
 
   /**
+   * Annule un cycle d'encaissement en cours. Réf. IF Spec p.58-61, §3.6
+   * "Cancel Cash in Request" — distincte d'`endCashin` (clôture normale) et
+   * volontairement **non appelée automatiquement** par ce client dans un
+   * scénario d'erreur : testée empiriquement le 2026-07-29 (voir
+   * docs/open-questions.md, scénario "billet catégorie 2/3") — **bloque
+   * indéfiniment le simulateur si le device est dans un état d'erreur
+   * cat.2/3**, exactement comme `endCashin`. À utiliser uniquement en cours
+   * normal de transaction (le WSDL/IF Spec ne documente aucune précaution
+   * particulière hors de ce cas déjà rencontré). Champs requête : WSDL
+   * BrueBoxService.wsdl:469-475 (Id?, SeqNo, SessionID?). Réponse contient
+   * `Cash` (toujours 2 éléments : `type=1` dépôt, `type=2` remboursement —
+   * IF Spec p.59-60) et `ManualDeposit`/`DepositCurrency` (mêmes réserves que
+   * `endCashin` sur `ManualDeposit`, voir sa docstring).
+   */
+  async cashinCancel(
+    sessionId: string
+  ): Promise<SimpleResult & { manualDeposit: string | undefined; cash: unknown }> {
+    const response = await this.call<
+      { SeqNo: string; SessionID: string },
+      { attributes?: Record<string, unknown>; ManualDeposit?: string; Cash?: unknown }
+    >("CashinCancelOperation", { SeqNo: this.nextSeqNo(), SessionID: sessionId });
+    const result = extractResultAttribute(response);
+    return {
+      result,
+      resultDescription: describeResultCode(result),
+      manualDeposit: response.ManualDeposit,
+      cash: response.Cash,
+    };
+  }
+
+  /**
+   * Annule une transaction `Change` en cours d'attente de rendu de monnaie.
+   * Réf. IF Spec p.49-51, §3.3 "Change Cancel Request" : "Cancelled change
+   * transaction by ChangeCancelRequest is finished by responding the
+   * result=1 in change response (Not cancel response)" — **c'est l'appel
+   * `Change` bloquant en cours (voir docstring `change`) qui se termine avec
+   * `result=1`, pas cette réponse `ChangeCancel` elle-même**. Doit donc être
+   * appelé depuis une session/connexion distincte de celle qui attend dans
+   * `Change`. Uniquement valide en état "Waiting Cancellation" (Status.Code
+   * `23`). Champs requête : WSDL BrueBoxService.wsdl:284-291
+   * (ChangeCancelRequestType — Id?, SeqNo, SessionID?, Option? [attribut
+   * `type` : 0=exécute l'annulation, 1=sort avec erreur `10` "change
+   * shortage"]). `cancelType` défaut `0`.
+   */
+  async changeCancel(sessionId: string, cancelType: 0 | 1 = 0): Promise<SimpleResult> {
+    const response = await this.call<
+      { SeqNo: string; SessionID: string; Option: { attributes: { type: number } } },
+      { attributes?: Record<string, unknown> }
+    >("ChangeCancelOperation", {
+      SeqNo: this.nextSeqNo(),
+      SessionID: sessionId,
+      Option: { attributes: { type: cancelType } },
+    });
+    const result = extractResultAttribute(response);
+    return { result, resultDescription: describeResultCode(result) };
+  }
+
+  /**
+   * Annule un réapprovisionnement par l'entrée en cours. Réf. IF Spec
+   * p.155-157, §3.39. "Except the device is in the middle of the cash in
+   * transaction, returns exclusive error (result=11)." Champs requête :
+   * WSDL BrueBoxService.wsdl:1500-1506 (Id?, SeqNo, SessionID?). Réponse
+   * contient `Cash` (2 éléments, mêmes conventions type=1/2 que
+   * `cashinCancel`) et `ManualDeposit`/`DepositCurrency`.
+   */
+  async replenishmentFromEntranceCancel(
+    sessionId: string
+  ): Promise<SimpleResult & { manualDeposit: string | undefined; cash: unknown }> {
+    const response = await this.call<
+      { SeqNo: string; SessionID: string },
+      { attributes?: Record<string, unknown>; ManualDeposit?: string; Cash?: unknown }
+    >("ReplenishmentFromEntranceCancelOperation", { SeqNo: this.nextSeqNo(), SessionID: sessionId });
+    const result = extractResultAttribute(response);
+    return {
+      result,
+      resultDescription: describeResultCode(result),
+      manualDeposit: response.ManualDeposit,
+      cash: response.Cash,
+    };
+  }
+
+  /**
+   * Distribue des espèces pour des dénominations précises, sans transaction
+   * de vente (ex. paiement d'appoint, remboursement manuel). Réf. IF Spec
+   * p.61-63, §3.7 "Cash out Request" : "The device conduct cash out
+   * transaction of assigned denomination information... Not able to cancel
+   * cash out transaction." Champs requête : WSDL BrueBoxService.wsdl:356-364
+   * (CashoutRequestType — Id?, SeqNo, SessionID?, Delay? [optionnel, non
+   * exposé ici — dispense différée par intervalle, hors périmètre de ce
+   * sprint], Cash [requis, `type="2"` "Cash out information", même
+   * convention que `CollectDenomination`]).
+   *
+   * **Aucune annulation possible une fois lancé** — contrairement à
+   * `collect`, ne jamais appeler en boucle de retry automatique sans
+   * confirmation explicite de l'appelant.
+   */
+  async cashout(sessionId: string, denominations: CollectDenomination[]): Promise<SimpleResult & { cash: unknown }> {
+    const response = await this.call<
+      {
+        SeqNo: string;
+        SessionID: string;
+        Cash: {
+          attributes: { type: number };
+          Denomination: Array<{ attributes: { cc: string; fv: string; devid: string }; Piece: number; Status: number }>;
+        };
+      },
+      { attributes?: Record<string, unknown>; Cash?: unknown }
+    >("CashoutOperation", {
+      SeqNo: this.nextSeqNo(),
+      SessionID: sessionId,
+      Cash: {
+        attributes: { type: 2 },
+        Denomination: denominations.map((d) => ({
+          attributes: { cc: d.cc, fv: d.fv, devid: d.devid },
+          Piece: d.piece,
+          Status: 0,
+        })),
+      },
+    });
+    const result = extractResultAttribute(response);
+    return { result, resultDescription: describeResultCode(result), cash: response.Cash };
+  }
+
+  /**
+   * Renvoie les pièces restantes dans le hopper vers la fente de sortie
+   * ("ReturnCoin" — le nom WSDL `ReturnCash` est plus large mais l'IF Spec
+   * §3.26 ne documente que ce cas). Réf. IF Spec p.126-128 : "Return
+   * remaining coins in the hopper to the exit slot." Champs requête : WSDL
+   * BrueBoxService.wsdl:1309-1316 (Id?, SeqNo, SessionID?, Option [requis,
+   * attribut `type` : `0`/`1` explicitement marqués **"unused"** dans l'IF
+   * Spec, `2`=Coin — seule valeur documentée comme active]). `deviceType`
+   * défaut `2` (Coin, seule option confirmée fonctionnelle).
+   */
+  async returnCash(sessionId: string, deviceType: 0 | 1 | 2 = 2): Promise<SimpleResult> {
+    const response = await this.call<
+      { SeqNo: string; SessionID: string; Option: { attributes: { type: number } } },
+      { attributes?: Record<string, unknown> }
+    >("ReturnCashOperation", {
+      SeqNo: this.nextSeqNo(),
+      SessionID: sessionId,
+      Option: { attributes: { type: deviceType } },
+    });
+    const result = extractResultAttribute(response);
+    return { result, resultDescription: describeResultCode(result) };
+  }
+
+  /**
    * Réinitialise l'appareil — récupération d'erreur générale. Réf. IF Spec
    * p.86-87, §3.10 : "Requests reset of the device. If the CI-10(ISP-K05) is
    * in the middle of cash in transaction, cancels cash in transaction then
