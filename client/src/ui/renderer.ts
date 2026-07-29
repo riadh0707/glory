@@ -28,6 +28,9 @@ interface GloryClientApi {
   romVersion(): Promise<{ ok: boolean; message: string; raw?: unknown; state: SessionState }>;
   adjustTime(): Promise<TransactionResult>;
   getSettingFile(fileName: string): Promise<{ ok: boolean; message: string; raw?: unknown; state: SessionState }>;
+  enableDenom(params: { cc: string; fv: string; devid: string }): Promise<TransactionResult>;
+  disableDenom(params: { cc: string; fv: string; devid: string }): Promise<TransactionResult>;
+  setExchangeRate(params: { from: string; to: string; rate: string }): Promise<TransactionResult>;
   onLogLine(callback: (line: string) => void): void;
   onEvent(callback: (line: string) => void): void;
 }
@@ -85,6 +88,15 @@ window.addEventListener("DOMContentLoaded", () => {
   const adjustTimeBtn = document.getElementById("btn-adjust-time") as HTMLButtonElement;
   const getSettingFileBtn = document.getElementById("btn-get-setting-file") as HTMLButtonElement;
   const settingFileNameInput = document.getElementById("input-setting-filename") as HTMLInputElement;
+  const enableDenomBtn = document.getElementById("btn-enable-denom") as HTMLButtonElement;
+  const disableDenomBtn = document.getElementById("btn-disable-denom") as HTMLButtonElement;
+  const denomCcInput = document.getElementById("input-denom-cc") as HTMLInputElement;
+  const denomFvInput = document.getElementById("input-denom-fv") as HTMLInputElement;
+  const denomDevidInput = document.getElementById("input-denom-devid") as HTMLInputElement;
+  const setExchangeRateBtn = document.getElementById("btn-set-exchange-rate") as HTMLButtonElement;
+  const exchangeFromInput = document.getElementById("input-exchange-from") as HTMLInputElement;
+  const exchangeToInput = document.getElementById("input-exchange-to") as HTMLInputElement;
+  const exchangeRateInput = document.getElementById("input-exchange-rate") as HTMLInputElement;
 
   window.api.onLogLine((line) => appendLine(logEl, line, classifyLogLine(line)));
   window.api.onEvent((line) => appendLine(eventsEl, line));
@@ -221,5 +233,51 @@ window.addEventListener("DOMContentLoaded", () => {
     appendLine(logEl, `[UI] Lire fichier config (${fileName}) → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
     statusEl.textContent = typeof result.raw === "string" ? result.raw : JSON.stringify(result.raw ?? {}, null, 2);
     setStatePill(result.state);
+  });
+
+  function readDenomInputs(): { cc: string; fv: string; devid: string } | undefined {
+    const cc = denomCcInput.value.trim();
+    const fv = denomFvInput.value.trim();
+    const devid = denomDevidInput.value.trim();
+    if (!cc || !fv || !devid) {
+      appendLine(logEl, "[UI] Dénomination → cc/fv/devid requis (ex. EUR / 2000 / 1)", "tag-error");
+      return undefined;
+    }
+    return { cc, fv, devid };
+  }
+
+  enableDenomBtn.addEventListener("click", async () => {
+    const params = readDenomInputs();
+    if (!params) return;
+    enableDenomBtn.disabled = true;
+    const result = await window.api.enableDenom(params);
+    appendLine(logEl, `[UI] Autoriser dénomination (${params.cc} ${params.fv}) → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
+    setStatePill(result.state);
+    enableDenomBtn.disabled = false;
+  });
+
+  disableDenomBtn.addEventListener("click", async () => {
+    const params = readDenomInputs();
+    if (!params) return;
+    disableDenomBtn.disabled = true;
+    const result = await window.api.disableDenom(params);
+    appendLine(logEl, `[UI] Interdire dénomination (${params.cc} ${params.fv}) → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
+    setStatePill(result.state);
+    disableDenomBtn.disabled = false;
+  });
+
+  setExchangeRateBtn.addEventListener("click", async () => {
+    const from = exchangeFromInput.value.trim();
+    const to = exchangeToInput.value.trim();
+    const rate = exchangeRateInput.value.trim();
+    if (!from || !to || !rate) {
+      appendLine(logEl, "[UI] Taux de change → devise source/cible/taux requis", "tag-error");
+      return;
+    }
+    setExchangeRateBtn.disabled = true;
+    const result = await window.api.setExchangeRate({ from, to, rate });
+    appendLine(logEl, `[UI] Taux de change (${from}→${to}=${rate}) → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
+    setStatePill(result.state);
+    setExchangeRateBtn.disabled = false;
   });
 });

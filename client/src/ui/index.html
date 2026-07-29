@@ -70,6 +70,27 @@
         </div>
       </div>
 
+      <div class="card">
+        <h2>Gestion des dénominations</h2>
+        <div class="controls">
+          <label for="input-denom-cc" style="font-size:12px; color:var(--ink-dim);">Devise (cc) / Valeur faciale (fv) / devid</label>
+          <div style="display:flex; gap:6px;">
+            <input id="input-denom-cc" type="text" placeholder="EUR" style="flex:1; padding:8px; border-radius:7px; border:1px solid var(--rule); background:var(--mono-bg); color:var(--ink); font-family:Consolas,monospace;" />
+            <input id="input-denom-fv" type="text" placeholder="2000" style="flex:1; padding:8px; border-radius:7px; border:1px solid var(--rule); background:var(--mono-bg); color:var(--ink); font-family:Consolas,monospace;" />
+            <input id="input-denom-devid" type="text" placeholder="1" style="flex:1; padding:8px; border-radius:7px; border:1px solid var(--rule); background:var(--mono-bg); color:var(--ink); font-family:Consolas,monospace;" />
+          </div>
+          <button id="btn-enable-denom" class="secondary">Autoriser cette dénomination</button>
+          <button id="btn-disable-denom" class="secondary">Interdire cette dénomination</button>
+          <label for="input-exchange-from" style="font-size:12px; color:var(--ink-dim); margin-top:4px;">Taux de change : de / vers / taux</label>
+          <div style="display:flex; gap:6px;">
+            <input id="input-exchange-from" type="text" placeholder="USD" style="flex:1; padding:8px; border-radius:7px; border:1px solid var(--rule); background:var(--mono-bg); color:var(--ink); font-family:Consolas,monospace;" />
+            <input id="input-exchange-to" type="text" placeholder="EUR" style="flex:1; padding:8px; border-radius:7px; border:1px solid var(--rule); background:var(--mono-bg); color:var(--ink); font-family:Consolas,monospace;" />
+            <input id="input-exchange-rate" type="text" placeholder="0.9" style="flex:1; padding:8px; border-radius:7px; border:1px solid var(--rule); background:var(--mono-bg); color:var(--ink); font-family:Consolas,monospace;" />
+          </div>
+          <button id="btn-set-exchange-rate" class="primary">Définir le taux de change</button>
+        </div>
+      </div>
+
       <div class="card" style="flex:1; min-height:0;">
         <h2>Statut (JSON)</h2>
         <pre id="status-output">—</pre>

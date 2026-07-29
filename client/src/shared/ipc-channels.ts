@@ -20,6 +20,9 @@ export const IpcChannels = {
   SessionRomVersion: "session:rom-version",
   SessionAdjustTime: "session:adjust-time",
   SessionGetSettingFile: "session:get-setting-file",
+  SessionEnableDenom: "session:enable-denom",
+  SessionDisableDenom: "session:disable-denom",
+  SessionSetExchangeRate: "session:set-exchange-rate",
   LogLine: "log:line",
   EventReceived: "event:received",
 } as const;

@@ -23,6 +23,12 @@ contextBridge.exposeInMainWorld("api", {
   romVersion: () => ipcRenderer.invoke(IpcChannels.SessionRomVersion),
   adjustTime: () => ipcRenderer.invoke(IpcChannels.SessionAdjustTime),
   getSettingFile: (fileName: string) => ipcRenderer.invoke(IpcChannels.SessionGetSettingFile, fileName),
+  enableDenom: (params: { cc: string; fv: string; devid: string }) =>
+    ipcRenderer.invoke(IpcChannels.SessionEnableDenom, params),
+  disableDenom: (params: { cc: string; fv: string; devid: string }) =>
+    ipcRenderer.invoke(IpcChannels.SessionDisableDenom, params),
+  setExchangeRate: (params: { from: string; to: string; rate: string }) =>
+    ipcRenderer.invoke(IpcChannels.SessionSetExchangeRate, params),
   onLogLine: (callback: (line: string) => void) => {
     ipcRenderer.on(IpcChannels.LogLine, (_event, line: string) => callback(line));
   },

@@ -6,6 +6,20 @@ renvoie par référence.
 
 ## Questions à poser au constructeur (Glory)
 
+- [ ] **`SetExchangeRateOperation` retourne systématiquement `result=98`
+  "parameter error" sur ce simulateur (testé le 2026-07-29), cause exacte
+  non identifiée.** Requête conforme à l'exemple `IF Spec p.158`
+  (`ExchangeRateSetting.ExchangeRate` avec attrs `from`/`to`, élément
+  `Rate`) — testé avec `USD→EUR=0.76951`/`0.9`, `EUR→EUR=1` (auto-référence,
+  pour écarter une histoire de code devise non reconnu), avec et sans
+  élément `Id` explicite : **même résultat `98` dans tous les cas**. Le
+  `GetSettingFile("GloryCo.xml")` de cette VM ne mentionne aucune devise
+  étrangère configurée (uniquement EUR) — hypothèse non confirmée : ce FCC
+  simulateur n'a peut-être aucune devise étrangère activée en config, ce qui
+  ferait échouer toute requête de taux de change quel que soit son contenu.
+  **Bloquant : non** (fonctionnalité multi-devises hors périmètre immédiat),
+  mais à vérifier auprès du constructeur si le besoin apparaît.
+
 - [ ] **Le protocole WebSocket (`FccWebsockLib.dll`/`FccInterfaceLib.jar`)
   s'applique-t-il à une révision matérielle CI-5 spécifique ? Existe-t-il un
   schéma/spécification publique pour ce protocole ?**

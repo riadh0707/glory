@@ -689,4 +689,128 @@ export class FccSoapClient {
     const result = extractResultAttribute(response);
     return { result, resultDescription: describeResultCode(result), settingFile: response.SettingFile };
   }
+
+  /**
+   * Ré-autorise l'acceptation d'une dénomination précédemment interdite (ex.
+   * après une restriction pour pénurie de monnaie). Réf. IF Spec p.128-130,
+   * §3.27 "Permit Denomination Request". Champs requête : WSDL
+   * BrueBoxService.wsdl:1338-1345 (EnableDenomRequestType — Id?, SeqNo,
+   * SessionID?, Cash [requis, CashType]). Exemple IF Spec : `Cash type="5"`
+   * (Denomination control), `Denomination` avec attributs `cc`/`fv`/`devid`,
+   * `Piece` et `Status` tous deux fixés à `0` dans l'exemple ("0 fix").
+   * Nécessite Occupy (codes `3`/`5`).
+   */
+  async enableDenom(sessionId: string, denominations: CollectDenomination[]): Promise<SimpleResult> {
+    const response = await this.call<
+      {
+        SeqNo: string;
+        SessionID: string;
+        Cash: {
+          attributes: { type: number };
+          Denomination: Array<{ attributes: { cc: string; fv: string; devid: string }; Piece: number; Status: number }>;
+        };
+      },
+      { attributes?: Record<string, unknown> }
+    >("EnableDenomOperation", {
+      SeqNo: this.nextSeqNo(),
+      SessionID: sessionId,
+      Cash: {
+        attributes: { type: 5 },
+        Denomination: denominations.map((d) => ({
+          attributes: { cc: d.cc, fv: d.fv, devid: d.devid },
+          Piece: 0,
+          Status: 0,
+        })),
+      },
+    });
+    const result = extractResultAttribute(response);
+    return { result, resultDescription: describeResultCode(result) };
+  }
+
+  /** Interdit l'acceptation d'une dénomination (restriction temporaire, ex.
+   * pénurie de monnaie pour le rendu). Symétrique de `enableDenom`. Réf.
+   * IF Spec p.130-132, §3.28 "Prohibit denomination Request". WSDL
+   * BrueBoxService.wsdl:1360-1367. Mêmes conventions de requête que
+   * `enableDenom` (`Cash type="5"`, `Piece`/`Status` fixés à `0`). */
+  async disableDenom(sessionId: string, denominations: CollectDenomination[]): Promise<SimpleResult> {
+    const response = await this.call<
+      {
+        SeqNo: string;
+        SessionID: string;
+        Cash: {
+          attributes: { type: number };
+          Denomination: Array<{ attributes: { cc: string; fv: string; devid: string }; Piece: number; Status: number }>;
+        };
+      },
+      { attributes?: Record<string, unknown> }
+    >("DisableDenomOperation", {
+      SeqNo: this.nextSeqNo(),
+      SessionID: sessionId,
+      Cash: {
+        attributes: { type: 5 },
+        Denomination: denominations.map((d) => ({
+          attributes: { cc: d.cc, fv: d.fv, devid: d.devid },
+          Piece: 0,
+          Status: 0,
+        })),
+      },
+    });
+    const result = extractResultAttribute(response);
+    return { result, resultDescription: describeResultCode(result) };
+  }
+
+  /**
+   * Définit le taux de change entre une devise étrangère et la devise
+   * principale. **Persisté dans le fichier de configuration** — "The
+   * specified rate is saved in the configuration file, it is used as the
+   * default" (IF Spec p.158, §3.40). Champs requête : WSDL
+   * BrueBoxService.wsdl:1702-1709 (SetExchangeRateRequestType — Id?, SeqNo,
+   * SessionID?, ExchangeRateSetting [requis, liste `ExchangeRate` avec
+   * attributs `from`/`to` requis (codes devise, ex. "USD"→"EUR") + élément
+   * `Rate` (chaîne décimale, ex. "0.76951")]).
+   */
+  async setExchangeRate(sessionId: string, rates: Array<{ from: string; to: string; rate: string }>): Promise<SimpleResult> {
+    const response = await this.call<
+      {
+        SeqNo: string;
+        SessionID: string;
+        ExchangeRateSetting: { ExchangeRate: Array<{ attributes: { from: string; to: string }; Rate: string }> };
+      },
+      { attributes?: Record<string, unknown> }
+    >("SetExchangeRateOperation", {
+      SeqNo: this.nextSeqNo(),
+      SessionID: sessionId,
+      ExchangeRateSetting: {
+        ExchangeRate: rates.map((r) => ({ attributes: { from: r.from, to: r.to }, Rate: r.rate })),
+      },
+    });
+    const result = extractResultAttribute(response);
+    return { result, resultDescription: describeResultCode(result) };
+  }
+
+  /**
+   * Restreint l'accès à des stackers spécifiques (les stackers listés
+   * deviennent restreints, les autres sont libérés). **Réservé à
+   * RBW-200/RBG-200** — "This command is valid only for RBG-200 and
+   * RBW-200" (IF Spec p.160, §3.41). **Sans objet sur ce prototype (modèle
+   * CI-10/RBW-100/RCW-100, voir docs/models.md)** : implémenté pour
+   * complétude d'API, mais un appel réel contre la VM RBW-100 n'a pas de
+   * matériel cible documenté — comportement (résultat/no-op) non vérifié
+   * empiriquement, voir docs/open-questions.md. Champs requête : WSDL
+   * BrueBoxService.wsdl:1799-1808 (SetRestrictionRequestType — Id?, SeqNo,
+   * SessionID?, Restrictions [requis, liste `Restriction` avec attribut
+   * `stacker` requis]).
+   */
+  async setRestriction(sessionId: string, stackers: number[]): Promise<SimpleResult> {
+    const response = await this.call<
+      { SeqNo: string; SessionID: string; Restrictions: { Restriction: Array<{ attributes: { stacker: number } }> } },
+      { attributes?: Record<string, unknown> }
+    >("SetRestrictionOperation", {
+      SeqNo: this.nextSeqNo(),
+      SessionID: sessionId,
+      Restrictions: { Restriction: stackers.map((s) => ({ attributes: { stacker: s } })) },
+    });
+    const result = extractResultAttribute(response);
+    return { result, resultDescription: describeResultCode(result) };
+  }
 }

@@ -448,6 +448,63 @@ async function handleGetSettingFile(fileName: string): Promise<InventoryResult> 
   }
 }
 
+interface DenomParams {
+  cc: string;
+  fv: string;
+  devid: string;
+}
+
+async function handleEnableDenom(params: DenomParams): Promise<TransactionResult> {
+  if (!soapClient || !sessionId) {
+    return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
+  }
+  try {
+    stateMachine.assertCanTransact();
+    const result = await soapClient.enableDenom(sessionId, [{ cc: params.cc, fv: params.fv, devid: params.devid, piece: 0 }]);
+    sendLog(`EnableDenom(${params.cc} ${params.fv} devid=${params.devid}) → result ${result.resultDescription}`);
+    historyStore.record("soap-response", "EnableDenomOperation", result);
+    return { ok: result.result === 0, message: result.resultDescription, state: stateMachine.getState() };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    sendLog(`[ERREUR] ${message}`);
+    return { ok: false, message, state: stateMachine.getState() };
+  }
+}
+
+async function handleDisableDenom(params: DenomParams): Promise<TransactionResult> {
+  if (!soapClient || !sessionId) {
+    return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
+  }
+  try {
+    stateMachine.assertCanTransact();
+    const result = await soapClient.disableDenom(sessionId, [{ cc: params.cc, fv: params.fv, devid: params.devid, piece: 0 }]);
+    sendLog(`DisableDenom(${params.cc} ${params.fv} devid=${params.devid}) → result ${result.resultDescription}`);
+    historyStore.record("soap-response", "DisableDenomOperation", result);
+    return { ok: result.result === 0, message: result.resultDescription, state: stateMachine.getState() };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    sendLog(`[ERREUR] ${message}`);
+    return { ok: false, message, state: stateMachine.getState() };
+  }
+}
+
+async function handleSetExchangeRate(params: { from: string; to: string; rate: string }): Promise<TransactionResult> {
+  if (!soapClient || !sessionId) {
+    return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
+  }
+  try {
+    stateMachine.assertCanTransact();
+    const result = await soapClient.setExchangeRate(sessionId, [{ from: params.from, to: params.to, rate: params.rate }]);
+    sendLog(`SetExchangeRate(${params.from}→${params.to}=${params.rate}) → result ${result.resultDescription}`);
+    historyStore.record("soap-response", "SetExchangeRateOperation", result);
+    return { ok: result.result === 0, message: result.resultDescription, state: stateMachine.getState() };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    sendLog(`[ERREUR] ${message}`);
+    return { ok: false, message, state: stateMachine.getState() };
+  }
+}
+
 function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 900,
@@ -493,6 +550,17 @@ ipcMain.handle(IpcChannels.SessionRomVersion, async (_event: IpcMainInvokeEvent)
 ipcMain.handle(IpcChannels.SessionAdjustTime, async (_event: IpcMainInvokeEvent) => handleAdjustTime());
 ipcMain.handle(IpcChannels.SessionGetSettingFile, async (_event: IpcMainInvokeEvent, fileName: string) =>
   handleGetSettingFile(fileName)
+);
+ipcMain.handle(IpcChannels.SessionEnableDenom, async (_event: IpcMainInvokeEvent, params: DenomParams) =>
+  handleEnableDenom(params)
+);
+ipcMain.handle(IpcChannels.SessionDisableDenom, async (_event: IpcMainInvokeEvent, params: DenomParams) =>
+  handleDisableDenom(params)
+);
+ipcMain.handle(
+  IpcChannels.SessionSetExchangeRate,
+  async (_event: IpcMainInvokeEvent, params: { from: string; to: string; rate: string }) =>
+    handleSetExchangeRate(params)
 );
 
 app.whenReady().then(createWindow);
