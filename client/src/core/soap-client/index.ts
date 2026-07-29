@@ -691,6 +691,31 @@ export class FccSoapClient {
   }
 
   /**
+   * Réinitialise l'appareil — récupération d'erreur générale. Réf. IF Spec
+   * p.86-87, §3.10 : "Requests reset of the device. If the CI-10(ISP-K05) is
+   * in the middle of cash in transaction, cancels cash in transaction then
+   * have the reset." Champs requête : WSDL BrueBoxService.wsdl:405-411
+   * (ResetRequestType — Id?, SeqNo, SessionID?). Réponse contient `Status`
+   * (même structure que `getStatus`).
+   *
+   * **Mise en garde empirique (2026-07-29, voir docs/open-questions.md,
+   * scénario "billet catégorie 2/3")** : normalement rapide (observé
+   * jusqu'à ~24s dans le pire cas connu), mais peut rester bloqué
+   * indéfiniment si l'appareil est dans un état d'erreur que le simulateur
+   * ne sait pas nettoyer (ex. billet catégorie 2/3 non retiré). L'appelant
+   * DOIT prévoir un timeout et une voie d'escalade (ne pas attendre
+   * indéfiniment une réponse HTTP qui peut ne jamais arriver).
+   */
+  async reset(sessionId: string): Promise<SimpleResult & { raw: unknown }> {
+    const response = await this.call<
+      { SeqNo: string; SessionID: string },
+      { attributes?: Record<string, unknown> }
+    >("ResetOperation", { SeqNo: this.nextSeqNo(), SessionID: sessionId });
+    const result = extractResultAttribute(response);
+    return { result, resultDescription: describeResultCode(result), raw: response };
+  }
+
+  /**
    * Ré-autorise l'acceptation d'une dénomination précédemment interdite (ex.
    * après une restriction pour pénurie de monnaie). Réf. IF Spec p.128-130,
    * §3.27 "Permit Denomination Request". Champs requête : WSDL

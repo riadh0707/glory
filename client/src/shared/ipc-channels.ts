@@ -23,6 +23,7 @@ export const IpcChannels = {
   SessionEnableDenom: "session:enable-denom",
   SessionDisableDenom: "session:disable-denom",
   SessionSetExchangeRate: "session:set-exchange-rate",
+  SessionReset: "session:reset",
   LogLine: "log:line",
   EventReceived: "event:received",
 } as const;

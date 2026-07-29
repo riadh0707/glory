@@ -113,6 +113,57 @@ cohérents sur toute la plage 0-96, mais une éventuelle colonne de description
 associée (si elle existe dans le PDF original) n'a pas été extraite — seuls
 noms et numéros sont confirmés.
 
+## Confirmation empirique (2026-07-29) — le canal TCP échoue quasi toute réponse SOAP
+
+En testant l'application Electron réelle (pas un script isolé) avec le canal
+TCP enregistré via `RegisterEvent`, **chaque appel SOAP effectué pendant la
+session a produit une trame TCP correspondante**, pas seulement les 97
+événements numérotés du tableau ci-dessus. Observé sur une seule session :
+copies de `StatusResponse`, `InventoryResponse`, `RomVersionResponse`,
+`GetSettingFileResponse`, `EnableDenomResponse`, `ReleaseResponse`,
+`CloseResponse` — en plus d'un `GlyCashierEvent`/`eventLogreadProgress` non
+sollicité (probablement une activité de fond du FCC, sans lien avec l'appel en
+cours) et d'un `HeartBeatEvent` périodique.
+
+**Structure de trame confirmée** (canal TCP brut, UTF-8, terminée par `\0`) :
+
+```
+<BbxEventRequest><StatusResponse result="0">
+  <Id />
+  <SeqNo>4</SeqNo>
+  <User>posadmin</User>
+  <Status>
+    <Code>0</Code>
+    <DevStatus devid="1" val="0" st="1000" />
+    <DevStatus devid="2" val="0" st="9100" />
+  </Status>
+</StatusResponse></BbxEventRequest>\0
+```
+
+Chaque trame reprend le nom exact de la réponse SOAP correspondante
+(`<XxxResponse result="N">...`), avec la même structure interne que la réponse
+SOAP synchrone elle-même — **enveloppée** dans `<BbxEventRequest>...
+</BbxEventRequest>`. C'est cohérent avec la catégorie (a) déjà identifiée
+("copies-événements des réponses de commandes"), mais c'était jusqu'ici une
+déduction à partir du tableau de noms d'événements (`IF Spec §10`), jamais
+confirmée avec une trame réelle capturée — **c'est fait ici**.
+
+`HeartBeatEvent` observé :
+
+```
+<BbxEventRequest><HeartBeatEvent>
+  <SerialNo>0123456789</SerialNo>
+</HeartBeatEvent></BbxEventRequest>\0
+```
+
+**Implication pratique pour le client** : le canal TCP peut servir de **flux
+de confirmation redondant** pour toute opération SOAP synchrone (utile si la
+réponse HTTP se perd ou si l'UI veut afficher un journal d'activité complet
+sans dépendre uniquement des réponses synchrones) — mais le code actuel
+(`core/event-listener`) ne fait qu'un affichage brut (UTF-8 + hex), sans
+parser cette structure. Parser cet enveloppe `BbxEventRequest` reste à faire
+si un usage applicatif du canal TCP est requis au-delà du logging diagnostic.
+
 ## Format des messages
 
 - **Non totalement documenté** pour le canal TCP brut dans l'IF Spec lui-même

@@ -29,6 +29,7 @@ contextBridge.exposeInMainWorld("api", {
     ipcRenderer.invoke(IpcChannels.SessionDisableDenom, params),
   setExchangeRate: (params: { from: string; to: string; rate: string }) =>
     ipcRenderer.invoke(IpcChannels.SessionSetExchangeRate, params),
+  reset: () => ipcRenderer.invoke(IpcChannels.SessionReset),
   onLogLine: (callback: (line: string) => void) => {
     ipcRenderer.on(IpcChannels.LogLine, (_event, line: string) => callback(line));
   },

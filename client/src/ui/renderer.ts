@@ -31,6 +31,7 @@ interface GloryClientApi {
   enableDenom(params: { cc: string; fv: string; devid: string }): Promise<TransactionResult>;
   disableDenom(params: { cc: string; fv: string; devid: string }): Promise<TransactionResult>;
   setExchangeRate(params: { from: string; to: string; rate: string }): Promise<TransactionResult>;
+  reset(): Promise<TransactionResult>;
   onLogLine(callback: (line: string) => void): void;
   onEvent(callback: (line: string) => void): void;
 }
@@ -97,6 +98,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const exchangeFromInput = document.getElementById("input-exchange-from") as HTMLInputElement;
   const exchangeToInput = document.getElementById("input-exchange-to") as HTMLInputElement;
   const exchangeRateInput = document.getElementById("input-exchange-rate") as HTMLInputElement;
+  const resetBtn = document.getElementById("btn-reset") as HTMLButtonElement;
 
   window.api.onLogLine((line) => appendLine(logEl, line, classifyLogLine(line)));
   window.api.onEvent((line) => appendLine(eventsEl, line));
@@ -279,5 +281,14 @@ window.addEventListener("DOMContentLoaded", () => {
     appendLine(logEl, `[UI] Taux de change (${from}→${to}=${rate}) → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
     setStatePill(result.state);
     setExchangeRateBtn.disabled = false;
+  });
+
+  resetBtn.addEventListener("click", async () => {
+    resetBtn.disabled = true;
+    appendLine(logEl, "[UI] Reset → en cours (peut prendre jusqu'à ~30s)...", "tag-ui");
+    const result = await window.api.reset();
+    appendLine(logEl, `[UI] Reset → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
+    setStatePill(result.state);
+    resetBtn.disabled = false;
   });
 });

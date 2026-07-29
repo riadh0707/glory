@@ -505,6 +505,34 @@ async function handleSetExchangeRate(params: { from: string; to: string; rate: s
   }
 }
 
+async function handleReset(): Promise<TransactionResult> {
+  if (!soapClient || !sessionId) {
+    return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
+  }
+  try {
+    stateMachine.assertCanTransact();
+    // Reset peut rester bloqué indéfiniment sur ce simulateur si l'appareil
+    // est dans un état d'erreur qu'il ne sait pas nettoyer (voir docstring
+    // core/soap-client reset() et docs/open-questions.md, scénario cat.2/3)
+    // — on borne l'attente côté client plutôt que de geler l'UI sans fin.
+    const RESET_TIMEOUT_MS = 30_000;
+    sendLog("Reset → appel en cours (peut prendre jusqu'à ~30s)...");
+    const result = await Promise.race([
+      soapClient.reset(sessionId),
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error(`Reset sans réponse après ${RESET_TIMEOUT_MS / 1000}s — l'appareil est probablement bloqué, une intervention manuelle (redémarrage service/émulateur) peut être nécessaire.`)), RESET_TIMEOUT_MS)
+      ),
+    ]);
+    sendLog(`Reset → result ${result.resultDescription}`);
+    historyStore.record("soap-response", "ResetOperation", result);
+    return { ok: result.result === 0, message: result.resultDescription, state: stateMachine.getState() };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    sendLog(`[ERREUR] ${message}`);
+    return { ok: false, message, state: stateMachine.getState() };
+  }
+}
+
 function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 900,
@@ -562,6 +590,7 @@ ipcMain.handle(
   async (_event: IpcMainInvokeEvent, params: { from: string; to: string; rate: string }) =>
     handleSetExchangeRate(params)
 );
+ipcMain.handle(IpcChannels.SessionReset, async (_event: IpcMainInvokeEvent) => handleReset());
 
 app.whenReady().then(createWindow);
 
