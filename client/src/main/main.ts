@@ -8,14 +8,14 @@ import { HistoryStore } from "../core/history-store";
 import { getModelConfig, isConfirmedModel } from "../core/model-adapter";
 import { generateDiagnosticReport, DiagnosticReportEnvironment } from "../core/diagnostic-report";
 
-// Modèle utilisé par ce prototype : la VM simulateur CI-10 du SDK, seule
-// instance dont l'endpoint a été vérifié empiriquement (docs/architecture.md).
-// CI-10X/CI-50 sont déclarés dans core/model-adapter mais nécessitent une
-// config d'environnement (endpoint non vérifié) ; CI-05 est un point
-// d'extension volontairement non implémenté (voir core/model-adapter/models/ci-05.ts).
+// Modèle actif : CI-10, seule instance dont l'endpoint a été vérifié
+// empiriquement (docs/architecture.md). CI-10X/CI-50 sont déclarés dans
+// core/model-adapter mais nécessitent une config d'environnement (endpoint
+// non vérifié) ; CI-05 est un point d'extension non implémenté (voir
+// core/model-adapter/models/ci-05.ts).
 const ACTIVE_MODEL_ID = "CI-10";
 
-const DEVICE_NAME = "glory-client-prototype";
+const DEVICE_NAME = "glory-fcc-client";
 const USER_ID = "posadmin";
 const USER_PWD = "";
 

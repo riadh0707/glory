@@ -1,8 +1,9 @@
 {
   "name": "glory-fcc-client",
-  "version": "0.1.0",
+  "productName": "Glory FCC Client",
+  "version": "1.0.0",
   "private": true,
-  "description": "Prototype client Electron pilotant un FCC Glory (ISP-K05B) via BrueBoxService (SOAP). Voir docs/ à la racine du SDK pour la documentation de référence.",
+  "description": "Client Electron pilotant un FCC Glory (ISP-K05B) via BrueBoxService (SOAP). Voir docs/ à la racine du SDK pour la documentation de référence.",
   "main": "dist/main/main.js",
   "scripts": {
     "build": "tsc -p tsconfig.json && tsc -p tsconfig.renderer.json && node -e \"const fs=require('fs');fs.mkdirSync('dist/ui',{recursive:true});fs.copyFileSync('src/ui/index.html','dist/ui/index.html');fs.copyFileSync('src/ui/styles.css','dist/ui/styles.css')\"",

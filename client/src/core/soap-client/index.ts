@@ -454,7 +454,7 @@ export class FccSoapClient {
    * attribut `type` : 1=RBW-100(FrontDoor)/RBW-150(UpperUnit), 2=RCW-100(COFB),
    * 3=RBW-200UL(UpperUnit) — IF Spec p.139]).
    *
-   * `unitType` défaut `1` (RBW-100, le modèle du prototype — voir
+   * `unitType` défaut `1` (RBW-100, le modèle ciblé par ce client — voir
    * docs/models.md, CI-10).
    */
   async lockUnit(sessionId: string, unitType: 1 | 2 | 3 = 1): Promise<SimpleResult> {
@@ -964,7 +964,7 @@ export class FccSoapClient {
    * Restreint l'accès à des stackers spécifiques (les stackers listés
    * deviennent restreints, les autres sont libérés). **Réservé à
    * RBW-200/RBG-200** — "This command is valid only for RBG-200 and
-   * RBW-200" (IF Spec p.160, §3.41). **Sans objet sur ce prototype (modèle
+   * RBW-200" (IF Spec p.160, §3.41). **Sans objet sur ce client (modèle
    * CI-10/RBW-100/RCW-100, voir docs/models.md)** : implémenté pour
    * complétude d'API, mais un appel réel contre la VM RBW-100 n'a pas de
    * matériel cible documenté — comportement (résultat/no-op) non vérifié

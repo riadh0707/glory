@@ -38,8 +38,8 @@ export class EventListener {
   async start(): Promise<void> {
     if (this.config.mode === "soap-callback") {
       throw new Error(
-        "Mode 'soap-callback' non implémenté dans ce sprint (Étape 3 ne couvre que le canal TCP brut, " +
-          "voir docs/event-system.md). Sélectionner 'tcp' pour ce prototype."
+        "Mode 'soap-callback' non implémenté (seul le canal TCP brut est couvert, " +
+          "voir docs/event-system.md). Sélectionner 'tcp'."
       );
     }
     if (this.server) {

@@ -11,7 +11,7 @@ import { UnconfirmedModelConfig } from "../types";
  * publié. Cette ambiguïté est explicitement listée comme question bloquante à
  * poser au constructeur Glory (docs/open-questions.md).
  *
- * Ce prototype ne code donc AUCUN comportement réseau pour CI-05 — ni SOAP ni
+ * Ce client ne code donc AUCUN comportement réseau pour CI-05 — ni SOAP ni
  * WebSocket — tant que cette question n'est pas tranchée. `getModelConfig`
  * retournera cette entrée avec `status: "unconfirmed"`, que l'appelant doit
  * gérer explicitement (voir core/model-adapter/index.ts).
