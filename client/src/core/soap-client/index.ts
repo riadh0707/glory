@@ -4,10 +4,19 @@ import * as https from "https";
 import * as path from "path";
 import { describeResultCode } from "./result-codes";
 
-/** Chemin vers la copie racine de BrueBoxService.wsdl, la seule à utiliser —
- * voir docs/development-notes.md, "Piège n°1" (plusieurs copies incomplètes
- * du WSDL existent ailleurs dans le SDK, toujours préférer celle-ci). */
-const WSDL_PATH = path.resolve(__dirname, "../../../../BrueBoxService.wsdl");
+/**
+ * Chemin vers la copie du WSDL utilisée par le client — copiée depuis la
+ * racine du SDK (`BrueBoxService.wsdl`, seule copie complète du SDK, voir
+ * docs/development-notes.md "Piège n°1") vers `dist/resources/` au moment du
+ * build (voir script `build` de package.json). **Ne plus référencer la
+ * racine du SDK directement par un chemin relatif** (`../../../../`) : ça
+ * fonctionnait en dev mais casse une fois l'app empaquetée, le dossier
+ * `client/` étant le seul inclus dans le paquet — la racine du SDK, elle,
+ * n'existe pas chez le client final. Bug réel rencontré le 2026-07-29 en
+ * testant `release/win-unpacked/*.exe` (voir aussi le piège similaire sur
+ * `DATA_DIR` dans `main.ts`).
+ */
+const WSDL_PATH = path.resolve(__dirname, "../../resources/BrueBoxService.wsdl");
 
 export type LogDirection = "request" | "response";
 export type SoapLogger = (direction: LogDirection, operation: string, payload: unknown) => void;

@@ -4,10 +4,18 @@
   "version": "1.0.0",
   "private": true,
   "description": "Client Electron pilotant un FCC Glory (ISP-K05B) via BrueBoxService (SOAP). Voir docs/ à la racine du SDK pour la documentation de référence.",
+  "author": {
+    "name": "Belabbas Mohamed Riadh",
+    "email": "belabbas.mohamed.riadh@gmail.com"
+  },
+  "homepage": "https://glory-fcc-client.local",
   "main": "dist/main/main.js",
   "scripts": {
-    "build": "tsc -p tsconfig.json && tsc -p tsconfig.renderer.json && node -e \"const fs=require('fs');fs.mkdirSync('dist/ui',{recursive:true});fs.copyFileSync('src/ui/index.html','dist/ui/index.html');fs.copyFileSync('src/ui/styles.css','dist/ui/styles.css')\"",
-    "start": "npm run build && electron ."
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig.renderer.json && node -e \"const fs=require('fs');fs.mkdirSync('dist/ui',{recursive:true});fs.copyFileSync('src/ui/index.html','dist/ui/index.html');fs.copyFileSync('src/ui/styles.css','dist/ui/styles.css');fs.mkdirSync('dist/resources',{recursive:true});fs.copyFileSync('../BrueBoxService.wsdl','dist/resources/BrueBoxService.wsdl')\"",
+    "start": "npm run build && electron .",
+    "dist:win": "npm run build && electron-builder --win",
+    "dist:linux": "npm run build && electron-builder --linux",
+    "dist:all": "npm run build && electron-builder --win --linux"
   },
   "dependencies": {
     "axios": "^1.18.1",
@@ -16,6 +24,56 @@
   "devDependencies": {
     "@types/node": "^26.1.2",
     "electron": "^43.2.0",
+    "electron-builder": "^26.15.3",
     "typescript": "^7.0.2"
+  },
+  "build": {
+    "appId": "com.glory-fcc-client.app",
+    "productName": "Glory FCC Client",
+    "copyright": "Copyright © 2026",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "package.json",
+      "!**/*.map"
+    ],
+    "extraMetadata": {
+      "main": "dist/main/main.js"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Glory FCC Client"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": ["x64"]
+        },
+        {
+          "target": "deb",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "build/icons",
+      "category": "Office",
+      "synopsis": "Client de pilotage FCC Glory (ISP-K05B) via BrueBoxService"
+    }
   }
 }

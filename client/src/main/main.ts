@@ -19,13 +19,29 @@ const DEVICE_NAME = "glory-fcc-client";
 const USER_ID = "posadmin";
 const USER_PWD = "";
 
-const DATA_DIR = path.join(__dirname, "..", "..", "data");
-const APP_STARTED_AT = new Date().toISOString();
-
 // Nom affiché par l'OS (menu Démarrer/barre des tâches Windows, launcher
 // Linux) — sans ça, Electron utilise par défaut le nom `package.json` en
-// kebab-case ("glory-fcc-client") dans certains contextes système.
+// kebab-case ("glory-fcc-client") dans certains contextes système. Appelé
+// AVANT app.getPath("userData") ci-dessous pour que ce dossier porte aussi
+// ce nom plutôt que le kebab-case par défaut.
 app.setName("Glory FCC Client");
+
+/**
+ * **Piège critique (2026-07-29)** : `DATA_DIR` était auparavant calculé par
+ * rapport à `__dirname` (`dist/main/../..`) — fonctionnait en dev, mais une
+ * fois l'app empaquetée, `dist/` est contenu dans `app.asar` (archive
+ * **en lecture seule**). `HistoryStore` tentait alors de créer son dossier
+ * de base SQLite *à l'intérieur de l'asar*, provoquant un crash immédiat au
+ * démarrage (avant même l'affichage de la fenêtre, avant l'enregistrement
+ * des handlers `uncaughtException` ci-dessous) — confirmé en testant
+ * `release/win-unpacked/Glory FCC Client.exe`, fenêtre "Error" au lancement.
+ * `app.getPath("userData")` est le dossier standard Electron pour les
+ * données persistantes par utilisateur (`%APPDATA%/Glory FCC Client` sur
+ * Windows, `~/.config/Glory FCC Client` sur Linux) — toujours accessible en
+ * écriture, dev comme empaqueté.
+ */
+const DATA_DIR = app.getPath("userData");
+const APP_STARTED_AT = new Date().toISOString();
 
 let mainWindow: BrowserWindow | null = null;
 const historyStore = new HistoryStore(path.join(DATA_DIR, "glory-client.db"));

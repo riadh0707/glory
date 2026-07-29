@@ -10,6 +10,7 @@
 client/node_modules/
 client/dist/
 client/data/
+client/release/
 client/*.log
 
 # OS
