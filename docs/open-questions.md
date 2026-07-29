@@ -284,6 +284,23 @@ Occupy→GetStatus→Release→Close, 6/6 `result=0`, contre la VM simulateur
   testé ; **note opérationnelle** : après tout `Collect`, prévoir un
   redémarrage VM si `Inventory` reste bloqué à `11`.
 
+- [x] **`StartReplenishmentFromCassette`/`EndReplenishmentFromCassette`
+  validés le 2026-07-29** — confirmation de l'hypothèse "IF Cst au lieu de
+  Stack Cst" formulée juste au-dessus pour `Collect`. Procédure : `UnlockUnit`
+  (SOAP) → "Door Set" (émulateur) → **"IF Cst"** (pas "Stack Cst") →
+  "Door Set" pour refermer. `StartReplenishmentFromCassette(type=0 "Both")` →
+  `result=0` (succès — confirme la précondition "cassette I/F" de l'IF Spec
+  p.140). `EndReplenishmentFromCassette` → `result=33` ("IF cassette illegal
+  denomination"), cohérent : la cassette I/F insérée était vide (aucun billet
+  préchargé via le "Money Handling Dialog" de l'émulateur, jamais utilisé —
+  distinct du dialogue "Entrance"). `ResultDetail` confirme le traitement par
+  RBW (`devid=1`) et RCW (`devid=2`).
+  **Bloquant : non** — le code est validé au niveau protocole (requête bien
+  formée, précondition correctement identifiée, résultat métier cohérent).
+  Pour un `result=0` complet, il faudrait précharger la cassette I/F via le
+  "Money Handling Dialog" (non tenté, section 3-3 des manuels simulateur) —
+  non exploré faute de temps, non bloquant pour la suite.
+
 - [ ] **Valider empiriquement le timeout Occupy** en observant le code `22`
   apparaître sur la VM simulateur après une session laissée ouverte sans
   activité.

@@ -405,18 +405,29 @@ export class FccSoapClient {
   }
 
   /**
-   * Démarre un réapprovisionnement par cassette (recharge directe d'une
-   * cassette, sans passer par l'entrée). Réf. docs/soap-operations.md, ligne
-   * 42. Champs requête : WSDL BrueBoxService.wsdl:1524-1531 (Id?, SeqNo,
-   * SessionID?, Option? [RefillOptionType, attribut `type` — signification
-   * exacte non extraite de l'IF Spec dans cette passe, omis ici car
-   * optionnel]).
+   * Démarre un réapprovisionnement par cassette : transporte les espèces
+   * d'une **cassette I/F (Interface)** vers les stackers de recyclage, et
+   * accepte simultanément les pièces déposées à l'entrée. Réf.
+   * docs/soap-operations.md, ligne 42. Champs requête : WSDL
+   * BrueBoxService.wsdl:1524-1531 (Id?, SeqNo, SessionID?, Option?
+   * [RefillOptionType, attribut `type` : 0=Both, 1=Note, 2=Coin — IF Spec
+   * p.140]).
+   *
+   * **Précondition critique (IF Spec p.140) : "This function works only with
+   * 'I/F collection cassette'."** — nécessite une cassette de type
+   * **Interface** insérée (bouton "IF Cst" du "Change Cassette Operation" de
+   * l'émulateur), PAS une cassette "Stack" (celle utilisée pour `Collect` —
+   * voir docs/open-questions.md). `deviceType` défaut 0 = "Both".
    */
-  async startReplenishmentFromCassette(sessionId: string): Promise<SimpleResult> {
+  async startReplenishmentFromCassette(sessionId: string, deviceType: 0 | 1 | 2 = 0): Promise<SimpleResult> {
     const response = await this.call<
-      { SeqNo: string; SessionID: string },
+      { SeqNo: string; SessionID: string; Option: { attributes: { type: number } } },
       { attributes?: Record<string, unknown> }
-    >("StartReplenishmentFromCassetteOperation", { SeqNo: this.nextSeqNo(), SessionID: sessionId });
+    >("StartReplenishmentFromCassetteOperation", {
+      SeqNo: this.nextSeqNo(),
+      SessionID: sessionId,
+      Option: { attributes: { type: deviceType } },
+    });
     const result = extractResultAttribute(response);
     return { result, resultDescription: describeResultCode(result) };
   }
