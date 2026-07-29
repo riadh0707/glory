@@ -294,6 +294,33 @@ développement.)
   fournis comme preuve de consommation du WSDL, pas comme base de code à
   industrialiser (Windows/.NET Framework legacy pour la plupart).
 
+## Packaging Windows/Linux (2026-07-29) — exception à la règle "ne pas versionner le SDK constructeur"
+
+`.gitignore` exclut délibérément le contenu volumineux fourni par Glory
+(`/App/`, `/Doc/`, `/Emulator/`, `/*.wsdl`, `/*.pdf`, ~5,3 Go). Ça a cassé le
+build CI (GitHub Actions) : `client/package.json` copiait
+`BrueBoxService.wsdl` depuis la racine du SDK au moment du build, un fichier
+qui n'existe donc pas dans un checkout Git propre. **Exception délibérée** :
+une copie de `BrueBoxService.wsdl` (168 Ko, le seul fichier réellement
+nécessaire à l'exécution du client, pas à sa documentation) est maintenant
+versionnée dans `client/resources/BrueBoxService.wsdl` et copiée vers
+`dist/resources/` au build — voir aussi la docstring `WSDL_PATH` dans
+`core/soap-client/index.ts`. Le reste du SDK (Doc/, Emulator/, App/) reste
+non versionné, cette exception est strictement limitée à ce seul fichier.
+
+Deux bugs de packaging supplémentaires, trouvés en testant l'exécutable réel
+généré (`release/win-unpacked/*.exe`), sont documentés dans le message du
+commit correspondant : `DATA_DIR` (main.ts) doit utiliser
+`app.getPath("userData")`, jamais un chemin relatif à `__dirname` (qui pointe
+dans `app.asar`, en lecture seule une fois empaqueté).
+
+**Limitation connue** : la génération de paquets Linux (AppImage/.deb) n'est
+pas fiable depuis un hôte **Windows** avec electron-builder — l'outil
+AppImage tente d'utiliser un binaire macOS (`darwin/mksquashfs`) même sur
+Windows, et `.deb` nécessite `fpm` (Ruby), absent de Windows. Solution
+retenue : `.github/workflows/build-client.yml`, qui construit Windows et
+Linux chacun sur son runner natif (déclenchement manuel ou tag `v*`).
+
 ## Backlog — opérations SOAP potentiellement à ajouter plus tard
 
 État au 2026-07-29 : 33 des 53 opérations du WSDL sont implémentées dans

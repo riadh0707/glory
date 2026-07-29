@@ -1,0 +1,3673 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<wsdl:definitions name="BrueBoxMessaging"
+    targetNamespace="http://www.glory.co.jp/bruebox.wsdl"
+          xmlns:tns="http://www.glory.co.jp/bruebox.wsdl"
+          xmlns:xsd1="http://www.glory.co.jp/bruebox.xsd"
+          xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+          xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+          xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://www.glory.co.jp/bruebox.xsd"
+                 xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+      <!--Request & Response type-->
+      <xsd:element name="StatusRequest" type="xsd1:StatusRequestType"/>
+      <xsd:element name="StatusResponse" type="xsd1:StatusResponseType"/>
+
+      <xsd:element name="OpenRequest" type="xsd1:OpenRequestType"/>
+      <xsd:element name="OpenResponse" type="xsd1:OpenResponseType"/>
+
+      <xsd:element name="CloseRequest" type="xsd1:CloseRequestType"/>
+      <xsd:element name="CloseResponse" type="xsd1:CloseResponseType"/>
+
+      <xsd:element name="ChangeRequest" type="xsd1:ChangeRequestType"/>
+      <xsd:element name="ChangeResponse" type="xsd1:ChangeResponseType"/>
+
+      <xsd:element name="ChangeCancelRequest" type="xsd1:ChangeCancelRequestType"/>
+      <xsd:element name="ChangeCancelResponse" type="xsd1:ChangeCancelResponseType"/>
+
+      <xsd:element name="StartCashinRequest" type="xsd1:StartCashinRequestType"/>
+      <xsd:element name="StartCashinResponse" type="xsd1:StartCashinResponseType"/>
+
+      <xsd:element name="EndCashinRequest" type="xsd1:EndCashinRequestType"/>
+      <xsd:element name="EndCashinResponse" type="xsd1:EndCashinResponseType"/>
+
+      <xsd:element name="CashinCancelRequest" type="xsd1:CashinCancelRequestType"/>
+      <xsd:element name="CashinCancelResponse" type="xsd1:CashinCancelResponseType"/>
+
+      <xsd:element name="CashoutRequest" type="xsd1:CashoutRequestType"/>
+      <xsd:element name="CashoutResponse" type="xsd1:CashoutResponseType"/>
+
+      <xsd:element name="InventoryRequest" type="xsd1:InventoryRequestType"/>
+      <xsd:element name="InventoryResponse" type="xsd1:InventoryResponseType"/>
+
+      <xsd:element name="ResetRequest" type="xsd1:ResetRequestType"/>
+      <xsd:element name="ResetResponse" type="xsd1:ResetResponseType"/>
+
+      <xsd:element name="CollectRequest" type="xsd1:CollectRequestType"/>
+      <xsd:element name="CollectResponse" type="xsd1:CollectResponseType"/>
+
+      <xsd:element name="CounterClearRequest" type="xsd1:CounterClearRequestType"/>
+      <xsd:element name="CounterClearResponse" type="xsd1:CounterClearResponseType"/>
+
+      <xsd:element name="RegisterEventRequest" type="xsd1:RegisterEventRequestType"/>
+      <xsd:element name="RegisterEventResponse" type="xsd1:RegisterEventResponseType"/>
+
+      <xsd:element name="UnRegisterEventRequest" type="xsd1:UnRegisterEventRequestType"/>
+      <xsd:element name="UnRegisterEventResponse" type="xsd1:UnRegisterEventResponseType"/>
+
+      <xsd:element name="EventNotificationStatusRequest" type="xsd1:EventNotificationStatusRequestType"/>
+      <xsd:element name="EventNotificationStatusResponse" type="xsd1:EventNotificationStatusResponseType"/>
+      
+      <xsd:element name="LoginUserRequest" type="xsd1:LoginUserRequestType"/>
+      <xsd:element name="LoginUserResponse" type="xsd1:LoginUserResponseType"/>
+
+      <xsd:element name="LogoutUserRequest" type="xsd1:LogoutUserRequestType"/>
+      <xsd:element name="LogoutUserResponse" type="xsd1:LogoutUserResponseType"/>
+
+      <xsd:element name="RomVersionRequest" type="xsd1:RomVersionRequestType"/>
+      <xsd:element name="RomVersionResponse" type="xsd1:RomVersionResponseType"/>
+
+      <xsd:element name="StartDownload" type="xsd1:StartDownloadRequestType"/>
+      <xsd:element name="StartDownloadResponse" type="xsd1:StartDownloadResponseType"/>
+
+      <xsd:element name="StartLogread" type="xsd1:StartLogreadRequestType"/>
+      <xsd:element name="StartLogreadResponse" type="xsd1:StartLogreadResponseType"/>
+
+      <xsd:element name="OccupyRequest" type="xsd1:OccupyRequestType"/>
+      <xsd:element name="OccupyResponse" type="xsd1:OccupyResponseType"/>
+
+      <xsd:element name="ReleaseRequest" type="xsd1:ReleaseRequestType"/>
+      <xsd:element name="ReleaseResponse" type="xsd1:ReleaseResponseType"/>
+
+      <xsd:element name="UpdateManualDepositTotalRequest" type="xsd1:UpdateManualDepositTotalRequestType"/>
+      <xsd:element name="UpdateManualDepositTotalResponse" type="xsd1:UpdateManualDepositTotalResponseType"/>
+
+      <xsd:element name="RefreshSalesTotalRequest" type="xsd1:RefreshSalesTotalRequestType"/>
+      <xsd:element name="RefreshSalesTotalResponse" type="xsd1:RefreshSalesTotalResponseType"/>
+
+      <xsd:element name="ReturnCashRequest" type="xsd1:ReturnCashRequestType"/>
+      <xsd:element name="ReturnCashResponse" type="xsd1:ReturnCashResponseType"/>
+
+      <xsd:element name="EnableDenomRequest" type="xsd1:EnableDenomRequestType"/>
+      <xsd:element name="EnableDenomResponse" type="xsd1:EnableDenomResponseType"/>
+
+      <xsd:element name="DisableDenomRequest" type="xsd1:DisableDenomRequestType"/>
+      <xsd:element name="DisableDenomResponse" type="xsd1:DisableDenomResponseType"/>
+
+      <xsd:element name="PowerControlRequest" type="xsd1:PowerControlRequestType"/>
+      <xsd:element name="PowerControlResponse" type="xsd1:PowerControlResponseType"/>
+
+      <xsd:element name="AdjustTimeRequest" type="xsd1:AdjustTimeRequestType"/>
+      <xsd:element name="AdjustTimeResponse" type="xsd1:AdjustTimeResponseType"/>
+
+      <xsd:element name="StartReplenishmentFromEntranceRequest" type="xsd1:StartReplenishmentFromEntranceRequestType"/>
+      <xsd:element name="StartReplenishmentFromEntranceResponse" type="xsd1:StartReplenishmentFromEntranceResponseType"/>
+
+      <xsd:element name="EndReplenishmentFromEntranceRequest" type="xsd1:EndReplenishmentFromEntranceRequestType"/>
+      <xsd:element name="EndReplenishmentFromEntranceResponse" type="xsd1:EndReplenishmentFromEntranceResponseType"/>
+
+      <xsd:element name="ReplenishmentFromEntranceCancelRequest" type="xsd1:ReplenishmentFromEntranceCancelRequestType"/>
+      <xsd:element name="ReplenishmentFromEntranceCancelResponse" type="xsd1:ReplenishmentFromEntranceCancelResponseType"/>
+      
+      <xsd:element name="StartReplenishmentFromCassetteRequest" type="xsd1:StartReplenishmentFromCassetteRequestType"/>
+      <xsd:element name="StartReplenishmentFromCassetteResponse" type="xsd1:StartReplenishmentFromCassetteResponseType"/>
+
+      <xsd:element name="EndReplenishmentFromCassetteRequest" type="xsd1:EndReplenishmentFromCassetteRequestType"/>
+      <xsd:element name="EndReplenishmentFromCassetteResponse" type="xsd1:EndReplenishmentFromCassetteResponseType"/>
+
+      <xsd:element name="LockUnitRequest" type="xsd1:LockUnitRequestType"/>
+      <xsd:element name="LockUnitResponse" type="xsd1:LockUnitResponseType"/>
+      
+      <xsd:element name="UnLockUnitRequest" type="xsd1:UnLockUnitRequestType"/>
+      <xsd:element name="UnLockUnitResponse" type="xsd1:UnLockUnitResponseType"/>
+
+      <xsd:element name="OpenExitCoverRequest" type="xsd1:OpenExitCoverRequestType"/>
+      <xsd:element name="OpenExitCoverResponse" type="xsd1:OpenExitCoverResponseType"/>
+
+      <xsd:element name="CloseExitCoverRequest" type="xsd1:CloseExitCoverRequestType"/>
+      <xsd:element name="CloseExitCoverResponse" type="xsd1:CloseExitCoverResponseType"/>
+
+      <xsd:element name="EventOfflineRecoveryRequest" type="xsd1:EventOfflineRecoveryRequestType"/>
+      <xsd:element name="EventOfflineRecoveryResponse" type="xsd1:EventOfflineRecoveryResponseType"/>
+
+      <xsd:element name="SetExchangeRateRequest" type="xsd1:SetExchangeRateRequestType"/>
+      <xsd:element name="SetExchangeRateResponse" type="xsd1:SetExchangeRateResponseType"/>
+
+      <xsd:element name="RollbackRequest" type="xsd1:RollbackRequestType"/>
+      <xsd:element name="RollbackResponse" type="xsd1:RollbackResponseType"/>
+      
+      <xsd:element name="UpdateSettingFileRequest" type="xsd1:UpdateSettingFileRequestType"/>
+      <xsd:element name="UpdateSettingFileResponse" type="xsd1:UpdateSettingFileResponseType"/>
+
+      <xsd:element name="SetRestrictionRequest" type="xsd1:SetRestrictionRequestType"/>
+      <xsd:element name="SetRestrictionResponse" type="xsd1:SetRestrictionResponseType"/>
+
+      <xsd:element name="GetLastResponseRequest" type="xsd1:GetLastResponseRequestType"/>
+      <xsd:element name="GetLastResponseResponse" type="xsd1:GetLastResponseResponseType"/>
+
+      <xsd:element name="RASSpecialAPIRequest" type="xsd1:RASSpecialAPIRequestType"/>
+      <xsd:element name="RASSpecialAPIResponse" type="xsd1:RASSpecialAPIResponseType"/>
+ 
+      <xsd:element name="UpdateDeviceCassetteSettingRequest" type="xsd1:UpdateDeviceCassetteSettingRequestType"/>
+      <xsd:element name="UpdateDeviceCassetteSettingResponse" type="xsd1:UpdateDeviceCassetteSettingResponseType"/>
+
+      <xsd:element name="StartSealingRequest" type="xsd1:StartSealingRequestType"/>
+      <xsd:element name="StartSealingResponse" type="xsd1:StartSealingResponseType"/>
+
+      <xsd:element name="UpdateCheckRequest" type="xsd1:UpdateCheckRequestType"/>
+      <xsd:element name="UpdateCheckResponse" type="xsd1:UpdateCheckResponseType"/>
+
+      <xsd:element name="AutoRebootChangeRequest" type="xsd1:AutoRebootChangeRequestType"/>
+      <xsd:element name="AutoRebootChangeResponse" type="xsd1:AutoRebootChangeResponseType"/>
+
+      <xsd:element name="LanguageChangeRequest" type="xsd1:LanguageChangeRequestType"/>
+      <xsd:element name="LanguageChangeResponse" type="xsd1:LanguageChangeResponseType"/>
+
+      <xsd:element name="GetSettingFileRequest" type="xsd1:GetSettingFileRequestType"/>
+      <xsd:element name="GetSettingFileResponse" type="xsd1:GetSettingFileResponseType"/>
+
+      <xsd:element name="UserSettingRequest" type="xsd1:UserSettingRequestType"/>
+      <xsd:element name="UserSettingResponse" type="xsd1:UserSettingResponseType"/>
+
+      <!-- ************************************************** -->
+      <!-- ************************************************** -->
+      <!--User define of ComplexType-->
+      <!--StatusRequest-->
+      <xsd:complexType name="StatusRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Option" type="xsd1:StatusOptionType" minOccurs="1" maxOccurs="1"/>
+          <xsd:element name="RequireVerification" type="xsd1:RequireVerificationType" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--StatusResponse-->
+      <xsd:complexType name="StatusResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Status" type="xsd1:StatusType" minOccurs="1" maxOccurs="1"/>
+          <xsd:element name="Cash"   type="xsd1:CashType"   minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="RequireVerifyInfos"   type="xsd1:RequireVerifyInfosType"   minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--OpenRequest-->
+      <xsd:complexType name="OpenRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:UserPwd" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:DeviceName" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--OpenResponse-->
+      <xsd:complexType name="OpenResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID"  minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--CloseRequest-->
+      <xsd:complexType name="CloseRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--CloseResponse-->
+      <xsd:complexType name="CloseResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--ChangeRequest-->
+      <xsd:complexType name="ChangeRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"     minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:Amount" minOccurs="1" maxOccurs="1"/>
+          <xsd:element name="Option" type="xsd1:CashinOptionType" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Cash" type="xsd1:CashType" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="ForeignCurrency" type="xsd1:ForeignCurrencyRequestType" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--ChangeResponse-->
+      <xsd:complexType name="ChangeResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"     minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"   minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:Amount" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:RoundedAmount" minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:ManualDeposit" minOccurs="1" maxOccurs="1"/>
+          <xsd:element name="ManualDepositDetails" type="xsd1:DepositDetailsType" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="DepositCurrency" type="xsd1:DepositCurrencyType" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Status" type="xsd1:StatusType" minOccurs="1" maxOccurs="1"/>
+          <xsd:element name="Cash"   type="xsd1:CashType"   minOccurs="2" maxOccurs="2"/>
+          <xsd:element name="CashInAmountDetails" type="xsd1:DepositDetailsType" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--ChangeCancelRequest-->
+      <xsd:complexType name="ChangeCancelRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Option" type="xsd1:CashinOptionType" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--ChangeCancelResponse-->
+      <xsd:complexType name="ChangeCancelResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--StartCashinRequest-->
+      <xsd:complexType name="StartCashinRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Option" type="xsd1:CashinOptionType" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="ForeignCurrency" type="xsd1:ForeignCurrencyRequestType" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--StartCashinResponse-->
+      <xsd:complexType name="StartCashinResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--EndCashinRequest-->
+      <xsd:complexType name="EndCashinRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Option" type="xsd1:CashinOptionType" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--EndCashinResponse-->
+      <xsd:complexType name="EndCashinResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:ManualDeposit" minOccurs="1" maxOccurs="1"/>
+          <xsd:element name="ManualDepositDetails" type="xsd1:DepositDetailsType" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="DepositCurrency" type="xsd1:DepositCurrencyType" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Cash" type="xsd1:CashType" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="CashInAmountDetails" type="xsd1:DepositDetailsType" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--CashoutRequest-->
+      <xsd:complexType name="CashoutRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Delay" type="xsd1:DelayOptionType" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Cash" type="xsd1:CashType" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--CashoutResponse-->
+      <xsd:complexType name="CashoutResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Cash" type="xsd1:CashType" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--InventoryRequest-->
+      <xsd:complexType name="InventoryRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Option" type="xsd1:InventoryOptionType" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--InventoryResponse-->
+      <xsd:complexType name="InventoryResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Cash"      type="xsd1:CashType"      minOccurs="0" maxOccurs="2"/>
+          <xsd:element name="CashUnits" type="xsd1:CashUnitsType" minOccurs="0" maxOccurs="unbounded"/>
+          <xsd:element name="InvalidCassette" type="xsd:string" minOccurs="0" maxOccurs="1" />
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--ResetRequest-->
+      <xsd:complexType name="ResetRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--ResetResponse-->
+      <xsd:complexType name="ResetResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Status" type="xsd1:StatusType" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--OccupyRequest-->
+      <xsd:complexType name="OccupyRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:OccupyImg" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--OccupyResponse-->
+      <xsd:complexType name="OccupyResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--ReleaseRequest-->
+      <xsd:complexType name="ReleaseRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--ReleaseResponse-->
+      <xsd:complexType name="ReleaseResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--CashinCancelRequest-->
+      <xsd:complexType name="CashinCancelRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--CashinCancelResponse-->
+      <xsd:complexType name="CashinCancelResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:ManualDeposit" minOccurs="1" maxOccurs="1"/>
+          <xsd:element name="ManualDepositDetails" type="xsd1:DepositDetailsType" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="DepositCurrency" type="xsd1:DepositCurrencyType" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Cash" type="xsd1:CashType" minOccurs="2" maxOccurs="2"/>
+          <xsd:element name="CashInAmountDetails" type="xsd1:DepositDetailsType" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--CashinOptionType-->
+      <xsd:complexType name="CashinOptionType">
+        <xsd:sequence>
+        </xsd:sequence>
+        <xsd:attributeGroup ref="xsd1:CashinRequestOptionAttribGroup"/>
+      </xsd:complexType>
+      
+      <!--StatusOptionType-->
+      <xsd:complexType name="StatusOptionType">
+        <xsd:sequence>
+        </xsd:sequence>
+        <xsd:attributeGroup ref="xsd1:StatusRequestOptionAttribGroup"/>
+      </xsd:complexType>
+
+      <!--DevStatusType-->
+      <xsd:complexType name="DevStatusType">
+        <xsd:sequence>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:devid"/>
+        <xsd:attribute ref="xsd1:val"/>
+        <xsd:attribute ref="xsd1:st"/>
+      </xsd:complexType>
+
+      <!--DenominationType-->
+      <xsd:complexType name="DenominationType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Piece"/>
+          <xsd:element ref="xsd1:Status"/>
+        </xsd:sequence>
+        <xsd:attributeGroup ref="xsd1:DenominationAttribGroup"/>
+      </xsd:complexType>
+
+      <!--CashType-->
+      <xsd:complexType name="CashType">
+        <xsd:sequence>
+          <xsd:element name="Denomination" type="xsd1:DenominationType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attributeGroup ref="xsd1:CashAttribGroup"/>
+      </xsd:complexType>
+
+      <!--StatusType-->
+      <xsd:complexType name="StatusType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Code" minOccurs="1" maxOccurs="1"/>
+          <xsd:element name="DevStatus" type="xsd1:DevStatusType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--EventNotificationStatusType-->
+      <xsd:complexType name="EventNotificationStatusType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:ComStatus" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--Restrictions-->
+      <xsd:complexType name="RestrictionsType">
+        <xsd:sequence>
+          <xsd:element name="Restriction" type="xsd1:RestrictionType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--Restriction-->
+      <xsd:complexType name="RestrictionType">
+        <xsd:attributeGroup ref="xsd1:RestrictionAttribGroup"/>
+      </xsd:complexType>
+      
+      <!--CashUnits-->
+      <xsd:complexType name="CashUnitsType">
+        <xsd:sequence>
+          <xsd:element name="CashUnit" type="xsd1:CashUnitType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attributeGroup ref="xsd1:CashUnitsAttribGroup"/>
+      </xsd:complexType>
+
+      <!--CashUnit-->
+      <xsd:complexType name="CashUnitType">
+        <xsd:sequence>
+          <xsd:element name="Denomination" type="xsd1:DenominationType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+        <xsd:attributeGroup ref="xsd1:CashUnitAttribGroup"/>
+      </xsd:complexType>
+
+      <!--Currency-->
+      <xsd:complexType name="CurrencyType">
+        <xsd:attributeGroup ref="xsd1:CurrencyAttribGroup"/>
+      </xsd:complexType>
+
+      <!--DepositCurrency-->
+      <xsd:complexType name="DepositCurrencyType">
+        <xsd:sequence>
+          <xsd:element name="Currency" type="xsd1:CurrencyType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--DepositDetailsType-->
+      <xsd:complexType name="DepositDetailsType">
+        <xsd:sequence>
+          <xsd:element name="MainAmount" type="xsd1:MainAmountType" minOccurs="1" maxOccurs="1"/>
+          <xsd:element name="ForeignCurrency" type="xsd1:ForeignCurrencyResponseType" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--MainAmountType-->
+      <xsd:complexType name="MainAmountType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Amount" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:cc"/>
+      </xsd:complexType>
+
+      <!--ForeignCurrencyRequestType-->
+      <xsd:complexType name="ForeignCurrencyRequestType">
+        <xsd:sequence>
+          <xsd:element name="Rate" type="xsd:string"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:cc"/>
+      </xsd:complexType>
+
+      <!--ForeignCurrencyResponseType-->
+      <xsd:complexType name="ForeignCurrencyResponseType">
+        <xsd:sequence>
+          <xsd:element name="PreAmount" type="xsd:string"/>
+          <xsd:element name="ExchangedAmount" type="xsd:string"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:cc"/>
+        <xsd:attribute ref="xsd1:rate"/>
+      </xsd:complexType>
+
+      <!--RequireVerifyInfosType-->
+      <xsd:complexType name="RequireVerifyInfosType">
+        <xsd:sequence>
+          <xsd:element name="RequireVerifyDenominationInfos" type="xsd1:RequireVerifyDenominationInfosType" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="RequireVerifyCollectionContainerInfos" type="xsd1:RequireVerifyCollectionContainerInfosType" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="RequireVerifyMixStackerInfos" type="xsd1:RequireVerifyMixStackerInfosType" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--RequireVerifyDenominationInfosType-->
+      <xsd:complexType name="RequireVerifyDenominationInfosType">
+        <xsd:sequence>
+          <xsd:element name="RequireVerifyDenomination" type="xsd1:RequireVerifyDenominationType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--RequireVerifyCollectionContainerInfosType-->
+      <xsd:complexType name="RequireVerifyCollectionContainerInfosType">
+        <xsd:sequence>
+          <xsd:element name="RequireVerifyCollectionContainer" type="xsd1:RequireVerifyCollectionContainerType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--RequireVerifyMixStackerInfosType-->
+      <xsd:complexType name="RequireVerifyMixStackerInfosType">
+        <xsd:sequence>
+          <xsd:element name="RequireVerifyMixStacker" type="xsd1:RequireVerifyMixStackerType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--RequireVerifyDenominationType-->
+      <xsd:complexType name="RequireVerifyDenominationType">
+        <xsd:sequence>
+          <xsd:element name="Cash" type="xsd1:CashType" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attributeGroup ref="xsd1:RequireVerifyInfoAttribGroup"/>
+      </xsd:complexType>
+
+      <!--RequireVerifyCollectionContainerType-->
+      <xsd:complexType name="RequireVerifyCollectionContainerType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:SerialNo" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attributeGroup ref="xsd1:RequireVerifyInfoAttribGroup"/>
+      </xsd:complexType>
+
+      <!--RequireVerifyMixStackerType-->
+      <xsd:complexType name="RequireVerifyMixStackerType">
+        <xsd:attributeGroup ref="xsd1:RequireVerifyInfoAttribGroup"/>
+      </xsd:complexType>
+
+      <!--RequireEventType-->
+      <xsd:complexType name="RequireEventType">
+        <xsd:attributeGroup ref="xsd1:RequireEventAttribGroup"/>
+      </xsd:complexType>
+
+      <!--RequireEventListType-->
+      <xsd:complexType name="RequireEventListType">
+        <xsd:sequence>
+          <xsd:element name="RequireEvent" type="xsd1:RequireEventType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--InventoryOptionType-->
+      <xsd:complexType name="InventoryOptionType">
+        <xsd:sequence>
+          <!-- 空要素 -->
+        </xsd:sequence>
+        <xsd:attributeGroup ref="xsd1:InventoryRequestOptionAttribGroup"/>
+      </xsd:complexType>
+
+      <!--DelayOptionType-->
+      <xsd:complexType name="DelayOptionType">
+        <xsd:sequence>
+          <!-- 空要素 -->
+        </xsd:sequence>
+        <xsd:attributeGroup ref="xsd1:CashOutRequestOptionAttribGroup"/>
+      </xsd:complexType>
+
+      <!--DelayMinutesType-->
+      <xsd:complexType name="DelayMinutesType">
+        <xsd:sequence>
+          <!-- 空要素 -->
+        </xsd:sequence>
+        <xsd:attributeGroup ref="xsd1:UnLockUnitRequestTimeAttribGroup"/>
+      </xsd:complexType>
+
+      <!--ResultDetailType-->
+      <xsd:complexType name="ResultDetailType">
+        <xsd:sequence>
+          <!-- 空要素 -->
+        </xsd:sequence>
+        <xsd:attributeGroup ref="xsd1:ResultDetailAttribGroup"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--CollectRequestType-->
+      <xsd:complexType name="CollectRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Option" type="xsd1:CollectOptionType" minOccurs="1" maxOccurs="1"/>
+          <xsd:element name="Mix" type="xsd1:CollectOptionType" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="IFCassette" type="xsd1:CollectOptionType" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="RequireVerification" type="xsd1:RequireVerificationType" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Partial" type="xsd1:CollectPartialType" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Cash"   type="xsd1:CashType"          minOccurs="1" maxOccurs="1"/>
+          <xsd:element name="COFBClearOption" type="xsd1:CollectOptionType" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--CollectResponseType-->
+      <xsd:complexType name="CollectResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Cash" type="xsd1:CashType" minOccurs="1" maxOccurs="4"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--RequireVerificationType-->
+      <xsd:complexType name="RequireVerificationType">
+        <xsd:sequence>
+          <!-- 空要素 -->
+        </xsd:sequence>
+        <xsd:attributeGroup ref="xsd1:RequireVerificationAttribGroup"/>
+      </xsd:complexType>
+
+      <!--CollectOptionType-->
+      <xsd:complexType name="CollectOptionType">
+        <xsd:sequence>
+          <!-- 空要素 -->
+        </xsd:sequence>
+        <xsd:attributeGroup ref="xsd1:CollectRequestOptionAttribGroup"/>
+      </xsd:complexType>
+
+      <!--CollectPartialType-->
+      <xsd:complexType name="CollectPartialType">
+        <xsd:sequence>
+          <!-- 空要素 -->
+        </xsd:sequence>
+        <xsd:attributeGroup ref="xsd1:CollectRequestPartialAttribGroup"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--CounterClearRequest-->
+      <xsd:complexType name="CounterClearRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Option" type="xsd1:CounterClearOptionType" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--CounterClearResponse-->
+      <xsd:complexType name="CounterClearResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--CounterClearOptionType-->
+      <xsd:complexType name="CounterClearOptionType">
+        <xsd:sequence>
+        </xsd:sequence>
+        <xsd:attributeGroup ref="xsd1:CounterClearRequestOptionAttribGroup"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--RegisterEventRequest-->
+      <xsd:complexType name="RegisterEventRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:Url"   minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:Port"  minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="DestinationType" type="xsd1:StatusOptionType" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Encryption" type="xsd1:StatusOptionType" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="RequireEventList" type="xsd1:RequireEventListType"  minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:TillID"  minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--RegisterEventResponse-->
+      <xsd:complexType name="RegisterEventResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--UnRegisterEventRequest-->
+      <xsd:complexType name="UnRegisterEventRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:Url"   minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:Port"  minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--UnRegisterEventResponse-->
+      <xsd:complexType name="UnRegisterEventResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--EventNotificationStatusRequest-->
+      <xsd:complexType name="EventNotificationStatusRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:Url"   minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:Port"  minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--EventNotificationStatusResponse-->
+      <xsd:complexType name="EventNotificationStatusResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Status" type="xsd1:EventNotificationStatusType"  minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--LoginUserRequest-->
+      <xsd:complexType name="LoginUserRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--LoginUserResponse-->
+      <xsd:complexType name="LoginUserResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--LogoutUserRequest-->
+      <xsd:complexType name="LogoutUserRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--LogoutUserResponse-->
+      <xsd:complexType name="LogoutUserResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--RomVersionRequest-->
+      <xsd:complexType name="RomVersionRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--RomVersionResponse-->
+      <xsd:complexType name="RomVersionResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CUTE"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:KERNEL"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:UBOOT"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SUBCPU"  minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="RBW10" type="xsd1:RBW10RomVerType" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="RCW8X" type="xsd1:RCW8XRomVerType" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="RZ50"  type="xsd1:RZ50RomVerType"  minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="RZ100"  type="xsd1:RZ100RomVerType"  minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="RBG200"  type="xsd1:RBG200RomVerType"  minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="RBW100"  type="xsd1:RBW100RomVerType"  minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="RBW100HVE200"  type="xsd1:RBW100HVE200RomVerType"  minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="RBW150"  type="xsd1:RBW150RomVerType"  minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="RCW100"  type="xsd1:RCW100RomVerType"  minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="RBW50"  type="xsd1:RBW50RomVerType"  minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="RCW50"  type="xsd1:RCW50RomVerType"  minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="RBW200"  type="xsd1:RBW200RomVerType"  minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="RCW200"  type="xsd1:RCW200RomVerType"  minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--RBW10RomVerType-->
+
+      <xsd:complexType name="RBW10RomVerType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:AP"/>
+          <xsd:element ref="xsd1:BVControl"/>
+          <xsd:element ref="xsd1:BVDownload"/>
+          <xsd:element ref="xsd1:BVSetting"/>
+          <xsd:element ref="xsd1:BVFormat"/>
+          <xsd:element ref="xsd1:BVPLD"/>
+          <xsd:element ref="xsd1:Boot"/>
+          <xsd:element ref="xsd1:IPL"/>
+          <xsd:element ref="xsd1:FPGA"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--RCW8XRomVerType-->
+
+      <xsd:complexType name="RCW8XRomVerType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:AP"/>
+          <xsd:element ref="xsd1:BV"/>
+          <xsd:element ref="xsd1:Boot"/>
+          <xsd:element ref="xsd1:IPL"/>
+          <xsd:element ref="xsd1:FPGA"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--RZ50RomVerType-->
+      <xsd:complexType name="RZ50RomVerType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:UP_APL"     minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_CONTROL" minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_DL"      minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_SET"     minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_FORMAT"  minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_PLD"     minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:LOW_APL"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CST2"       minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CST4"       minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CST6"       minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CST8"       minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:COLLECT"    minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--RZ100RomVerType-->
+      <xsd:complexType name="RZ100RomVerType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:UP_APL"     minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:ESCROW"     minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_CONTROL" minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_DL"      minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_SET"     minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_FORMAT"  minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_PLD"     minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:LOW_APL"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CST1"       minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CST2"       minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CST3"       minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CST4"       minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CST5"       minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CST6"       minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CST7"       minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CST8"       minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:COLLECT"    minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--RBG200RomVerType-->
+      <xsd:complexType name="RBG200RomVerType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:UpperUnit"/>
+          <xsd:element ref="xsd1:BVUnit"/>
+          <xsd:element ref="xsd1:IFBoard"/>
+          <xsd:element ref="xsd1:LowerUnit"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      
+      <!--RBW100RomVerType-->
+      <xsd:complexType name="RBW100RomVerType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:BV_GENERAL1"     minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_GENERAL2"     minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:IPL"             minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_DL"           minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_AP"           minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_PARAM1"       minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_PARAM2"       minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_FORMAT"       minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:PLD1"            minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:FPGA1"           minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:PLD2"            minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:FPGA2"           minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:UN_GENERAL"      minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:UN_FUNC"         minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:UN_SERIAL"       minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:UN_CC"           minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:UN_CMB"          minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:MAIN_AP"         minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:COLLECT_SERIAL"  minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SPEC_INFO"       minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--RBW100HVE200RomVerType-->
+      <xsd:complexType name="RBW100HVE200RomVerType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:BV_GENERAL1"     minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_GENERAL2"     minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:IPL"             minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_AP"           minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_SNAP"         minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:FPGA"            minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_PARAM1"       minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_PARAM2"       minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_SETTINGVALUE" minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:UN_OPALL1"       minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:UN_OPALL2"       minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:UN_GENERAL"      minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:UN_FUNC"         minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:UN_CC"           minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:UN_CMB"          minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:MAIN_AP"         minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:COLLECT_SERIAL"  minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SPEC_INFO"       minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--RBW150RomVerType-->
+      <xsd:complexType name="RBW150RomVerType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:UP_TOTAL_VERSION"              minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:UP_FW_VERSION"                 minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:UP_CPLD_VERSION"               minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:UP_FPGA_VERSION"               minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:LOW_TOTAL_VERSION"             minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:LOW_FW_VERSION"                minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:LOW_CPLD_VERSION"              minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:LOW_FPGA_VERSION"              minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_TOTAL_VERSION1"             minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_TOTAL_VERSION2_NATION_CODE" minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_TOTAL_VERSION2_DETAIL_INF"  minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_TOTAL_VERSION2_TEMPLATE"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_MAIN_CPU_IPL_VERSION"       minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_UNIT_ID"                    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_UNIT_TOTAL_VERSION"         minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_UNIT_FUNCTION_VERSION"      minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_TEMPLATE_LOGICAL_VERSION"   minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_MODEL_CODE"                 minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+      
+      <!--RCW100RomVerType-->
+      <xsd:complexType name="RCW100RomVerType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:CV_AP"           minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CV_COUNTRY"      minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:MAIN_AP"         minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SPEC_INFO"       minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--RBW50RomVerType-->
+      <xsd:complexType name="RBW50RomVerType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:MAIN_TOTAL_VERSION"            minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:MAIN_FW_VERSION"               minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:MAIN_FPGA_VERSION"             minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_TOTAL_VERSION1"             minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_TOTAL_VERSION2_NATION_CODE" minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_TOTAL_VERSION2_DETAIL_INF"  minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_TOTAL_VERSION2_TEMPLATE"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_MAIN_CPU_IPL_VERSION"       minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_UNIT_ID"                    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_UNIT_TOTAL_VERSION"         minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_UNIT_FUNCTION_VERSION"      minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_TEMPLATE_LOGICAL_VERSION"   minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_MODEL_CODE"                 minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:DEVICE_SERIAL_NUMBER"          minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:HARDWARE_REVISION"             minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--RCW50RomVerType-->
+      <xsd:complexType name="RCW50RomVerType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:MAIN_TOTAL_VERSION"                    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:MAIN_FW_VERSION"                       minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:MAIN_FPGA_VERSION"                     minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:RECOGNITION_UNIT_VERSION"              minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:RECOGNITION_UNIT_TEMPLATE_NATION_CODE" minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:RECOGNITION_UNIT_TEMPLATE_VERSION"     minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:DEVICE_SERIAL_NUMBER"                  minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--TemplateVersionType-->
+      <xsd:complexType name="TemplateVersionType">
+        <xsd:attributeGroup ref="xsd1:TemplateVersionAttribGroup"/>
+      </xsd:complexType>
+
+      <!--TemplateVersionsType-->
+      <xsd:complexType name="TemplateVersionsType">
+        <xsd:sequence>
+          <xsd:element name="TemplateVersion" type="xsd1:TemplateVersionType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--RBW200RomVerType-->
+      <xsd:complexType name="RBW200RomVerType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:MAIN_TOTAL_VERSION"                    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:MAIN_FW_VERSION"                       minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:MAIN_FPGA_VERSION"                     minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_TOTAL_VERSION1"                     minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_TOTAL_VERSION2_NATION_CODE"         minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_TOTAL_VERSION2_DETAIL_INF"          minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_TOTAL_VERSION2_TEMPLATE"            minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_MAIN_CPU_IPL_VERSION"               minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_UNIT_ID"                            minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_UNIT_TOTAL_VERSION"                 minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_UNIT_FUNCTION_VERSION"              minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_TEMPLATE_LOGICAL_VERSION"           minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:BV_MODEL_CODE"                         minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:DEVICE_SERIAL_NUMBER"                  minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:HARDWARE_REVISION"                     minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:COLLECTION_CONTAINER_SERIAL_NUMBER"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="TemplateVersions"  type="xsd1:TemplateVersionsType"  minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--RCW200RomVerType-->
+      <xsd:complexType name="RCW200RomVerType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:MAIN_TOTAL_VERSION"                        minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:MAIN_FW_VERSION"                           minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:MAIN_FPGA_VERSION"                         minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:RECOGNITION_UNIT_MODEL_CODE"               minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:RECOGNITION_UNIT_NAME"                     minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:RECOGNITION_UNIT_TOTAL_VERSION"            minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:RECOGNITION_UNIT_FUNCTION_VERSION"         minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:RECOGNITION_UNIT_SERIAL_NUMBER"            minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:RECOGNITION_TOTAL_VERSION1"                minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:RECOGNITION_TOTAL_VERSION1_AP"             minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:RECOGNITION_TOTAL_VERSION1_FPGA1"          minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:RECOGNITION_TOTAL_VERSION1_FPGA2"          minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:RECOGNITION_TOTAL_VERSION2_ISO"            minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:RECOGNITION_TOTAL_VERSION2_DETAIL_INF"     minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:RECOGNITION_TOTAL_VERSION2_VERSION"        minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:RECOGNITION_TOTAL_VERSION2_MARKET_VERSION" minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:RECOGNITION_TOTAL_VERSION2_DETAIL_INF2"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:DEVICE_SERIAL_NUMBER"                  	minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:DEVICE_HARDWARE_REVISION"                  minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:IF_CASSETTE_SERIAL_NUMBER"                 minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="TemplateVersions"  type="xsd1:TemplateVersionsType"  minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--StartDownload-->
+      <xsd:complexType name="StartDownloadRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--StartDownloadResponse-->
+      <xsd:complexType name="StartDownloadResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--StartLogread-->
+      <xsd:complexType name="StartLogreadRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--StartLogreadResponse-->
+      <xsd:complexType name="StartLogreadResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--RefreshSalesTotalRequest-->
+      <xsd:complexType name="RefreshSalesTotalRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"     minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:Amount" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--RefreshSalesTotalResponse-->
+      <xsd:complexType name="RefreshSalesTotalResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--UpdateManualDepositTotalRequest-->
+      <xsd:complexType name="UpdateManualDepositTotalRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"     minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:Amount" minOccurs="1" maxOccurs="1"/>
+          <xsd:element name="DepositCurrency" type="xsd1:DepositCurrencyType" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="ForeignAmount" type="xsd1:ForeignAmountType" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--ForeignAmountType-->
+      <xsd:complexType name="ForeignAmountType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Amount" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:cc"/>
+      </xsd:complexType>
+
+      <!--UpdateManualDepositTotalResponse-->
+      <xsd:complexType name="UpdateManualDepositTotalResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--ReturnCashRequest-->
+      <xsd:complexType name="ReturnCashRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Option" type="xsd1:ReturnCashOptionType" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--ReturnCashResponse-->
+      <xsd:complexType name="ReturnCashResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--ReturnCashOptionType-->
+      <xsd:complexType name="ReturnCashOptionType">
+        <xsd:sequence>
+        </xsd:sequence>
+        <xsd:attributeGroup ref="xsd1:ReturnCashRequestOptionAttribGroup"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--EnableDenomRequest-->
+      <xsd:complexType name="EnableDenomRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Cash" type="xsd1:CashType" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--EnableDenomResponse-->
+      <xsd:complexType name="EnableDenomResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--DisableDenomRequest-->
+      <xsd:complexType name="DisableDenomRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Cash" type="xsd1:CashType" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--DisableDenomResponse-->
+      <xsd:complexType name="DisableDenomResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--PowerControlRequest-->
+      <xsd:complexType name="PowerControlRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Option" type="xsd1:PowerControlOptionType" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--PowerControlResponse-->
+      <xsd:complexType name="PowerControlResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Option" type="xsd1:PowerControlOptionType2" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--PowerControlOptionType-->
+      <xsd:complexType name="PowerControlOptionType">
+        <xsd:sequence>
+        </xsd:sequence>
+        <xsd:attributeGroup ref="xsd1:PowerControlRequestOptionAttribGroup"/>
+      </xsd:complexType>
+
+      <!--PowerControlOptionType2-->
+      <xsd:complexType name="PowerControlOptionType2">
+        <xsd:sequence>
+        </xsd:sequence>
+        <xsd:attributeGroup ref="xsd1:PowerControlResponseOptionAttribGroup"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--AdjustTimeRequest-->
+      <xsd:complexType name="AdjustTimeRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Date" type="xsd1:AdjustTimeDateType" minOccurs="1" maxOccurs="1"/>
+          <xsd:element name="Time" type="xsd1:AdjustTimeTimeType" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--AdjustTimeResponse-->
+      <xsd:complexType name="AdjustTimeResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--AdjustTimeDateType-->
+      <xsd:complexType name="AdjustTimeDateType">
+        <xsd:sequence>
+        </xsd:sequence>
+        <xsd:attributeGroup ref="xsd1:AdjustTimeRequestDateAttribGroup"/>
+      </xsd:complexType>
+
+      <!--AdjustTimeTimeType-->
+      <xsd:complexType name="AdjustTimeTimeType">
+        <xsd:sequence>
+        </xsd:sequence>
+        <xsd:attributeGroup ref="xsd1:AdjustTimeRequestTimeAttribGroup"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--StartReplenishmentFromEntranceRequest-->
+      <xsd:complexType name="StartReplenishmentFromEntranceRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--StartReplenishmentFromEntranceResponse-->
+      <xsd:complexType name="StartReplenishmentFromEntranceResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--EndReplenishmentFromEntranceRequest-->
+      <xsd:complexType name="EndReplenishmentFromEntranceRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--EndReplenishmentFromEntranceResponse-->
+      <xsd:complexType name="EndReplenishmentFromEntranceResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:ManualDeposit" minOccurs="1" maxOccurs="1"/>
+          <xsd:element name="DepositCurrency" type="xsd1:DepositCurrencyType" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Cash" type="xsd1:CashType" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--ReplenishmentFromEntranceCancelRequest-->
+      <xsd:complexType name="ReplenishmentFromEntranceCancelRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--ReplenishmentFromEntranceCancelResponse-->
+      <xsd:complexType name="ReplenishmentFromEntranceCancelResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:ManualDeposit" minOccurs="1" maxOccurs="1"/>
+          <xsd:element name="DepositCurrency" type="xsd1:DepositCurrencyType" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Cash" type="xsd1:CashType" minOccurs="2" maxOccurs="2"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--StartReplenishmentFromCassetteRequest-->
+      <xsd:complexType name="StartReplenishmentFromCassetteRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Option" type="xsd1:RefillOptionType" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--StartReplenishmentFromCassetteResponse-->
+      <xsd:complexType name="StartReplenishmentFromCassetteResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"        minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo"     minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"      minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--EndReplenishmentFromCassetteRequest-->
+      <xsd:complexType name="EndReplenishmentFromCassetteRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--EndReplenishmentFromCassetteResponse-->
+      <xsd:complexType name="EndReplenishmentFromCassetteResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"        minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo"     minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"      minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="ResultDetail"  type="xsd1:ResultDetailType" minOccurs="0" maxOccurs="2"/>
+          <xsd:element name="Cash"          type="xsd1:CashType"         minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--RefillOptionType-->
+      <xsd:complexType name="RefillOptionType">
+        <xsd:sequence>
+        </xsd:sequence>
+        <xsd:attributeGroup ref="xsd1:RefillOptionAttribGroup"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--LockUnitRequest-->
+      <xsd:complexType name="LockUnitRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Option" type="xsd1:LockUnitOptionType" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--LockUnitRequestOptionType-->
+      <xsd:complexType name="LockUnitOptionType">
+        <xsd:sequence>
+        </xsd:sequence>
+        <xsd:attributeGroup ref="xsd1:LockUnitRequestOptionAttribGroup"/>
+      </xsd:complexType>
+
+      <!--LockUnitResponse-->
+      <xsd:complexType name="LockUnitResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"        minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo"     minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"      minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--UnLockUnitRequest-->
+      <xsd:complexType name="UnLockUnitRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Option" type="xsd1:UnLockUnitOptionType" minOccurs="1" maxOccurs="1"/>
+          <xsd:element name="Delay" type="xsd1:DelayMinutesType" minOccurs="0" maxOccurs="1"/>      <!-- Do not use this element. -->
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--UnLockUnitRequestOptionType-->
+      <xsd:complexType name="UnLockUnitOptionType">
+        <xsd:sequence>
+        </xsd:sequence>
+        <xsd:attributeGroup ref="xsd1:UnLockUnitRequestOptionAttribGroup"/>
+      </xsd:complexType>
+
+      <!--UnLockUnitResponse-->
+      <xsd:complexType name="UnLockUnitResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"        minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo"     minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"      minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--OpenExitCoverRequest-->
+      <xsd:complexType name="OpenExitCoverRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--OpenExitCoverResponse-->
+      <xsd:complexType name="OpenExitCoverResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"        minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo"     minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"      minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--CloseExitCoverRequest-->
+      <xsd:complexType name="CloseExitCoverRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--CloseExitCoverResponse-->
+      <xsd:complexType name="CloseExitCoverResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"        minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo"     minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"      minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--EventOfflineRecoveryRequest-->
+      <xsd:complexType name="EventOfflineRecoveryRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:Url"   minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:Port"  minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="RequireEventList" type="xsd1:RequireEventListType"  minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--EventOfflineRecoveryResponse-->
+      <xsd:complexType name="EventOfflineRecoveryResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:Url"   minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--SetExchangeRateRequest-->
+      <xsd:complexType name="SetExchangeRateRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="ExchangeRateSetting" type="xsd1:ExchangeRateSettingType"  minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--ExchangeRateType-->
+      <xsd:complexType name="ExchangeRateType">
+        <xsd:sequence>
+          <xsd:element name="Rate" type="xsd:string"/>
+        </xsd:sequence>
+        <xsd:attributeGroup ref="xsd1:RateAttribGroup"/>
+      </xsd:complexType>
+
+      <!--ExchangeRateSettingType-->
+      <xsd:complexType name="ExchangeRateSettingType">
+        <xsd:sequence>
+          <xsd:element name="ExchangeRate" type="xsd1:ExchangeRateType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--SetExchangeRateResponse-->
+      <xsd:complexType name="SetExchangeRateResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--RollbackRequest-->
+      <xsd:complexType name="RollbackRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Cash" type="xsd1:CashType"  minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--RollbackResponse-->
+      <xsd:complexType name="RollbackResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Cash" type="xsd1:CashType"  minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+      
+      <!--**********-->
+      <!--UpdateSettingFileRequest-->
+      <xsd:complexType name="UpdateSettingFileRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="FilePath" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+          <xsd:element name="UpdateList" type="xsd1:UpdateListType" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--UpdateListType-->
+      <xsd:complexType name="UpdateListType">
+        <xsd:sequence>
+          <xsd:element name="Update" type="xsd1:UpdateType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--UpdateType-->
+      <xsd:complexType name="UpdateType">
+        <xsd:sequence>
+        </xsd:sequence>
+        <xsd:attribute name="update" type="xsd:string"/>
+      </xsd:complexType>
+
+      <!--UpdateSettingFileResponse-->
+      <xsd:complexType name="UpdateSettingFileResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--SetRestrictionRequest-->
+      <xsd:complexType name="SetRestrictionRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Restrictions" type="xsd1:RestrictionsType" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--SetRestrictionResponse-->
+      <xsd:complexType name="SetRestrictionResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--GetLastResponseRequest-->
+      <xsd:complexType name="GetLastResponseRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--GetLastResponseResponse-->
+      <xsd:complexType name="GetLastResponseResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="LastResponse" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--RASSpecialAPIRequest-->
+      <xsd:complexType name="RASSpecialAPIRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Option" type="xsd1:SpecialAPIOptionType" minOccurs="1" maxOccurs="1"/>
+          <xsd:element name="Command" type="xsd1:CommandType" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--RASSpecialAPIResponse-->
+      <xsd:complexType name="RASSpecialAPIResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Option" type="xsd1:SpecialAPIOptionType" minOccurs="1" maxOccurs="1"/>
+          <xsd:element name="Command" type="xsd1:CommandType" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--SpecialAPIOptionType-->
+      <xsd:complexType name="SpecialAPIOptionType">
+        <xsd:sequence>
+        </xsd:sequence>
+        <xsd:attributeGroup ref="xsd1:SpecialAPIOptionAttribGroup"/>
+      </xsd:complexType>
+
+      <!--CommandType-->
+      <xsd:complexType name="CommandType">
+        <xsd:sequence>
+          <xsd:element name="Parameter" type="xsd:string" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attributeGroup ref="xsd1:CommandAttribGroup"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--UpdateDeviceCassetteSettingRequest-->
+      <xsd:complexType name="UpdateDeviceCassetteSettingRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="DeviceCassetteSettings" type="xsd1:DeviceCassetteSettingsType" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--UpdateDeviceCassetteSettingResponse-->
+      <xsd:complexType name="UpdateDeviceCassetteSettingResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--DeviceCassetteSettingsType-->
+      <xsd:complexType name="DeviceCassetteSettingsType">
+        <xsd:sequence>
+          <xsd:element name="DeviceCassetteSetting" type="xsd1:DeviceCassetteSettingType" minOccurs="1" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--DeviceCassetteSettingType-->
+      <xsd:complexType name="DeviceCassetteSettingType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Device" minOccurs="1" maxOccurs="1"/>
+          <xsd:element name="Accept" type="xsd1:AcceptType" minOccurs="1" maxOccurs="1"/>
+          <xsd:element name="Cassette" type="xsd1:CassetteType" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--AcceptType-->
+      <xsd:complexType name="AcceptType">
+        <xsd:sequence>
+          <xsd:element name="Denomination" type="xsd1:UpdateDenominationType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--CassetteType-->
+      <xsd:complexType name="CassetteType">
+        <xsd:sequence>
+          <xsd:element name="Denomination" type="xsd1:UpdateDenominationType" minOccurs="0" maxOccurs="unbounded"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--UpdateDenominationType-->
+      <xsd:complexType name="UpdateDenominationType">
+        <xsd:attributeGroup ref="xsd1:UpdateDenominationAttribGroup"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--StartSealingRequest-->
+      <xsd:complexType name="StartSealingRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--StartSealingResponse-->
+      <xsd:complexType name="StartSealingResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--UpdateCheckRequest-->
+      <xsd:complexType name="UpdateCheckRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Date" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:UpdateTarget" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--UpdateCheckResponse-->
+      <xsd:complexType name="UpdateCheckResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:ResultCode" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--AutoRebootChangeRequest-->
+      <xsd:complexType name="AutoRebootChangeRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Enable" type="xsd1:AutoRebootEnableType" minOccurs="1" maxOccurs="1"/>
+          <xsd:element name="Time" type="xsd1:AutoRebootTimeType" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--AutoRebootChangeResponse-->
+      <xsd:complexType name="AutoRebootChangeResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--AutoRebootEnableType-->
+      <xsd:complexType name="AutoRebootEnableType">
+        <xsd:sequence>
+        </xsd:sequence>
+        <xsd:attributeGroup ref="xsd1:AutoRebootEnableAttribGroup"/>
+      </xsd:complexType>
+      
+      <!--AutoRebootTimeType-->
+      <xsd:complexType name="AutoRebootTimeType">
+        <xsd:sequence>
+        </xsd:sequence>
+        <xsd:attributeGroup ref="xsd1:AutoRebootTimeAttribGroup"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--LanguageChangeRequest-->
+      <xsd:complexType name="LanguageChangeRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:Language" minOccurs="1" maxOccurs="1"/>
+          <xsd:element name="Option" type="xsd1:LanguageChangeOptionType" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--LanguageChangeResponse-->
+      <xsd:complexType name="LanguageChangeResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--LanguageChangeOptionType-->
+      <xsd:complexType name="LanguageChangeOptionType">
+        <xsd:sequence>
+        </xsd:sequence>
+        <xsd:attributeGroup ref="xsd1:LanguageChangeRequestOptionAttribGroup"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--GetSettingFileRequest-->
+      <xsd:complexType name="GetSettingFileRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="FileName" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--GetSettingFileResponse-->
+      <xsd:complexType name="GetSettingFileResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="SettingFile" type="xsd:string" minOccurs="1" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!--**********-->
+      <!--UserSettingRequest-->
+      <xsd:complexType name="UserSettingRequestType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SessionID" minOccurs="0" maxOccurs="1"/>
+          <xsd:element name="Option" type="xsd1:UserSettingOptionType" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:Group"  minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:Password"  minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:NewPassword"  minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+      </xsd:complexType>
+
+      <!--UserSettingOptionType-->
+      <xsd:complexType name="UserSettingOptionType">
+        <xsd:sequence>
+        </xsd:sequence>
+        <xsd:attributeGroup ref="xsd1:UserSettingRequestOptionAttribGroup"/>
+      </xsd:complexType>
+
+      <!--UserSettingResponse-->
+      <xsd:complexType name="UserSettingResponseType">
+        <xsd:sequence>
+          <xsd:element ref="xsd1:Id"    minOccurs="0" maxOccurs="1"/>
+          <xsd:element ref="xsd1:SeqNo" minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:User"  minOccurs="1" maxOccurs="1"/>
+          <xsd:element ref="xsd1:CustomId" minOccurs="0" maxOccurs="1"/>
+        </xsd:sequence>
+        <xsd:attribute ref="xsd1:result"/>
+      </xsd:complexType>
+
+      <!-- ************************************************** -->
+      <!--単純型の型定義-->
+      <xsd:element name="Id"          type="xsd:string"/>
+      <xsd:element name="SeqNo"       type="xsd:string"/>
+      <xsd:element name="SessionID"   type="xsd:string"/>
+      <xsd:element name="UserPwd"     type="xsd:string"/>
+      <xsd:element name="Device"        type="xsd:string"/>
+      <xsd:element name="DeviceName"  type="xsd:string"/>
+      <xsd:element name="CustomId"  type="xsd:string"/>
+      <xsd:element name="ManualDeposit" type="xsd:string"/>
+      <xsd:element name="Amount"        type="xsd:string"/>
+      <xsd:element name="RoundedAmount" type="xsd:string"/>
+      <xsd:element name="Code"          type="xsd:integer"/>
+      <xsd:element name="Piece"         type="xsd:integer"/>
+      <xsd:element name="Status"        type="xsd:integer"/>
+      <xsd:element name="Port"          type="xsd:integer"/>
+      <xsd:element name="Url"           type="xsd:string"/>
+      <xsd:element name="ComStatus"     type="xsd:integer"/>
+      <xsd:element name="OccupyImg"     type="xsd:string"/>
+
+      <xsd:element name="CUTE"          type="xsd:string"/>
+      <xsd:element name="KERNEL"        type="xsd:string"/>
+      <xsd:element name="UBOOT"         type="xsd:string"/>
+      <xsd:element name="SUBCPU"        type="xsd:string"/>
+      <xsd:element name="AP"            type="xsd:string"/>
+      <xsd:element name="BV"            type="xsd:string"/>
+      <xsd:element name="BVControl"     type="xsd:string"/>
+      <xsd:element name="BVDownload"    type="xsd:string"/>
+      <xsd:element name="BVSetting"     type="xsd:string"/>
+      <xsd:element name="BVFormat"      type="xsd:string"/>
+      <xsd:element name="BVPLD"         type="xsd:string"/>
+      <xsd:element name="Boot"          type="xsd:string"/>
+      <xsd:element name="IPL"           type="xsd:string"/>
+      <xsd:element name="FPGA"          type="xsd:string"/>
+
+      <xsd:element name="UP_APL"      type="xsd:string"/>
+      <xsd:element name="ESCROW"      type="xsd:string"/>
+      <xsd:element name="BV_CONTROL"  type="xsd:string"/>
+      <xsd:element name="BV_DL"       type="xsd:string"/>
+      <xsd:element name="BV_SET"      type="xsd:string"/>
+      <xsd:element name="BV_FORMAT"   type="xsd:string"/>
+      <xsd:element name="BV_PLD"      type="xsd:string"/>
+      <xsd:element name="LOW_APL"     type="xsd:string"/>
+      <xsd:element name="CST1"        type="xsd:string"/>
+      <xsd:element name="CST2"        type="xsd:string"/>
+      <xsd:element name="CST3"        type="xsd:string"/>
+      <xsd:element name="CST4"        type="xsd:string"/>
+      <xsd:element name="CST5"        type="xsd:string"/>
+      <xsd:element name="CST6"        type="xsd:string"/>
+      <xsd:element name="CST7"        type="xsd:string"/>
+      <xsd:element name="CST8"        type="xsd:string"/>
+      <xsd:element name="COLLECT"     type="xsd:string"/>
+
+      <xsd:element name="BV_GENERAL1"     type="xsd:string"/>
+      <xsd:element name="BV_GENERAL2"     type="xsd:string"/>
+      <xsd:element name="BV_AP"           type="xsd:string"/>
+      <xsd:element name="BV_PARAM1"       type="xsd:string"/>
+      <xsd:element name="BV_PARAM2"       type="xsd:string"/>
+      <xsd:element name="PLD1"            type="xsd:string"/>
+      <xsd:element name="FPGA1"           type="xsd:string"/>
+      <xsd:element name="PLD2"            type="xsd:string"/>
+      <xsd:element name="FPGA2"           type="xsd:string"/>
+      <xsd:element name="UN_GENERAL"      type="xsd:string"/>
+      <xsd:element name="UN_FUNC"         type="xsd:string"/>
+      <xsd:element name="UN_SERIAL"       type="xsd:string"/>
+      <xsd:element name="UN_CC"           type="xsd:string"/>
+      <xsd:element name="UN_CMB"          type="xsd:string"/>
+      <xsd:element name="MAIN_AP"         type="xsd:string"/>
+      <xsd:element name="COLLECT_SERIAL"  type="xsd:string"/>
+      <xsd:element name="SPEC_INFO"       type="xsd:string"/>
+      <xsd:element name="BV_SNAP"         type="xsd:string"/>
+      <xsd:element name="BV_SETTINGVALUE" type="xsd:string"/>
+      <xsd:element name="UN_OPALL1"       type="xsd:string"/>
+      <xsd:element name="UN_OPALL2"       type="xsd:string"/>
+
+      <xsd:element name="CV_AP"         type="xsd:string"/>
+      <xsd:element name="CV_COUNTRY"      type="xsd:string"/>
+
+      <xsd:element name="UpperUnit"       type="xsd:string"/>
+      <xsd:element name="BVUnit"          type="xsd:string"/>
+      <xsd:element name="IFBoard"         type="xsd:string"/>
+      <xsd:element name="LowerUnit"       type="xsd:string"/>
+      <xsd:element name="BVTotal1"        type="xsd:string"/>
+      <xsd:element name="BVTotal2"        type="xsd:string"/>
+
+      <xsd:element name="UP_TOTAL_VERSION"              type="xsd:string"/>
+      <xsd:element name="UP_FW_VERSION"                 type="xsd:string"/>
+      <xsd:element name="UP_CPLD_VERSION"               type="xsd:string"/>
+      <xsd:element name="UP_FPGA_VERSION"               type="xsd:string"/>
+      <xsd:element name="LOW_TOTAL_VERSION"             type="xsd:string"/>
+      <xsd:element name="LOW_FW_VERSION"                type="xsd:string"/>
+      <xsd:element name="LOW_CPLD_VERSION"              type="xsd:string"/>
+      <xsd:element name="LOW_FPGA_VERSION"              type="xsd:string"/>
+      <xsd:element name="BV_TOTAL_VERSION1"             type="xsd:string"/>
+      <xsd:element name="BV_TOTAL_VERSION2_NATION_CODE" type="xsd:string"/>
+      <xsd:element name="BV_TOTAL_VERSION2_DETAIL_INF"  type="xsd:string"/>
+      <xsd:element name="BV_TOTAL_VERSION2_TEMPLATE"    type="xsd:string"/>
+      <xsd:element name="BV_MAIN_CPU_IPL_VERSION"       type="xsd:string"/>
+      <xsd:element name="BV_UNIT_ID"                    type="xsd:string"/>
+      <xsd:element name="BV_UNIT_TOTAL_VERSION"         type="xsd:string"/>
+      <xsd:element name="BV_UNIT_FUNCTION_VERSION"      type="xsd:string"/>
+      <xsd:element name="BV_TEMPLATE_LOGICAL_VERSION"   type="xsd:string"/>
+      <xsd:element name="BV_MODEL_CODE"                 type="xsd:string"/>
+      <xsd:element name="MAIN_TOTAL_VERSION"            type="xsd:string"/>
+      <xsd:element name="MAIN_FW_VERSION"               type="xsd:string"/>
+      <xsd:element name="MAIN_FPGA_VERSION"             type="xsd:string"/>
+      <xsd:element name="DEVICE_SERIAL_NUMBER"          type="xsd:string"/>
+      <xsd:element name="HARDWARE_REVISION"             type="xsd:string"/>
+      <xsd:element name="RECOGNITION_UNIT_VERSION"              type="xsd:string"/>
+      <xsd:element name="RECOGNITION_UNIT_TEMPLATE_NATION_CODE" type="xsd:string"/>
+      <xsd:element name="RECOGNITION_UNIT_TEMPLATE_VERSION"     type="xsd:string"/>
+      <xsd:element name="RECOGNITION_UNIT_MODEL_CODE"               type="xsd:string"/>
+      <xsd:element name="RECOGNITION_UNIT_NAME"                     type="xsd:string"/>
+      <xsd:element name="RECOGNITION_UNIT_TOTAL_VERSION"            type="xsd:string"/>
+      <xsd:element name="RECOGNITION_UNIT_FUNCTION_VERSION"         type="xsd:string"/>
+      <xsd:element name="RECOGNITION_UNIT_SERIAL_NUMBER"            type="xsd:string"/>
+      <xsd:element name="RECOGNITION_TOTAL_VERSION1"                type="xsd:string"/>
+      <xsd:element name="RECOGNITION_TOTAL_VERSION1_AP"             type="xsd:string"/>
+      <xsd:element name="RECOGNITION_TOTAL_VERSION1_FPGA1"          type="xsd:string"/>
+      <xsd:element name="RECOGNITION_TOTAL_VERSION1_FPGA2"          type="xsd:string"/>
+      <xsd:element name="RECOGNITION_TOTAL_VERSION2_ISO"            type="xsd:string"/>
+      <xsd:element name="RECOGNITION_TOTAL_VERSION2_DETAIL_INF"     type="xsd:string"/>
+      <xsd:element name="RECOGNITION_TOTAL_VERSION2_VERSION"        type="xsd:string"/>
+      <xsd:element name="RECOGNITION_TOTAL_VERSION2_MARKET_VERSION" type="xsd:string"/>
+      <xsd:element name="RECOGNITION_TOTAL_VERSION2_DETAIL_INF2"    type="xsd:string"/>
+      <xsd:element name="DEVICE_HARDWARE_REVISION"                  type="xsd:string"/>
+      <xsd:element name="IF_CASSETTE_SERIAL_NUMBER"                 type="xsd:string"/>
+      <xsd:element name="COLLECTION_CONTAINER_SERIAL_NUMBER"        type="xsd:string"/>
+
+      <xsd:element name="User" type="xsd:string"/>
+      <!--<xsd:complexType name="UserType">
+        <xsd:simpleContent>
+          <xsd:extension base="xsd:string" >
+          </xsd:extension>
+        </xsd:simpleContent>
+      </xsd:complexType>-->
+
+      <xsd:element name="SerialNo" type="xsd:string"/>
+      <xsd:element name="Date" type="xsd:string"/>
+      <xsd:element name="UpdateTarget" type="xsd:string"/>
+      <xsd:element name="ResultCode" type="xsd:integer"/>
+      <xsd:element name="Language" type="xsd:string"/>
+      <xsd:element name="Group" type="xsd:string"/>
+      <xsd:element name="Password" type="xsd:string"/>
+      <xsd:element name="NewPassword" type="xsd:string"/>
+      <xsd:element name="TillID" type="xsd:string"/>
+
+      <!-- ************************************************** -->
+      <!--Attribute -->
+      <xsd:attributeGroup name="StatusRequestOptionAttribGroup">
+        <xsd:attribute ref ="xsd1:type" use="required"/>
+      </xsd:attributeGroup>
+
+      <xsd:attributeGroup name="InventoryRequestOptionAttribGroup">
+        <xsd:attribute ref="xsd1:type" use="required"/>
+      </xsd:attributeGroup>
+
+      <xsd:attributeGroup name="CashOutRequestOptionAttribGroup">
+        <xsd:attribute ref="xsd1:type" use="required"/>
+        <xsd:attribute ref="xsd1:time" use="required"/>
+      </xsd:attributeGroup>
+
+      <xsd:attributeGroup name="CollectRequestOptionAttribGroup">
+        <xsd:attribute ref="xsd1:type" use="required"/>
+      </xsd:attributeGroup>
+
+      <xsd:attributeGroup name="RequireVerificationAttribGroup">
+        <xsd:attribute ref="xsd1:type" use="required"/>
+      </xsd:attributeGroup>
+
+      <xsd:attributeGroup name="CollectRequestPartialAttribGroup">
+        <xsd:attribute ref="xsd1:type" use="required"/>
+      </xsd:attributeGroup>
+
+      <xsd:attributeGroup name="CounterClearRequestOptionAttribGroup">
+        <xsd:attribute ref="xsd1:type" use="required"/>
+      </xsd:attributeGroup>
+
+      <xsd:attributeGroup name="LockUnitRequestOptionAttribGroup">
+        <xsd:attribute ref="xsd1:type" use="required"/>
+      </xsd:attributeGroup>
+
+      <xsd:attributeGroup name="UnLockUnitRequestOptionAttribGroup">
+        <xsd:attribute ref="xsd1:type" use="required"/>
+      </xsd:attributeGroup>
+
+      <xsd:attributeGroup name="UnLockUnitRequestTimeAttribGroup">
+        <xsd:attribute ref="xsd1:time" use="required"/>
+      </xsd:attributeGroup>
+
+      <xsd:attributeGroup name="CashinRequestOptionAttribGroup">
+        <xsd:attribute ref="xsd1:type" use="required"/>
+      </xsd:attributeGroup>
+
+      <xsd:attributeGroup name="AutoRebootEnableAttribGroup">
+        <xsd:attribute ref ="xsd1:type" use="required"/>
+      </xsd:attributeGroup>
+
+      <xsd:attributeGroup name="CashAttribGroup">
+        <xsd:attribute ref="xsd1:type" use="required"/>
+        <xsd:attribute ref="xsd1:note_destination"/>
+        <xsd:attribute ref="xsd1:coin_destination"/>
+      </xsd:attributeGroup>
+
+      <xsd:attributeGroup name="DenominationAttribGroup">
+        <xsd:attribute ref="xsd1:cc"/>
+        <xsd:attribute ref="xsd1:fv"/>
+        <xsd:attribute ref="xsd1:rev"/>
+        <xsd:attribute ref="xsd1:devid"/>
+      </xsd:attributeGroup>
+
+      <xsd:attributeGroup name="CurrencyAttribGroup">
+        <xsd:attribute ref="xsd1:type" use="required"/>
+        <xsd:attribute ref="xsd1:cc"/>
+        <xsd:attribute ref="xsd1:fv"/>
+        <xsd:attribute ref="xsd1:piece"/>
+      </xsd:attributeGroup>
+
+      <xsd:attributeGroup name="CashUnitsAttribGroup">
+        <xsd:attribute ref="xsd1:devid"/>
+      </xsd:attributeGroup>
+
+      <xsd:attributeGroup name="CashUnitAttribGroup">
+        <xsd:attribute ref="xsd1:unitno"/>
+        <xsd:attribute ref="xsd1:st"/>
+        <xsd:attribute ref="xsd1:nf"/>
+        <xsd:attribute ref="xsd1:ne"/>
+        <xsd:attribute ref="xsd1:max"/>
+      </xsd:attributeGroup>
+
+      <xsd:attributeGroup name="RestrictionAttribGroup">
+        <xsd:attribute ref="xsd1:stacker"/>
+      </xsd:attributeGroup>
+
+      <xsd:attributeGroup name="RequireVerifyInfoAttribGroup">
+        <xsd:attribute ref ="xsd1:devid" use="required"/>
+        <xsd:attribute ref ="xsd1:val" use="required"/>
+      </xsd:attributeGroup>
+
+      <xsd:attributeGroup name="RequireEventAttribGroup">
+        <xsd:attribute ref ="xsd1:eventno" use="required"/>
+      </xsd:attributeGroup>
+
+      <xsd:attributeGroup name="ReturnCashRequestOptionAttribGroup">
+        <xsd:attribute ref ="xsd1:type" use="required"/>
+      </xsd:attributeGroup>
+
+      <xsd:attributeGroup name="PowerControlRequestOptionAttribGroup">
+        <xsd:attribute ref ="xsd1:type" use="required"/>
+      </xsd:attributeGroup>
+
+      <xsd:attributeGroup name="PowerControlResponseOptionAttribGroup">
+        <xsd:attribute ref ="xsd1:type" use="required"/>
+      </xsd:attributeGroup>
+
+      <xsd:attributeGroup name="AdjustTimeRequestDateAttribGroup">
+        <xsd:attribute ref ="xsd1:month" use="required"/>
+        <xsd:attribute ref ="xsd1:day" use="required"/>
+        <xsd:attribute ref ="xsd1:year" use="required"/>
+      </xsd:attributeGroup>
+
+      <xsd:attributeGroup name="AdjustTimeRequestTimeAttribGroup">
+        <xsd:attribute ref ="xsd1:hour" use="required"/>
+        <xsd:attribute ref ="xsd1:minute" use="required"/>
+        <xsd:attribute ref ="xsd1:second" use="required"/>
+      </xsd:attributeGroup>
+
+      <xsd:attributeGroup name="AutoRebootTimeAttribGroup">
+        <xsd:attribute ref ="xsd1:hour" use="required"/>
+        <xsd:attribute ref ="xsd1:minute" use="required"/>
+      </xsd:attributeGroup>
+
+      <xsd:attributeGroup name="LanguageChangeRequestOptionAttribGroup">
+        <xsd:attribute ref ="xsd1:type" use="required"/>
+      </xsd:attributeGroup>
+
+      <xsd:attributeGroup name="RateAttribGroup">
+        <xsd:attribute ref ="xsd1:from" use="required"/>
+        <xsd:attribute ref ="xsd1:to" use="required"/>
+      </xsd:attributeGroup>
+
+      <xsd:attributeGroup name="SpecialAPIOptionAttribGroup">
+        <xsd:attribute ref ="xsd1:type" use="required"/>
+      </xsd:attributeGroup>
+
+      <xsd:attributeGroup name="CommandAttribGroup">
+        <xsd:attribute ref ="xsd1:type" use="required"/>
+      </xsd:attributeGroup>
+
+      <xsd:attributeGroup name="UpdateDenominationAttribGroup">
+        <xsd:attribute ref="xsd1:no"/>
+        <xsd:attribute ref="xsd1:nc"/>
+        <xsd:attribute ref="xsd1:dc"/>
+        <xsd:attribute ref="xsd1:cc"/>
+        <xsd:attribute ref="xsd1:fv"/>
+        <xsd:attribute ref="xsd1:rev"/>
+        <xsd:attribute ref="xsd1:max"/>
+        <xsd:attribute ref="xsd1:nf"/>
+        <xsd:attribute ref="xsd1:ne"/>
+        <xsd:attribute ref="xsd1:cst_type"/>
+      </xsd:attributeGroup>
+
+      <xsd:attributeGroup name="ResultDetailAttribGroup">
+        <xsd:attribute ref="xsd1:devid"/>
+        <xsd:attribute ref="xsd1:completion"/>
+        <xsd:attribute ref="xsd1:replenishfrom"/>
+      </xsd:attributeGroup>
+
+      <xsd:attributeGroup name="TemplateVersionAttribGroup">
+        <xsd:attribute ref="xsd1:cc"/>
+        <xsd:attribute ref="xsd1:version"/>
+      </xsd:attributeGroup>
+
+      <xsd:attributeGroup name="RefillOptionAttribGroup">
+        <xsd:attribute ref="xsd1:type" use="required"/>
+      </xsd:attributeGroup>
+
+      <xsd:attributeGroup name="UserSettingRequestOptionAttribGroup">
+        <xsd:attribute ref="xsd1:type" use="required"/>
+      </xsd:attributeGroup>
+
+      <!-- ************************************************** -->
+      <!--属性型の定義-->
+      <xsd:attribute name="result" type="xsd:integer"/>
+      <xsd:attribute name="devid"  type="xsd:integer"/>
+      <xsd:attribute name="val"    type="xsd:integer"/>
+      <xsd:attribute name="eventno"    type="xsd:integer"/>
+      <xsd:attribute name="time"   type="xsd:integer"/>
+
+      <!--denomination-->
+      <xsd:attribute name="cc"  type="xsd:string"/>
+      <xsd:attribute name="fv"  type="xsd:integer"/>
+      <xsd:attribute name="rev" type="xsd:integer"/>
+
+      <!--Restriction-->
+      <xsd:attribute name="stacker" type="xsd:integer"/>
+
+      <!--CashUnit-->
+      <xsd:attribute name="unitno" type="xsd:integer"/>
+      <xsd:attribute name="st"     type="xsd:integer"/>
+
+      <!--Currency-->
+      <xsd:attribute name="piece" type="xsd:integer"/>
+
+      <xsd:attribute name="type"   type="xsd:integer"/>
+      <xsd:attribute name="note_destination"  type="xsd:string"/>
+      <xsd:attribute name="coin_destination"  type="xsd:string"/>
+      <xsd:attribute name="encode" type="xsd:integer"/>
+
+      <xsd:attribute name="nf"   type="xsd:integer"/>
+      <xsd:attribute name="ne"   type="xsd:integer"/>
+      <xsd:attribute name="max"  type="xsd:integer"/>
+
+      <xsd:attribute name="month"   type="xsd:integer"/>
+      <xsd:attribute name="day"     type="xsd:integer"/>
+      <xsd:attribute name="year"    type="xsd:integer"/>
+      <xsd:attribute name="hour"    type="xsd:integer"/>
+      <xsd:attribute name="minute"  type="xsd:integer"/>
+      <xsd:attribute name="second"  type="xsd:integer"/>
+
+      <!--Rate-->
+      <xsd:attribute name="from" type="xsd:string"/>
+      <xsd:attribute name="to"   type="xsd:string"/>
+      <xsd:attribute name="rate" type="xsd:double"/>
+
+      <!--UpdateDenomination-->
+      <xsd:attribute name="no" type="xsd:integer"/>
+      <xsd:attribute name="nc" type="xsd:integer"/>
+      <xsd:attribute name="dc" type="xsd:integer"/>
+      <xsd:attribute name="cst_type" type="xsd:string"/>
+
+      <!--ResultDetail-->
+      <xsd:attribute name="completion" type="xsd:integer"/>
+      <xsd:attribute name="replenishfrom" type="xsd:integer"/>
+
+      <!--TermplateVersion-->
+      <xsd:attribute name="version"   type="xsd:string"/>
+
+      <!-- ************************************************** -->
+
+    </xsd:schema>
+  </wsdl:types>
+
+
+  <!--********************************************************************************-->
+  <!--********************************************************************************-->
+  <wsdl:message name="OccupyRequestMsg">
+    <wsdl:part name="body" element="xsd1:OccupyRequest"/>
+  </wsdl:message>
+  <wsdl:message name="OccupyResponseMsg">
+    <wsdl:part name="body" element="xsd1:OccupyResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="ReleaseRequestMsg">
+    <wsdl:part name="body" element="xsd1:ReleaseRequest"/>
+  </wsdl:message>
+  <wsdl:message name="ReleaseResponseMsg">
+    <wsdl:part name="body" element="xsd1:ReleaseResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="StatusRequestMsg">
+    <wsdl:part name="body" element="xsd1:StatusRequest"/>
+  </wsdl:message>
+  <wsdl:message name="StatusResponseMsg">
+    <wsdl:part name="body" element="xsd1:StatusResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="OpenRequestMsg">
+    <wsdl:part name="body" element="xsd1:OpenRequest"/>
+  </wsdl:message>
+  <wsdl:message name="OpenResponseMsg">
+    <wsdl:part name="body" element="xsd1:OpenResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="CloseRequestMsg">
+    <wsdl:part name="body" element="xsd1:CloseRequest"/>
+  </wsdl:message>
+  <wsdl:message name="CloseResponseMsg">
+    <wsdl:part name="body" element="xsd1:CloseResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="ChangeRequestMsg">
+    <wsdl:part name="body" element="xsd1:ChangeRequest"/>
+  </wsdl:message>
+  <wsdl:message name="ChangeResponseMsg">
+    <wsdl:part name="body" element="xsd1:ChangeResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="ChangeCancelRequestMsg">
+    <wsdl:part name="body" element="xsd1:ChangeCancelRequest"/>
+  </wsdl:message>
+  <wsdl:message name="ChangeCancelResponseMsg">
+    <wsdl:part name="body" element="xsd1:ChangeCancelResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="StartCashinRequestMsg">
+    <wsdl:part name="body" element="xsd1:StartCashinRequest"/>
+  </wsdl:message>
+  <wsdl:message name="StartCashinResponseMsg">
+    <wsdl:part name="body" element="xsd1:StartCashinResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="EndCashinRequestMsg">
+    <wsdl:part name="body" element="xsd1:EndCashinRequest"/>
+  </wsdl:message>
+  <wsdl:message name="EndCashinResponseMsg">
+    <wsdl:part name="body" element="xsd1:EndCashinResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="CashinCancelRequestMsg">
+    <wsdl:part name="body" element="xsd1:CashinCancelRequest"/>
+  </wsdl:message>
+  <wsdl:message name="CashinCancelResponseMsg">
+    <wsdl:part name="body" element="xsd1:CashinCancelResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="CashoutRequestMsg">
+    <wsdl:part name="body" element="xsd1:CashoutRequest"/>
+  </wsdl:message>
+  <wsdl:message name="CashoutResponseMsg">
+    <wsdl:part name="body" element="xsd1:CashoutResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="InventoryRequestMsg">
+    <wsdl:part name="body" element="xsd1:InventoryRequest"/>
+  </wsdl:message>
+  <wsdl:message name="InventoryResponseMsg">
+    <wsdl:part name="body" element="xsd1:InventoryResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="ResetRequestMsg">
+    <wsdl:part name="body" element="xsd1:ResetRequest"/>
+  </wsdl:message>
+  <wsdl:message name="ResetResponseMsg">
+    <wsdl:part name="body" element="xsd1:ResetResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="CollectRequestMsg">
+    <wsdl:part name="body" element="xsd1:CollectRequest"/>
+  </wsdl:message>
+  <wsdl:message name="CollectResponseMsg">
+    <wsdl:part name="body" element="xsd1:CollectResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="CounterClearRequestMsg">
+    <wsdl:part name="body" element="xsd1:CounterClearRequest"/>
+  </wsdl:message>
+  <wsdl:message name="CounterClearResponseMsg">
+    <wsdl:part name="body" element="xsd1:CounterClearResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="RegisterEventRequestMsg">
+    <wsdl:part name="body" element="xsd1:RegisterEventRequest"/>
+  </wsdl:message>
+  <wsdl:message name="RegisterEventResponseMsg">
+    <wsdl:part name="body" element="xsd1:RegisterEventResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="UnRegisterEventRequestMsg">
+    <wsdl:part name="body" element="xsd1:UnRegisterEventRequest"/>
+  </wsdl:message>
+  <wsdl:message name="UnRegisterEventResponseMsg">
+    <wsdl:part name="body" element="xsd1:UnRegisterEventResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="EventNotificationStatusRequestMsg">
+    <wsdl:part name="body" element="xsd1:EventNotificationStatusRequest"/>
+  </wsdl:message>
+  <wsdl:message name="EventNotificationStatusResponseMsg">
+    <wsdl:part name="body" element="xsd1:EventNotificationStatusResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="LoginUserRequestMsg">
+    <wsdl:part name="body" element="xsd1:LoginUserRequest"/>
+  </wsdl:message>
+  <wsdl:message name="LoginUserResponseMsg">
+    <wsdl:part name="body" element="xsd1:LoginUserResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="LogoutUserRequestMsg">
+    <wsdl:part name="body" element="xsd1:LogoutUserRequest"/>
+  </wsdl:message>
+  <wsdl:message name="LogoutUserResponseMsg">
+    <wsdl:part name="body" element="xsd1:LogoutUserResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="RomVersionRequestMsg">
+    <wsdl:part name="body" element="xsd1:RomVersionRequest"/>
+  </wsdl:message>
+  <wsdl:message name="RomVersionResponseMsg">
+    <wsdl:part name="body" element="xsd1:RomVersionResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="StartDownloadMsg">
+    <wsdl:part name="body" element="xsd1:StartDownload"/>
+  </wsdl:message>
+  <wsdl:message name="StartDownloadResponseMsg">
+    <wsdl:part name="body" element="xsd1:StartDownloadResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="StartLogreadMsg">
+    <wsdl:part name="body" element="xsd1:StartLogread"/>
+  </wsdl:message>
+  <wsdl:message name="StartLogreadResponseMsg">
+    <wsdl:part name="body" element="xsd1:StartLogreadResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="UpdateManualDepositTotalRequestMsg">
+    <wsdl:part name="body" element="xsd1:UpdateManualDepositTotalRequest"/>
+  </wsdl:message>
+  <wsdl:message name="UpdateManualDepositTotalResponseMsg">
+    <wsdl:part name="body" element="xsd1:UpdateManualDepositTotalResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="RefreshSalesTotalRequestMsg">
+    <wsdl:part name="body" element="xsd1:RefreshSalesTotalRequest"/>
+  </wsdl:message>
+  <wsdl:message name="RefreshSalesTotalResponseMsg">
+    <wsdl:part name="body" element="xsd1:RefreshSalesTotalResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="ReturnCashRequestMsg">
+    <wsdl:part name="body" element="xsd1:ReturnCashRequest"/>
+  </wsdl:message>
+  <wsdl:message name="ReturnCashResponseMsg">
+    <wsdl:part name="body" element="xsd1:ReturnCashResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="EnableDenomRequestMsg">
+    <wsdl:part name="body" element="xsd1:EnableDenomRequest"/>
+  </wsdl:message>
+  <wsdl:message name="EnableDenomResponseMsg">
+    <wsdl:part name="body" element="xsd1:EnableDenomResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="DisableDenomRequestMsg">
+    <wsdl:part name="body" element="xsd1:DisableDenomRequest"/>
+  </wsdl:message>
+  <wsdl:message name="DisableDenomResponseMsg">
+    <wsdl:part name="body" element="xsd1:DisableDenomResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="PowerControlRequestMsg">
+    <wsdl:part name="body" element="xsd1:PowerControlRequest"/>
+  </wsdl:message>
+  <wsdl:message name="PowerControlResponseMsg">
+    <wsdl:part name="body" element="xsd1:PowerControlResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="AdjustTimeRequestMsg">
+    <wsdl:part name="body" element="xsd1:AdjustTimeRequest"/>
+  </wsdl:message>
+  <wsdl:message name="AdjustTimeResponseMsg">
+    <wsdl:part name="body" element="xsd1:AdjustTimeResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="StartReplenishmentFromEntranceRequestMsg">
+    <wsdl:part name="body" element="xsd1:StartReplenishmentFromEntranceRequest"/>
+  </wsdl:message>
+  <wsdl:message name="StartReplenishmentFromEntranceResponseMsg">
+    <wsdl:part name="body" element="xsd1:StartReplenishmentFromEntranceResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="EndReplenishmentFromEntranceRequestMsg">
+    <wsdl:part name="body" element="xsd1:EndReplenishmentFromEntranceRequest"/>
+  </wsdl:message>
+  <wsdl:message name="EndReplenishmentFromEntranceResponseMsg">
+    <wsdl:part name="body" element="xsd1:EndReplenishmentFromEntranceResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="ReplenishmentFromEntranceCancelRequestMsg">
+    <wsdl:part name="body" element="xsd1:ReplenishmentFromEntranceCancelRequest"/>
+  </wsdl:message>
+  <wsdl:message name="ReplenishmentFromEntranceCancelResponseMsg">
+    <wsdl:part name="body" element="xsd1:ReplenishmentFromEntranceCancelResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="StartReplenishmentFromCassetteRequestMsg">
+    <wsdl:part name="body" element="xsd1:StartReplenishmentFromCassetteRequest"/>
+  </wsdl:message>
+  <wsdl:message name="StartReplenishmentFromCassetteResponseMsg">
+    <wsdl:part name="body" element="xsd1:StartReplenishmentFromCassetteResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="EndReplenishmentFromCassetteRequestMsg">
+    <wsdl:part name="body" element="xsd1:EndReplenishmentFromCassetteRequest"/>
+  </wsdl:message>
+  <wsdl:message name="EndReplenishmentFromCassetteResponseMsg">
+    <wsdl:part name="body" element="xsd1:EndReplenishmentFromCassetteResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="LockUnitRequestMsg">
+    <wsdl:part name="body" element="xsd1:LockUnitRequest"/>
+  </wsdl:message>
+  <wsdl:message name="LockUnitResponseMsg">
+    <wsdl:part name="body" element="xsd1:LockUnitResponse"/>
+  </wsdl:message>
+  
+  <wsdl:message name="UnLockUnitRequestMsg">
+    <wsdl:part name="body" element="xsd1:UnLockUnitRequest"/>
+  </wsdl:message>
+  <wsdl:message name="UnLockUnitResponseMsg">
+    <wsdl:part name="body" element="xsd1:UnLockUnitResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="OpenExitCoverRequestMsg">
+    <wsdl:part name="body" element="xsd1:OpenExitCoverRequest"/>
+  </wsdl:message>
+  <wsdl:message name="OpenExitCoverResponseMsg">
+    <wsdl:part name="body" element="xsd1:OpenExitCoverResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="CloseExitCoverRequestMsg">
+    <wsdl:part name="body" element="xsd1:CloseExitCoverRequest"/>
+  </wsdl:message>
+  <wsdl:message name="CloseExitCoverResponseMsg">
+    <wsdl:part name="body" element="xsd1:CloseExitCoverResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="EventOfflineRecoveryRequestMsg">
+    <wsdl:part name="body" element="xsd1:EventOfflineRecoveryRequest"/>
+  </wsdl:message>
+  <wsdl:message name="EventOfflineRecoveryResponseMsg">
+    <wsdl:part name="body" element="xsd1:EventOfflineRecoveryResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="SetExchangeRateRequestMsg">
+    <wsdl:part name="body" element="xsd1:SetExchangeRateRequest"/>
+  </wsdl:message>
+  <wsdl:message name="SetExchangeRateResponseMsg">
+    <wsdl:part name="body" element="xsd1:SetExchangeRateResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="RollbackRequestMsg">
+    <wsdl:part name="body" element="xsd1:RollbackRequest"/>
+  </wsdl:message>
+  <wsdl:message name="RollbackResponseMsg">
+    <wsdl:part name="body" element="xsd1:RollbackResponse"/>
+  </wsdl:message>
+  
+  <wsdl:message name="UpdateSettingFileRequestMsg">
+    <wsdl:part name="body" element="xsd1:UpdateSettingFileRequest"/>
+  </wsdl:message>
+  <wsdl:message name="UpdateSettingFileResponseMsg">
+    <wsdl:part name="body" element="xsd1:UpdateSettingFileResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="SetRestrictionRequestMsg">
+    <wsdl:part name="body" element="xsd1:SetRestrictionRequest"/>
+  </wsdl:message>
+  <wsdl:message name="SetRestrictionResponseMsg">
+    <wsdl:part name="body" element="xsd1:SetRestrictionResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="GetLastResponseRequestMsg">
+    <wsdl:part name="body" element="xsd1:GetLastResponseRequest"/>
+  </wsdl:message>
+  <wsdl:message name="GetLastResponseResponseMsg">
+    <wsdl:part name="body" element="xsd1:GetLastResponseResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="RASSpecialAPIRequestMsg">
+    <wsdl:part name="body" element="xsd1:RASSpecialAPIRequest"/>
+  </wsdl:message>
+  <wsdl:message name="RASSpecialAPIResponseMsg">
+    <wsdl:part name="body" element="xsd1:RASSpecialAPIResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="UpdateDeviceCassetteSettingRequestMsg">
+    <wsdl:part name="body" element="xsd1:UpdateDeviceCassetteSettingRequest"/>
+  </wsdl:message>
+  <wsdl:message name="UpdateDeviceCassetteSettingResponseMsg">
+    <wsdl:part name="body" element="xsd1:UpdateDeviceCassetteSettingResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="StartSealingRequestMsg">
+    <wsdl:part name="body" element="xsd1:StartSealingRequest"/>
+  </wsdl:message>
+  <wsdl:message name="StartSealingResponseMsg">
+    <wsdl:part name="body" element="xsd1:StartSealingResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="UpdateCheckRequestMsg">
+    <wsdl:part name="body" element="xsd1:UpdateCheckRequest"/>
+  </wsdl:message>
+  <wsdl:message name="UpdateCheckResponseMsg">
+    <wsdl:part name="body" element="xsd1:UpdateCheckResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="AutoRebootChangeRequestMsg">
+    <wsdl:part name="body" element="xsd1:AutoRebootChangeRequest"/>
+  </wsdl:message>
+  <wsdl:message name="AutoRebootChangeResponseMsg">
+    <wsdl:part name="body" element="xsd1:AutoRebootChangeResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="LanguageChangeRequestMsg">
+    <wsdl:part name="body" element="xsd1:LanguageChangeRequest"/>
+  </wsdl:message>
+  <wsdl:message name="LanguageChangeResponseMsg">
+    <wsdl:part name="body" element="xsd1:LanguageChangeResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="GetSettingFileRequestMsg">
+    <wsdl:part name="body" element="xsd1:GetSettingFileRequest"/>
+  </wsdl:message>
+  <wsdl:message name="GetSettingFileResponseMsg">
+    <wsdl:part name="body" element="xsd1:GetSettingFileResponse"/>
+  </wsdl:message>
+
+  <wsdl:message name="UserSettingRequestMsg">
+    <wsdl:part name="body" element="xsd1:UserSettingRequest"/>
+  </wsdl:message>
+  <wsdl:message name="UserSettingResponseMsg">
+    <wsdl:part name="body" element="xsd1:UserSettingResponse"/>
+  </wsdl:message>
+
+  <!--********************************************************************************-->
+  <!--********************************************************************************-->
+  <wsdl:portType name ="BrueBoxPortType">
+
+    <wsdl:operation name ="OccupyOperation">
+      <wsdl:input message="tns:OccupyRequestMsg" name="OccupyOperationRequest"/>
+      <wsdl:output message="tns:OccupyResponseMsg" name="OccupyOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="ReleaseOperation">
+      <wsdl:input message="tns:ReleaseRequestMsg" name="ReleaseOperationRequest"/>
+      <wsdl:output message="tns:ReleaseResponseMsg" name="ReleaseOperationResponse"/>
+    </wsdl:operation>
+    <wsdl:operation name ="GetStatus">
+      <wsdl:input message="tns:StatusRequestMsg" name="GetStatusRequest"/>
+      <wsdl:output message="tns:StatusResponseMsg" name="GetStatusResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="OpenOperation">
+      <wsdl:input message="tns:OpenRequestMsg" name="OpenOperationRequest"/>
+      <wsdl:output message="tns:OpenResponseMsg" name="OpenOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="CloseOperation">
+      <wsdl:input message="tns:CloseRequestMsg" name="CloseOperationRequest"/>
+      <wsdl:output message="tns:CloseResponseMsg" name="CloseOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="ChangeOperation">
+      <wsdl:input message="tns:ChangeRequestMsg" name="ChangeOperationRequest"/>
+      <wsdl:output message="tns:ChangeResponseMsg" name="ChangeOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="ChangeCancelOperation">
+      <wsdl:input message="tns:ChangeCancelRequestMsg" name="ChangeCancelOperationRequest"/>
+      <wsdl:output message="tns:ChangeCancelResponseMsg" name="ChangeCancelOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="StartCashinOperation">
+      <wsdl:input message="tns:StartCashinRequestMsg" name="StartCashinOperationRequest"/>
+      <wsdl:output message="tns:StartCashinResponseMsg" name="StartCashinOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="EndCashinOperation">
+      <wsdl:input message="tns:EndCashinRequestMsg" name="EndCashinOperationRequest"/>
+      <wsdl:output message="tns:EndCashinResponseMsg" name="EndCashinOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="CashinCancelOperation">
+      <wsdl:input message="tns:CashinCancelRequestMsg" name="CashinCancelOperationRequest"/>
+      <wsdl:output message="tns:CashinCancelResponseMsg" name="CashinCancelOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="CashoutOperation">
+      <wsdl:input message="tns:CashoutRequestMsg" name="CashoutOperationRequest"/>
+      <wsdl:output message="tns:CashoutResponseMsg" name="CashoutOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="InventoryOperation">
+      <wsdl:input message="tns:InventoryRequestMsg" name="InventoryOperationRequest"/>
+      <wsdl:output message="tns:InventoryResponseMsg" name="InventoryOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="ResetOperation">
+      <wsdl:input message="tns:ResetRequestMsg" name="ResetOperationRequest"/>
+      <wsdl:output message="tns:ResetResponseMsg" name="ResetOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="CollectOperation">
+      <wsdl:input message="tns:CollectRequestMsg" name="CollectOperationRequest"/>
+      <wsdl:output message="tns:CollectResponseMsg" name="CollectOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="CounterClearOperation">
+      <wsdl:input message="tns:CounterClearRequestMsg" name="CounterClearOperationRequest"/>
+      <wsdl:output message="tns:CounterClearResponseMsg" name="CounterClearOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="RegisterEventOperation">
+      <wsdl:input message="tns:RegisterEventRequestMsg" name="RegisterEventOperationRequest"/>
+      <wsdl:output message="tns:RegisterEventResponseMsg" name="RegisterEventOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="UnRegisterEventOperation">
+      <wsdl:input message="tns:UnRegisterEventRequestMsg" name="UnRegisterEventOperationRequest"/>
+      <wsdl:output message="tns:UnRegisterEventResponseMsg" name="UnRegisterEventOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="EventNotificationStatusOperation">
+      <wsdl:input message="tns:EventNotificationStatusRequestMsg" name="EventNotificationStatusOperationRequest"/>
+      <wsdl:output message="tns:EventNotificationStatusResponseMsg" name="EventNotificationStatusOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="LoginUserOperation">
+      <wsdl:input message="tns:LoginUserRequestMsg" name="LoginUserOperationRequest"/>
+      <wsdl:output message="tns:LoginUserResponseMsg" name="LoginUserOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="LogoutUserOperation">
+      <wsdl:input message="tns:LogoutUserRequestMsg" name="LogioutUserOperationRequest"/>
+      <wsdl:output message="tns:LogoutUserResponseMsg" name="LogoutUserOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="RomVersionOperation">
+      <wsdl:input message="tns:RomVersionRequestMsg" name="RomVersionOperationRequest"/>
+      <wsdl:output message="tns:RomVersionResponseMsg" name="RomVersionOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="StartDownloadOperation">
+      <wsdl:input message="tns:StartDownloadMsg" name="StartDownloadOperationRequest"/>
+      <wsdl:output message="tns:StartDownloadResponseMsg" name="StartDownloadOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="StartLogreadOperation">
+      <wsdl:input message="tns:StartLogreadMsg" name="StartLogreadOperationRequest"/>
+      <wsdl:output message="tns:StartLogreadResponseMsg" name="StartLogreadOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="UpdateManualDepositTotalOperation">
+      <wsdl:input message="tns:UpdateManualDepositTotalRequestMsg" name="UpdateManualDepositTotalOperationRequest"/>
+      <wsdl:output message="tns:UpdateManualDepositTotalResponseMsg" name="UpdateManualDepositTotalOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="RefreshSalesTotalOperation">
+      <wsdl:input message="tns:RefreshSalesTotalRequestMsg" name="RefreshSalesTotalOperationRequest"/>
+      <wsdl:output message="tns:RefreshSalesTotalResponseMsg" name="RefreshSalesTotalOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="ReturnCashOperation">
+      <wsdl:input message="tns:ReturnCashRequestMsg" name="ReturnCashRequest"/>
+      <wsdl:output message="tns:ReturnCashResponseMsg" name="ReturnCashResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="EnableDenomOperation">
+      <wsdl:input message="tns:EnableDenomRequestMsg" name="EnableDenomRequest"/>
+      <wsdl:output message="tns:EnableDenomResponseMsg" name="EnableDenomResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="DisableDenomOperation">
+      <wsdl:input message="tns:DisableDenomRequestMsg" name="DisableDenomRequest"/>
+      <wsdl:output message="tns:DisableDenomResponseMsg" name="DisableDenomResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="PowerControlOperation">
+      <wsdl:input message="tns:PowerControlRequestMsg" name="PowerControlRequest"/>
+      <wsdl:output message="tns:PowerControlResponseMsg" name="PowerControlResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="AdjustTimeOperation">
+      <wsdl:input message="tns:AdjustTimeRequestMsg" name="AdjustTimeRequest"/>
+      <wsdl:output message="tns:AdjustTimeResponseMsg" name="AdjustTimeResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="StartReplenishmentFromEntranceOperation">
+      <wsdl:input message="tns:StartReplenishmentFromEntranceRequestMsg" name="StartReplenishmentFromEntranceOperationRequest"/>
+      <wsdl:output message="tns:StartReplenishmentFromEntranceResponseMsg" name="StartReplenishmentFromEntranceOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="EndReplenishmentFromEntranceOperation">
+      <wsdl:input message="tns:EndReplenishmentFromEntranceRequestMsg" name="EndReplenishmentFromEntranceOperationRequest"/>
+      <wsdl:output message="tns:EndReplenishmentFromEntranceResponseMsg" name="EndReplenishmentFromEntranceOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="ReplenishmentFromEntranceCancelOperation">
+      <wsdl:input message="tns:ReplenishmentFromEntranceCancelRequestMsg" name="ReplenishmentFromEntranceCancelOperationRequest"/>
+      <wsdl:output message="tns:ReplenishmentFromEntranceCancelResponseMsg" name="ReplenishmentFromEntranceCancelOperationResponse"/>
+    </wsdl:operation>
+    
+    <wsdl:operation name ="StartReplenishmentFromCassetteOperation">
+      <wsdl:input message="tns:StartReplenishmentFromCassetteRequestMsg" name="StartReplenishmentFromCassetteOperationRequest"/>
+      <wsdl:output message="tns:StartReplenishmentFromCassetteResponseMsg" name="StartReplenishmentFromCassetteOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="EndReplenishmentFromCassetteOperation">
+      <wsdl:input message="tns:EndReplenishmentFromCassetteRequestMsg" name="EndReplenishmentFromCassetteOperationRequest"/>
+      <wsdl:output message="tns:EndReplenishmentFromCassetteResponseMsg" name="EndReplenishmentFromCassetteOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="LockUnitOperation">
+      <wsdl:input message="tns:LockUnitRequestMsg" name="LockUnitOperationRequest"/>
+      <wsdl:output message="tns:LockUnitResponseMsg" name="LockUnitOperationResponse"/>
+    </wsdl:operation>
+    
+    <wsdl:operation name ="UnLockUnitOperation">
+      <wsdl:input message="tns:UnLockUnitRequestMsg" name="UnLockUnitOperationRequest"/>
+      <wsdl:output message="tns:UnLockUnitResponseMsg" name="UnLockUnitOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="OpenExitCoverOperation">
+      <wsdl:input message="tns:OpenExitCoverRequestMsg" name="OpenExitCoverOperationRequest"/>
+      <wsdl:output message="tns:OpenExitCoverResponseMsg" name="OpenExitCoverOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="CloseExitCoverOperation">
+      <wsdl:input message="tns:CloseExitCoverRequestMsg" name="CloseExitCoverOperationRequest"/>
+      <wsdl:output message="tns:CloseExitCoverResponseMsg" name="CloseExitCoverOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="EventOfflineRecoveryOperation">
+      <wsdl:input message="tns:EventOfflineRecoveryRequestMsg" name="EventOfflineRecoveryOperationRequest"/>
+      <wsdl:output message="tns:EventOfflineRecoveryResponseMsg" name="EventOfflineRecoveryOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="SetExchangeRateOperation">
+      <wsdl:input message="tns:SetExchangeRateRequestMsg" name="SetExchangeRateOperationRequest"/>
+      <wsdl:output message="tns:SetExchangeRateResponseMsg" name="SetExchangeRateOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="RollbackOperation">
+      <wsdl:input message="tns:RollbackRequestMsg" name="RollbackOperationRequest"/>
+      <wsdl:output message="tns:RollbackResponseMsg" name="RollbackOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="UpdateSettingFileOperation">
+      <wsdl:input message="tns:UpdateSettingFileRequestMsg" name="UpdateSettingFileOperationRequest"/>
+      <wsdl:output message="tns:UpdateSettingFileResponseMsg" name="UpdateSettingFileOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="SetRestrictionOperation">
+      <wsdl:input message="tns:SetRestrictionRequestMsg" name="SetRestrictionOperationRequest"/>
+      <wsdl:output message="tns:SetRestrictionResponseMsg" name="SetRestrictionOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="GetLastResponseOperation">
+      <wsdl:input message="tns:GetLastResponseRequestMsg" name="GetLastResponseOperationRequest"/>
+      <wsdl:output message="tns:GetLastResponseResponseMsg" name="GetLastResponseOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="RASSpecialAPIOperation">
+      <wsdl:input message="tns:RASSpecialAPIRequestMsg" name="RASSpecialAPIOperationRequest"/>
+      <wsdl:output message="tns:RASSpecialAPIResponseMsg" name="RASSpecialAPIOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="UpdateDeviceCassetteSettingOperation">
+      <wsdl:input message="tns:UpdateDeviceCassetteSettingRequestMsg" name="UpdateDeviceCassetteSettingRequest"/>
+      <wsdl:output message="tns:UpdateDeviceCassetteSettingResponseMsg" name="UpdateDeviceCassetteSettingResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="StartSealingOperation">
+      <wsdl:input message="tns:StartSealingRequestMsg" name="StartSealingOperationRequest"/>
+      <wsdl:output message="tns:StartSealingResponseMsg" name="StartSealingOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="UpdateCheckOperation">
+      <wsdl:input message="tns:UpdateCheckRequestMsg" name="UpdateCheckOperationRequest"/>
+      <wsdl:output message="tns:UpdateCheckResponseMsg" name="UpdateCheckOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="AutoRebootChangeOperation">
+      <wsdl:input message="tns:AutoRebootChangeRequestMsg" name="AutoRebootChangeOperationRequest"/>
+      <wsdl:output message="tns:AutoRebootChangeResponseMsg" name="AutoRebootChangeOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="LanguageChangeOperation">
+      <wsdl:input message="tns:LanguageChangeRequestMsg" name="LanguageChangeOperationRequest"/>
+      <wsdl:output message="tns:LanguageChangeResponseMsg" name="LanguageChangeOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="GetSettingFileOperation">
+      <wsdl:input message="tns:GetSettingFileRequestMsg" name="GetSettingFileOperationRequest"/>
+      <wsdl:output message="tns:GetSettingFileResponseMsg" name="GetSettingFileOperationResponse"/>
+    </wsdl:operation>
+
+    <wsdl:operation name ="UserSettingOperation">
+      <wsdl:input message="tns:UserSettingRequestMsg" name="UserSettingOperationRequest"/>
+      <wsdl:output message="tns:UserSettingResponseMsg" name="UserSettingOperationResponse"/>
+    </wsdl:operation>
+  </wsdl:portType>
+
+  <!--********************************************************************************-->
+  <!--********************************************************************************-->
+  <wsdl:binding name="BrueBoxSoapBinding" type="tns:BrueBoxPortType">
+
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+    <wsdl:operation name="OccupyOperation">
+      <soap:operation soapAction="OccupyOperation"/>
+      <wsdl:input name="OccupyOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="OccupyOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="ReleaseOperation">
+      <soap:operation soapAction="ReleaseOperation"/>
+      <wsdl:input name="ReleaseOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="ReleaseOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="GetStatus">
+      <soap:operation soapAction="GetStatus"/>
+      <wsdl:input name="GetStatusRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="GetStatusResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="OpenOperation">
+      <soap:operation soapAction="OpenOperation"/>
+      <wsdl:input name="OpenOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="OpenOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="CloseOperation">
+      <soap:operation soapAction="CloseOperation"/>
+      <wsdl:input name="CloseOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="CloseOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="ChangeOperation">
+      <soap:operation soapAction="ChangeOperation"/>
+      <wsdl:input name="ChangeOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="ChangeOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="ChangeCancelOperation">
+      <soap:operation soapAction="ChangeCancelOperation"/>
+      <wsdl:input name="ChangeCancelOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="ChangeCancelOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="StartCashinOperation">
+      <soap:operation soapAction="StartCashinOperation"/>
+      <wsdl:input name="StartCashinOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="StartCashinOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="EndCashinOperation">
+      <soap:operation soapAction="EndCashinOperation"/>
+      <wsdl:input name="EndCashinOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="EndCashinOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="CashinCancelOperation">
+      <soap:operation soapAction="CashinCancelOperation"/>
+      <wsdl:input name="CashinCancelOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="CashinCancelOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="CashoutOperation">
+      <soap:operation soapAction="CashoutOperation"/>
+      <wsdl:input name="CashoutOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="CashoutOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="InventoryOperation">
+      <soap:operation soapAction="InventoryOperation"/>
+      <wsdl:input name="InventoryOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="InventoryOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="ResetOperation">
+      <soap:operation soapAction="ResetOperation"/>
+      <wsdl:input name="ResetOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="ResetOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="CollectOperation">
+      <soap:operation soapAction="CollectOperation"/>
+      <wsdl:input name="CollectOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="CollectOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="CounterClearOperation">
+      <soap:operation soapAction="CounterClearOperation"/>
+      <wsdl:input name="CounterClearOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="CounterClearOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="RegisterEventOperation">
+      <soap:operation soapAction="RegisterEventOperation"/>
+      <wsdl:input name="RegisterEventOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="RegisterEventOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="UnRegisterEventOperation">
+      <soap:operation soapAction="UnRegisterEventOperation"/>
+      <wsdl:input name="UnRegisterEventOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="UnRegisterEventOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="EventNotificationStatusOperation">
+      <soap:operation soapAction="EventNotificationStatusOperation"/>
+      <wsdl:input name="EventNotificationStatusOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="EventNotificationStatusOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    
+    <wsdl:operation name="LoginUserOperation">
+      <soap:operation soapAction="LoginUserOperation"/>
+      <wsdl:input name="LoginUserOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="LoginUserOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="LogoutUserOperation">
+      <soap:operation soapAction="LogoutUserOperation"/>
+      <wsdl:input name="LogioutUserOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="LogoutUserOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="RomVersionOperation">
+      <soap:operation soapAction="RomVersionOperation"/>
+      <wsdl:input name="RomVersionOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="RomVersionOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="StartDownloadOperation">
+      <soap:operation soapAction="StartDownloadOperation"/>
+      <wsdl:input name="StartDownloadOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="StartDownloadOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="StartLogreadOperation">
+      <soap:operation soapAction="StartLogreadOperation"/>
+      <wsdl:input name="StartLogreadOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="StartLogreadOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="UpdateManualDepositTotalOperation">
+      <soap:operation soapAction="UpdateManualDepositTotalOperation"/>
+      <wsdl:input name="UpdateManualDepositTotalOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="UpdateManualDepositTotalOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="RefreshSalesTotalOperation">
+      <soap:operation soapAction="RefreshSalesTotalOperation"/>
+      <wsdl:input name="RefreshSalesTotalOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="RefreshSalesTotalOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="ReturnCashOperation">
+      <soap:operation soapAction="ReturnCashOperation"/>
+      <wsdl:input name="ReturnCashRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="ReturnCashResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="EnableDenomOperation">
+      <soap:operation soapAction="EnableDenomOperation"/>
+      <wsdl:input name="EnableDenomRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="EnableDenomResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="DisableDenomOperation">
+      <soap:operation soapAction="DisableDenomOperation"/>
+      <wsdl:input name="DisableDenomRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="DisableDenomResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="PowerControlOperation">
+      <soap:operation soapAction="PowerControlOperation"/>
+      <wsdl:input name="PowerControlRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="PowerControlResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="AdjustTimeOperation">
+      <soap:operation soapAction="AdjustTimeOperation"/>
+      <wsdl:input name="AdjustTimeRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="AdjustTimeResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="StartReplenishmentFromEntranceOperation">
+      <soap:operation soapAction="StartReplenishmentFromEntranceOperation"/>
+      <wsdl:input name="StartReplenishmentFromEntranceOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="StartReplenishmentFromEntranceOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="EndReplenishmentFromEntranceOperation">
+      <soap:operation soapAction="EndReplenishmentFromEntranceOperation"/>
+      <wsdl:input name="EndReplenishmentFromEntranceOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="EndReplenishmentFromEntranceOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="ReplenishmentFromEntranceCancelOperation">
+      <soap:operation soapAction="ReplenishmentFromEntranceCancelOperation"/>
+      <wsdl:input name="ReplenishmentFromEntranceCancelOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="ReplenishmentFromEntranceCancelOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    
+    <wsdl:operation name="StartReplenishmentFromCassetteOperation">
+      <soap:operation soapAction="StartReplenishmentFromCassetteOperation"/>
+      <wsdl:input name="StartReplenishmentFromCassetteOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="StartReplenishmentFromCassetteOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="EndReplenishmentFromCassetteOperation">
+      <soap:operation soapAction="EndReplenishmentFromCassetteOperation"/>
+      <wsdl:input name="EndReplenishmentFromCassetteOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="EndReplenishmentFromCassetteOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="LockUnitOperation">
+      <soap:operation soapAction="LockUnitOperation"/>
+      <wsdl:input name="LockUnitOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="LockUnitOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    
+    <wsdl:operation name="UnLockUnitOperation">
+      <soap:operation soapAction="UnLockUnitOperation"/>
+      <wsdl:input name="UnLockUnitOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="UnLockUnitOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="OpenExitCoverOperation">
+      <soap:operation soapAction="OpenExitCoverOperation"/>
+      <wsdl:input name="OpenExitCoverOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="OpenExitCoverOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="CloseExitCoverOperation">
+      <soap:operation soapAction="CloseExitCoverOperation"/>
+      <wsdl:input name="CloseExitCoverOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="CloseExitCoverOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="EventOfflineRecoveryOperation">
+      <soap:operation soapAction="EventOfflineRecoveryOperation"/>
+      <wsdl:input name="EventOfflineRecoveryOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="EventOfflineRecoveryOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="SetExchangeRateOperation">
+      <soap:operation soapAction="SetExchangeRateOperation"/>
+      <wsdl:input name="SetExchangeRateOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="SetExchangeRateOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="RollbackOperation">
+      <soap:operation soapAction="RollbackOperation"/>
+      <wsdl:input name="RollbackOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="RollbackOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="UpdateSettingFileOperation">
+      <soap:operation soapAction="UpdateSettingFileOperation"/>
+      <wsdl:input name="UpdateSettingFileOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="UpdateSettingFileOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="SetRestrictionOperation">
+      <soap:operation soapAction="SetRestrictionOperation"/>
+      <wsdl:input name="SetRestrictionOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="SetRestrictionOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+    
+    <wsdl:operation name="GetLastResponseOperation">
+      <soap:operation soapAction="GetLastResponseOperation"/>
+      <wsdl:input name="GetLastResponseOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="GetLastResponseOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="RASSpecialAPIOperation">
+      <soap:operation soapAction="RASSpecialAPIOperation"/>
+      <wsdl:input name="RASSpecialAPIOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="RASSpecialAPIOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="UpdateDeviceCassetteSettingOperation">
+      <soap:operation soapAction="UpdateDeviceCassetteSettingOperation"/>
+      <wsdl:input name="UpdateDeviceCassetteSettingRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="UpdateDeviceCassetteSettingResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="StartSealingOperation">
+      <soap:operation soapAction="StartSealingOperation"/>
+      <wsdl:input name="StartSealingOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="StartSealingOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="UpdateCheckOperation">
+      <soap:operation soapAction="UpdateCheckOperation"/>
+      <wsdl:input name="UpdateCheckOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="UpdateCheckOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="AutoRebootChangeOperation">
+      <soap:operation soapAction="AutoRebootChangeOperation"/>
+      <wsdl:input name="AutoRebootChangeOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="AutoRebootChangeOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="LanguageChangeOperation">
+      <soap:operation soapAction="LanguageChangeOperation"/>
+      <wsdl:input name="LanguageChangeOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="LanguageChangeOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="GetSettingFileOperation">
+      <soap:operation soapAction="GetSettingFileOperation"/>
+      <wsdl:input name="GetSettingFileOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="GetSettingFileOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+
+    <wsdl:operation name="UserSettingOperation">
+      <soap:operation soapAction="UserSettingOperation"/>
+      <wsdl:input name="UserSettingOperationRequest">
+        <soap:body use="literal"/>
+      </wsdl:input>
+      <wsdl:output name="UserSettingOperationResponse">
+        <soap:body use="literal"/>
+      </wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+
+
+  <!--********************************************************************************-->
+  <!--********************************************************************************-->
+  <wsdl:service name="BrueBoxService">
+    <wsdl:port name="BrueBoxPort" binding="tns:BrueBoxSoapBinding">
+      <soap:address location="http://service.bruebox.com:9090/axis2/services/BrueBoxService"/>
+    </wsdl:port>
+  </wsdl:service>
+
+</wsdl:definitions>
+
+
+

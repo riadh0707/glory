@@ -11,7 +11,7 @@
   "homepage": "https://glory-fcc-client.local",
   "main": "dist/main/main.js",
   "scripts": {
-    "build": "tsc -p tsconfig.json && tsc -p tsconfig.renderer.json && node -e \"const fs=require('fs');fs.mkdirSync('dist/ui',{recursive:true});fs.copyFileSync('src/ui/index.html','dist/ui/index.html');fs.copyFileSync('src/ui/styles.css','dist/ui/styles.css');fs.mkdirSync('dist/resources',{recursive:true});fs.copyFileSync('../BrueBoxService.wsdl','dist/resources/BrueBoxService.wsdl')\"",
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig.renderer.json && node -e \"const fs=require('fs');fs.mkdirSync('dist/ui',{recursive:true});fs.copyFileSync('src/ui/index.html','dist/ui/index.html');fs.copyFileSync('src/ui/styles.css','dist/ui/styles.css');fs.mkdirSync('dist/resources',{recursive:true});fs.copyFileSync('resources/BrueBoxService.wsdl','dist/resources/BrueBoxService.wsdl')\"",
     "start": "npm run build && electron .",
     "dist:win": "npm run build && electron-builder --win",
     "dist:linux": "npm run build && electron-builder --linux",
