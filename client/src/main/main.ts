@@ -33,6 +33,18 @@ const USER_PWD = "";
 const LICENSE_SERVER_URL =
   process.env.GLORY_LICENSE_SERVER_URL || "https://glory-fcc-license-server.example.workers.dev";
 
+/**
+ * **Désactivé temporairement (2026-07-29)** — le serveur de licence
+ * (`license-server/`) n'a jamais été déployé pour de vrai (`LICENSE_SERVER_URL`
+ * ci-dessus reste un placeholder qui ne répond à rien). Une version buildée
+ * avec le gate actif serait bloquée indéfiniment sur l'écran d'activation
+ * chez le client — décision explicite de désactiver le gate plutôt que de
+ * livrer une app inutilisable. **Remettre à `true` une fois le Worker
+ * déployé pour de vrai** (voir license-server/README.md), et remplacer
+ * `LICENSE_SERVER_URL` par l'URL réelle à ce moment-là.
+ */
+const LICENSE_GATE_ENABLED = false;
+
 // Nom affiché par l'OS (menu Démarrer/barre des tâches Windows, launcher
 // Linux) — sans ça, Electron utilise par défaut le nom `package.json` en
 // kebab-case ("glory-fcc-client") dans certains contextes système. Appelé
@@ -868,11 +880,15 @@ function createWindow(): void {
       sandbox: false,
     },
   });
-  // Écran de vérification (spinner) le temps du premier appel réseau —
-  // évite une fenêtre blanche pendant que gateOnLicense() attend la
-  // réponse du serveur de licence.
-  loadLicenseScreen();
-  void gateOnLicense();
+  if (LICENSE_GATE_ENABLED) {
+    // Écran de vérification (spinner) le temps du premier appel réseau —
+    // évite une fenêtre blanche pendant que gateOnLicense() attend la
+    // réponse du serveur de licence.
+    loadLicenseScreen();
+    void gateOnLicense();
+  } else {
+    loadMainApp();
+  }
 }
 
 ipcMain.handle(IpcChannels.SessionConnect, async (_event: IpcMainInvokeEvent) => handleConnect());
