@@ -20,6 +20,8 @@ interface FccConnectionConfig {
   rejectUnauthorized: boolean;
   eventTcpPort: number;
   callbackIp: string;
+  userId: string;
+  userPwd: string;
 }
 
 type LicenseStatus = "checking" | "valid" | "invalid" | "network-error";

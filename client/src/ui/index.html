@@ -23,9 +23,9 @@
       <div class="card">
         <h2>Connexion au FCC</h2>
         <div class="controls">
-          <label for="input-soap-endpoint" class="field-label">Adresse du FCC (URL SOAP) — vérifiez que c'est bien celle de VOTRE terminal avant de connecter</label>
+          <label for="input-soap-endpoint" class="field-label">Adresse du TERMINAL GLORY (URL SOAP) — l'appareil, pas cet ordinateur</label>
           <input id="input-soap-endpoint" type="text" placeholder="https://192.168.1.50/axis2/services/BrueBoxService" />
-          <label for="input-callback-ip" class="field-label">Adresse IP de cette machine (vue par le FCC)</label>
+          <label for="input-callback-ip" class="field-label">Adresse IP de CET ORDINATEUR — différente de celle du terminal ci-dessus</label>
           <input id="input-callback-ip" type="text" placeholder="192.168.1.10" />
           <label for="input-event-port" class="field-label">Port TCP événements (généralement 55561)</label>
           <input id="input-event-port" type="text" inputmode="numeric" placeholder="55561" />
@@ -33,6 +33,10 @@
             <input id="input-reject-unauthorized" type="checkbox" style="width:auto;" />
             Exiger un certificat TLS valide (décocher si certificat auto-signé)
           </label>
+          <label for="input-user-id" class="field-label" style="margin-top:6px;">Identifiant de connexion au terminal</label>
+          <input id="input-user-id" type="text" placeholder="posadmin" />
+          <label for="input-user-pwd" class="field-label">Mot de passe (laisser vide si aucun)</label>
+          <input id="input-user-pwd" type="password" placeholder="" />
         </div>
       </div>
 

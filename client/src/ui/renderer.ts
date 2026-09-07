@@ -79,6 +79,8 @@ window.addEventListener("DOMContentLoaded", () => {
   const callbackIpInput = document.getElementById("input-callback-ip") as HTMLInputElement;
   const eventPortInput = document.getElementById("input-event-port") as HTMLInputElement;
   const rejectUnauthorizedInput = document.getElementById("input-reject-unauthorized") as HTMLInputElement;
+  const userIdInput = document.getElementById("input-user-id") as HTMLInputElement;
+  const userPwdInput = document.getElementById("input-user-pwd") as HTMLInputElement;
 
   window.api.onLogLine((line) => appendLine(logEl, line, classifyLogLine(line)));
   window.api.onEvent((line) => appendLine(eventsEl, line));
@@ -91,6 +93,8 @@ window.addEventListener("DOMContentLoaded", () => {
     callbackIpInput.value = config.callbackIp;
     eventPortInput.value = String(config.eventTcpPort);
     rejectUnauthorizedInput.checked = config.rejectUnauthorized;
+    userIdInput.value = config.userId;
+    userPwdInput.value = config.userPwd;
   });
 
   /**
@@ -147,6 +151,8 @@ window.addEventListener("DOMContentLoaded", () => {
       callbackIp: callbackIpInput.value.trim(),
       eventTcpPort,
       rejectUnauthorized: rejectUnauthorizedInput.checked,
+      userId: userIdInput.value.trim(),
+      userPwd: userPwdInput.value,
     });
     const result = await window.api.connect();
     appendLine(logEl, `[UI] Connecter → ${result.message}`, "tag-ui");

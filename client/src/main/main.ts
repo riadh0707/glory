@@ -18,8 +18,13 @@ import { loadFccConfig, saveFccConfig, FccConnectionConfig } from "../core/fcc-c
 const ACTIVE_MODEL_ID = "CI-10";
 
 const DEVICE_NAME = "glory-fcc-client";
-const USER_ID = "posadmin";
-const USER_PWD = "";
+// Identifiants par défaut — surchargés par connConfig.userId/userPwd
+// (userData/fcc-config.json, voir core/fcc-config) si le client les a
+// renseignés. Ne fonctionnent QUE contre la VM simulateur du SDK
+// (SoapUserCheck désactivé dedans) — un terminal réel exige généralement de
+// vrais identifiants, voir la docstring de FccConnectionConfig.userId.
+const DEFAULT_USER_ID = "posadmin";
+const DEFAULT_USER_PWD = "";
 
 /**
  * URL du serveur de vérification de licence (Cloudflare Worker, voir
@@ -143,6 +148,8 @@ async function handleConnect(): Promise<ConnectResult> {
     rejectUnauthorized: modelConfig.tls.rejectUnauthorized,
     eventTcpPort: modelConfig.eventListener.tcpPort,
     callbackIp: "192.168.0.1",
+    userId: DEFAULT_USER_ID,
+    userPwd: DEFAULT_USER_PWD,
   });
 
   try {
@@ -173,7 +180,7 @@ async function handleConnect(): Promise<ConnectResult> {
       },
     });
 
-    const openResult = await soapClient.open(USER_ID, USER_PWD, DEVICE_NAME);
+    const openResult = await soapClient.open(connConfig.userId, connConfig.userPwd, DEVICE_NAME);
     sendLog(`Open → result ${openResult.resultDescription}`);
     if (openResult.result !== 0 || !openResult.sessionId) {
       await cleanupFailedConnect();
@@ -748,6 +755,8 @@ function currentFccConfig(): FccConnectionConfig {
     rejectUnauthorized: isConfirmedModel(modelConfig) ? modelConfig.tls.rejectUnauthorized : true,
     eventTcpPort: isConfirmedModel(modelConfig) ? modelConfig.eventListener.tcpPort : 55561,
     callbackIp: "192.168.0.1",
+    userId: DEFAULT_USER_ID,
+    userPwd: DEFAULT_USER_PWD,
   });
 }
 

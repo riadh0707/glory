@@ -31,6 +31,19 @@ export interface FccConnectionConfig {
    * du site si elle n'est pas déjà connue).
    */
   callbackIp: string;
+  /**
+   * Identifiant/mot de passe SOAP (`OpenOperation`, IF Spec). Le simulateur
+   * VM du SDK acceptait `posadmin`/vide car "SoapUserCheck" y était
+   * désactivé via un fichier de config accessible en SSH (voir
+   * docs/development-notes.md) — **un vrai terminal en production a très
+   * probablement cette vérification active** et exige de vraies
+   * identifiants (fournis par Glory ou définis lors de l'installation du
+   * site). Confirmé le 2026-09-07 : un client a reçu `result=15` ("user
+   * auth failure", voir docs/error-codes.md) avec les valeurs par défaut
+   * contre son terminal réel.
+   */
+  userId: string;
+  userPwd: string;
 }
 
 function configFilePath(userDataDir: string): string {
@@ -46,6 +59,8 @@ export function loadFccConfig(userDataDir: string, defaults: FccConnectionConfig
       rejectUnauthorized: stored.rejectUnauthorized ?? defaults.rejectUnauthorized,
       eventTcpPort: stored.eventTcpPort || defaults.eventTcpPort,
       callbackIp: stored.callbackIp || defaults.callbackIp,
+      userId: stored.userId || defaults.userId,
+      userPwd: stored.userPwd ?? defaults.userPwd,
     };
   } catch {
     return defaults;
