@@ -176,6 +176,7 @@ async function handleConnect(): Promise<ConnectResult> {
     const openResult = await soapClient.open(USER_ID, USER_PWD, DEVICE_NAME);
     sendLog(`Open → result ${openResult.resultDescription}`);
     if (openResult.result !== 0 || !openResult.sessionId) {
+      await cleanupFailedConnect();
       return {
         ok: false,
         message: `Échec Open : ${openResult.resultDescription}`,
@@ -204,6 +205,7 @@ async function handleConnect(): Promise<ConnectResult> {
     const occupyResult = await soapClient.occupy(sessionId);
     sendLog(`Occupy → result ${occupyResult.resultDescription}`);
     if (occupyResult.result !== 0) {
+      await cleanupFailedConnect();
       return {
         ok: false,
         message: `Échec Occupy : ${occupyResult.resultDescription}`,
@@ -221,8 +223,37 @@ async function handleConnect(): Promise<ConnectResult> {
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     sendLog(`[ERREUR] ${message}`);
+    await cleanupFailedConnect();
     return { ok: false, message, state: stateMachine.getState() };
   }
+}
+
+/**
+ * **Bug réel trouvé via un rapport de diagnostic client (2026-09-07)** :
+ * quand `handleConnect()` échouait après avoir démarré `eventListener`
+ * (ex. `ETIMEDOUT` en tentant de joindre un mauvais endpoint SOAP), le
+ * listener restait ouvert sur son port TCP — jamais arrêté. Au clic suivant
+ * sur "Connecter", un nouveau `EventListener` tentait de reprendre le même
+ * port → `EADDRINUSE`, empêchant toute nouvelle tentative sans redémarrer
+ * l'app entière. Le rapport montrait exactement ce cycle : le client avait
+ * identifié "Glory FCC Client" lui-même comme processus occupant le port.
+ * Cette fonction referme proprement l'écouteur (et réinitialise l'état de
+ * session) sur **tout** chemin d'échec de `handleConnect()`.
+ */
+async function cleanupFailedConnect(): Promise<void> {
+  if (eventListener) {
+    try {
+      await eventListener.stop();
+      sendLog("Écouteur TCP arrêté (nettoyage après échec de connexion).");
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      sendLog(`[ERREUR] Échec de l'arrêt de l'écouteur TCP après connexion ratée : ${message}`);
+    }
+    eventListener = null;
+  }
+  soapClient = null;
+  sessionId = undefined;
+  stateMachine.forceClosed();
 }
 
 interface StatusResult {

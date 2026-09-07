@@ -92,4 +92,20 @@ export class SessionStateMachine {
     this.assertCanClose();
     this.state = "Closed";
   }
+
+  /**
+   * Remet l'état à "Closed" **sans** passer par les transitions normales
+   * (Release/Close) — pour le cas où la session côté client doit être
+   * abandonnée après un échec en cours de connexion (ex. `handleConnect()`
+   * échoue après `onOpened()` mais avant `onOccupied()`) : la session FCC
+   * elle-même n'a jamais été correctement établie, donc il n'y a rien à
+   * "fermer proprement" côté protocole — seul l'état local doit être
+   * réaligné pour permettre une nouvelle tentative de connexion. Ajoutée le
+   * 2026-09-07 suite à un rapport de diagnostic client montrant l'app
+   * bloquée après un échec de connexion (voir `cleanupFailedConnect()` dans
+   * main.ts).
+   */
+  forceClosed(): void {
+    this.state = "Closed";
+  }
 }
