@@ -12,10 +12,13 @@
       <h1>Glory FCC Client</h1>
       <p>Console de pilotage — BrueBoxService</p>
     </div>
-    <span id="state-pill" class="status-pill state-Closed">
-      <span class="dot"></span>
-      <span id="state-label">Closed</span>
-    </span>
+    <div class="masthead-right">
+      <span id="state-pill" class="status-pill state-Closed">
+        <span class="dot"></span>
+        <span id="state-label">Closed</span>
+      </span>
+      <button id="btn-toggle-tech" class="secondary small">Mode technique</button>
+    </div>
   </header>
 
   <main>
@@ -37,16 +40,11 @@
           <input id="input-user-id" type="text" placeholder="posadmin" />
           <label for="input-user-pwd" class="field-label">Mot de passe (laisser vide si aucun)</label>
           <input id="input-user-pwd" type="password" placeholder="" />
-        </div>
-      </div>
-
-      <div class="card">
-        <h2>Session</h2>
-        <div class="controls">
-          <button id="btn-connect" class="primary">Connecter</button>
-          <button id="btn-status" class="secondary">Statut</button>
-          <button id="btn-disconnect" class="danger">Déconnecter</button>
-          <button id="btn-generate-report" class="secondary">Générer rapport de diagnostic</button>
+          <div class="button-row" style="margin-top:8px;">
+            <button id="btn-connect" class="primary">Connecter</button>
+            <button id="btn-status" class="secondary">Statut</button>
+            <button id="btn-disconnect" class="danger">Déconnecter</button>
+          </div>
         </div>
       </div>
 
@@ -58,40 +56,72 @@
           <label for="input-amount" class="field-label">Montant à encaisser</label>
           <input id="input-amount" type="text" inputmode="numeric" placeholder="ex. 1000" />
           <button id="btn-change" class="primary">Encaisser (Change)</button>
+          <button id="btn-cashin-cancel" class="danger">Annuler l'encaissement</button>
+          <button id="btn-print-receipt" class="secondary">🖨 Imprimer le reçu</button>
         </div>
       </div>
 
       <div class="card">
-        <h2>Remplissage / Déverrouillage / Inventaire</h2>
+        <h2>Remplissage</h2>
         <div class="controls">
           <button id="btn-start-replenish" class="secondary">Démarrer remplissage (entrée)</button>
           <button id="btn-end-replenish" class="secondary">Terminer remplissage</button>
-          <button id="btn-unlock" class="secondary">Déverrouiller (RBW-100)</button>
-          <button id="btn-lock" class="secondary">Verrouiller (RBW-100)</button>
-          <button id="btn-inventory" class="secondary">Inventaire</button>
-          <button id="btn-open-exit-cover" class="secondary">Ouvrir couvercle sortie</button>
-          <button id="btn-close-exit-cover" class="secondary">Fermer couvercle sortie</button>
+          <button id="btn-replenish-entrance-cancel" class="danger">Annuler le remplissage</button>
         </div>
       </div>
 
       <div class="card">
-        <h2>Supervision / diagnostic</h2>
+        <h2>Cassette / unité</h2>
+        <div class="controls">
+          <button id="btn-unlock" class="primary">🔓 Déverrouiller (RBW-100)</button>
+          <button id="btn-lock" class="secondary">🔒 Verrouiller (RBW-100)</button>
+          <button id="btn-open-exit-cover" class="secondary">Ouvrir couvercle sortie</button>
+          <button id="btn-close-exit-cover" class="secondary">Fermer couvercle sortie</button>
+          <button id="btn-reset" class="danger">↺ Reset (récupération d'erreur)</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Inventaire</h2>
+        <div class="controls">
+          <button id="btn-inventory" class="secondary">Actualiser l'inventaire</button>
+          <div id="inventory-table" class="report-table-wrap">
+            <p class="muted">Cliquez sur « Actualiser l'inventaire » pour voir le contenu du terminal.</p>
+          </div>
+          <button id="btn-print-inventory" class="secondary" disabled>🖨 Imprimer l'inventaire</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Rapport du jour</h2>
+        <div class="controls">
+          <button id="btn-day-report" class="secondary">Générer le rapport du jour</button>
+          <div id="day-report-table" class="report-table-wrap">
+            <p class="muted">Cliquez sur « Générer le rapport du jour » pour voir le résumé des transactions.</p>
+          </div>
+          <button id="btn-print-day-report" class="secondary" disabled>🖨 Imprimer le rapport du jour</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Assistance</h2>
+        <div class="controls">
+          <button id="btn-generate-report" class="secondary">Générer un rapport de diagnostic</button>
+          <p class="muted">À envoyer au support en cas de problème avec le terminal.</p>
+        </div>
+      </div>
+
+      <details id="tech-panel" class="card" data-tech>
+        <summary>Mode technique (support)</summary>
         <div class="controls">
           <button id="btn-rom-version" class="secondary">Versions firmware</button>
-          <button id="btn-adjust-time" class="secondary">Régler date/heure (= heure système)</button>
           <label for="input-setting-filename" class="field-label">Nom du fichier de configuration</label>
           <input id="input-setting-filename" type="text" placeholder="ex. GloryCo.xml" />
           <button id="btn-get-setting-file" class="secondary">Lire fichier config</button>
-          <button id="btn-reset" class="danger">Reset (récupération d'erreur, peut être lent)</button>
-        </div>
-      </div>
+          <button id="btn-adjust-time" class="secondary">Régler date/heure (= heure système)</button>
 
-      <div class="card">
-        <h2>Annulation / retour d'espèces</h2>
-        <div class="controls">
-          <button id="btn-cashin-cancel" class="secondary">Annuler encaissement (CashinCancel)</button>
+          <h3>Annulation / retour d'espèces</h3>
           <button id="btn-change-cancel" class="secondary">Annuler Change en attente</button>
-          <button id="btn-replenish-entrance-cancel" class="secondary">Annuler remplissage (entrée)</button>
           <button id="btn-return-cash" class="secondary">Renvoyer pièces (hopper → sortie)</button>
           <label for="input-cashout-cc" class="field-label">Cashout : cc / fv / devid / pièces</label>
           <div class="field-row">
@@ -101,12 +131,8 @@
             <input id="input-cashout-piece" type="text" inputmode="numeric" placeholder="1" />
           </div>
           <button id="btn-cashout" class="danger">Cashout (distribution manuelle, irréversible)</button>
-        </div>
-      </div>
 
-      <div class="card">
-        <h2>Gestion des dénominations</h2>
-        <div class="controls">
+          <h3>Gestion des dénominations</h3>
           <label for="input-denom-cc" class="field-label">Devise (cc) / Valeur faciale (fv) / devid</label>
           <div class="field-row">
             <input id="input-denom-cc" type="text" placeholder="EUR" />
@@ -122,16 +148,14 @@
             <input id="input-exchange-rate" type="text" placeholder="0.9" />
           </div>
           <button id="btn-set-exchange-rate" class="primary">Définir le taux de change</button>
-        </div>
-      </div>
 
-      <div class="card card--fill">
-        <h2>Statut (JSON)</h2>
-        <pre id="status-output">—</pre>
-      </div>
+          <h3>Statut (JSON)</h3>
+          <pre id="status-output">—</pre>
+        </div>
+      </details>
     </div>
 
-    <div class="col-right">
+    <div class="col-right" data-tech>
       <div class="card log-panel">
         <h2>Journal (requêtes/réponses SOAP)</h2>
         <div id="log" class="log-body"></div>
@@ -144,6 +168,8 @@
     </div>
   </main>
 </div>
+
+<div id="print-area"></div>
 
 <script src="./renderer.js"></script>
 </body>

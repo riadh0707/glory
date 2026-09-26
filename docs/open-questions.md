@@ -422,3 +422,13 @@ Occupy→GetStatus→Release→Close, 6/6 `result=0`, contre la VM simulateur
   dans les pages relues de l'IF Spec pour cette documentation) — voir
   `models.md`.
   **Bloquant : non**, detail mineur de gestion d'erreur.
+
+- [ ] **Scan de ticket/code-barres pour obtenir un prix** (demandé par le
+  client le 2026-09-26) : reste flou — quel type de ticket, d'où vient le
+  prix (fichier ? logiciel de caisse existant ?). Hors du périmètre du FCC
+  (aucune opération SOAP de catalogue produit dans `soap-operations.md`) —
+  nécessiterait un scanner code-barres + une source de prix externes,
+  entièrement en dehors de `BrueBoxService`. Mis de côté par décision
+  explicite du client en attendant une clarification.
+  **Bloquant : oui pour cette fonctionnalité précise**, tant que le besoin
+  n'est pas précisé.

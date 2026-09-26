@@ -7,7 +7,6 @@ import { EventListener } from "../core/event-listener";
 import { HistoryStore } from "../core/history-store";
 import { getModelConfig, isConfirmedModel } from "../core/model-adapter";
 import { generateDiagnosticReport, DiagnosticReportEnvironment } from "../core/diagnostic-report";
-import { recheckStoredLicense, verifyAndStoreLicense, readStoredLicense, LicenseCheckResult } from "../core/license";
 import { loadFccConfig, saveFccConfig, FccConnectionConfig } from "../core/fcc-config";
 
 // Modèle actif : CI-10, seule instance dont l'endpoint a été vérifié
@@ -25,30 +24,6 @@ const DEVICE_NAME = "glory-fcc-client";
 // vrais identifiants, voir la docstring de FccConnectionConfig.userId.
 const DEFAULT_USER_ID = "posadmin";
 const DEFAULT_USER_PWD = "";
-
-/**
- * URL du serveur de vérification de licence (Cloudflare Worker, voir
- * `license-server/`). **À remplacer par l'URL réelle après déploiement**
- * (`wrangler deploy` affiche l'URL `https://<nom>.<compte>.workers.dev`) —
- * surchargeable sans recompiler via la variable d'environnement
- * `GLORY_LICENSE_SERVER_URL`, pratique pour pointer vers un Worker de test
- * (`wrangler dev`, généralement `http://127.0.0.1:8787`) pendant le
- * développement.
- */
-const LICENSE_SERVER_URL =
-  process.env.GLORY_LICENSE_SERVER_URL || "https://glory-fcc-license-server.example.workers.dev";
-
-/**
- * **Désactivé temporairement (2026-07-29)** — le serveur de licence
- * (`license-server/`) n'a jamais été déployé pour de vrai (`LICENSE_SERVER_URL`
- * ci-dessus reste un placeholder qui ne répond à rien). Une version buildée
- * avec le gate actif serait bloquée indéfiniment sur l'écran d'activation
- * chez le client — décision explicite de désactiver le gate plutôt que de
- * livrer une app inutilisable. **Remettre à `true` une fois le Worker
- * déployé pour de vrai** (voir license-server/README.md), et remplacer
- * `LICENSE_SERVER_URL` par l'URL réelle à ce moment-là.
- */
-const LICENSE_GATE_ENABLED = false;
 
 // Nom affiché par l'OS (menu Démarrer/barre des tâches Windows, launcher
 // Linux) — sans ça, Electron utilise par défaut le nom `package.json` en
@@ -457,7 +432,34 @@ interface InventoryResult {
   ok: boolean;
   message: string;
   raw?: unknown;
+  /** Lignes de dénomination extraites de `raw` (Cash + CashUnits), pour un
+   * affichage tableau lisible côté UI — voir `extractInventoryLines`. Vide
+   * pour les autres opérations qui réutilisent ce type (RomVersion,
+   * GetSettingFile). */
+  lines?: DenomLine[];
   state: SessionState;
+}
+
+/**
+ * Regroupe les dénominations trouvées dans une réponse `InventoryOperation`
+ * (`Cash` — stock courant — et `CashUnits` — capacité par unité/cassette,
+ * WSDL BrueBoxService.wsdl:390-401/560-574) pour l'affichage tableau. Deux
+ * niveaux d'imbrication différents selon le champ (`Cash.Denomination`
+ * directement, vs `CashUnits[].CashUnit[].Denomination`) — voir
+ * `flattenCashDenoms`, qui ne gère qu'un seul niveau, d'où la boucle
+ * supplémentaire ici pour `CashUnits`.
+ */
+function extractInventoryLines(raw: unknown): DenomLine[] {
+  if (!raw || typeof raw !== "object") return [];
+  const r = raw as Record<string, unknown>;
+  const lines: DenomLine[] = [...flattenCashDenoms(r.Cash)];
+  for (const cashUnitsBlock of asArray(r.CashUnits as Record<string, unknown> | Record<string, unknown>[] | undefined)) {
+    if (!cashUnitsBlock || typeof cashUnitsBlock !== "object") continue;
+    for (const cashUnit of asArray((cashUnitsBlock as Record<string, unknown>).CashUnit as unknown)) {
+      lines.push(...flattenCashDenoms(cashUnit));
+    }
+  }
+  return lines;
 }
 
 async function handleInventory(): Promise<InventoryResult> {
@@ -469,7 +471,13 @@ async function handleInventory(): Promise<InventoryResult> {
     const result = await soapClient.inventory(sessionId, 0);
     sendLog(`Inventory → result ${result.resultDescription}`);
     historyStore.record("soap-response", "InventoryOperation", result);
-    return { ok: result.result === 0, message: result.resultDescription, raw: result.raw, state: stateMachine.getState() };
+    return {
+      ok: result.result === 0,
+      message: result.resultDescription,
+      raw: result.raw,
+      lines: extractInventoryLines(result.raw),
+      state: stateMachine.getState(),
+    };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     sendLog(`[ERREUR] ${message}`);
@@ -773,6 +781,135 @@ function handleFccConfigSave(config: FccConnectionConfig): FccConnectionConfig {
   return config;
 }
 
+/** Normalise un noeud XML→JS qui peut être un objet unique ou un tableau
+ * (comportement de la lib "soap" selon le nombre d'occurrences réellement
+ * présentes dans la réponse) — utilisé pour parcourir `Cash`/`Denomination`
+ * sans avoir à deviner la forme exacte à chaque appel. */
+function asArray<T>(value: T | T[] | undefined | null): T[] {
+  if (value === undefined || value === null) return [];
+  return Array.isArray(value) ? value : [value];
+}
+
+interface DenomLine {
+  cc: string;
+  fv: string;
+  devid: string;
+  piece: number;
+}
+
+/**
+ * Extrait les lignes de dénomination (devise/valeur faciale/pièces) d'un
+ * champ `cash` tel que renvoyé par `core/soap-client` (`response.Cash`,
+ * WSDL `CashType` — `Denomination[]` avec attributs `cc`/`fv`/`devid` et
+ * élément `Piece`, voir BrueBoxService.wsdl:516-531). Utilisée pour
+ * l'inventaire ET le rapport du jour — seule fonction qui connaît cette
+ * structure XML, pour ne pas la redupliquer avec des hypothèses différentes.
+ */
+function flattenCashDenoms(cash: unknown): DenomLine[] {
+  const out: DenomLine[] = [];
+  for (const block of asArray(cash as Record<string, unknown> | Record<string, unknown>[] | undefined)) {
+    if (!block || typeof block !== "object") continue;
+    const denoms = asArray((block as Record<string, unknown>).Denomination as unknown);
+    for (const d of denoms) {
+      if (!d || typeof d !== "object") continue;
+      const node = d as Record<string, unknown>;
+      const attrs = (node.attributes as Record<string, unknown> | undefined) ?? {};
+      const cc = String(attrs.cc ?? node.cc ?? "?");
+      const fv = String(attrs.fv ?? node.fv ?? "0");
+      const devid = String(attrs.devid ?? node.devid ?? "?");
+      const piece = Number(node.Piece ?? 0) || 0;
+      if (piece > 0) out.push({ cc, fv, devid, piece });
+    }
+  }
+  return out;
+}
+
+interface DayReportOperationTotal {
+  operation: string;
+  label: string;
+  count: number;
+  lines: DenomLine[];
+  totalsByCurrency: Record<string, number>;
+}
+
+interface DayReportResponse {
+  ok: boolean;
+  message: string;
+  generatedAt: string;
+  dateLabel: string;
+  operations: DayReportOperationTotal[];
+  totalsByCurrency: Record<string, number>;
+  errorCount: number;
+}
+
+/** Opérations dont le résultat contient des espèces pertinentes pour un
+ * résumé de journée — voir docs/soap-operations.md. Le label est celui
+ * affiché au client, pas le nom technique WSDL. */
+const DAY_REPORT_OPERATIONS: Record<string, string> = {
+  ChangeOperation: "Encaissements (Change)",
+  EndCashinOperation: "Encaissements terminés",
+  CashoutOperation: "Distributions manuelles (Cashout)",
+  EndReplenishmentFromEntranceOperation: "Réapprovisionnements terminés",
+  CashinCancelOperation: "Encaissements annulés (espèces rendues)",
+  ReplenishmentFromEntranceCancelOperation: "Réapprovisionnements annulés",
+};
+
+/**
+ * Résumé des transactions du jour (espèces encaissées/distribuées), pensé
+ * pour être imprimé par le client en fin de journée — distinct du rapport de
+ * diagnostic (celui-ci reste technique, pour le support). Agrège
+ * `historyStore` plutôt que de tenir un compteur en mémoire : survit à un
+ * redémarrage de l'app dans la même journée.
+ *
+ * Ne lit que les entrées `soap-response` **typées** (celles enregistrées par
+ * chaque `handleXxx` avec `{result, resultDescription, cash}`), pas les
+ * entrées brutes équivalentes déjà loguées automatiquement par le logger du
+ * client SOAP (`core/soap-client`, méthode `call()`) — les deux partagent le
+ * même `kind`/`operation`, mais seule la version typée expose `cash` sous une
+ * forme homogène ; on les distingue par la présence de `resultDescription`.
+ */
+function handleDayReport(): DayReportResponse {
+  const dateLabel = new Date().toISOString().slice(0, 10);
+  const events = historyStore.getAllEvents().filter((ev) => ev.ts.startsWith(dateLabel));
+
+  const byOperation = new Map<string, DayReportOperationTotal>();
+  for (const [operation, label] of Object.entries(DAY_REPORT_OPERATIONS)) {
+    byOperation.set(operation, { operation, label, count: 0, lines: [], totalsByCurrency: {} });
+  }
+
+  const totalsByCurrency: Record<string, number> = {};
+
+  for (const ev of events) {
+    if (ev.kind !== "soap-response" || !ev.operation) continue;
+    const entry = byOperation.get(ev.operation);
+    if (!entry) continue;
+    const payload = ev.payload as Record<string, unknown> | undefined;
+    if (!payload || typeof payload !== "object" || !("resultDescription" in payload)) continue; // entrée brute, pas typée
+
+    entry.count += 1;
+    const lines = flattenCashDenoms(payload.cash);
+    for (const line of lines) {
+      entry.lines.push(line);
+      const value = (line.piece * Number(line.fv)) / 100;
+      entry.totalsByCurrency[line.cc] = (entry.totalsByCurrency[line.cc] ?? 0) + value;
+      totalsByCurrency[line.cc] = (totalsByCurrency[line.cc] ?? 0) + value;
+    }
+  }
+
+  const errorCount = events.filter((ev) => ev.kind === "error").length;
+  const operations = [...byOperation.values()].filter((op) => op.count > 0);
+
+  return {
+    ok: true,
+    message: `Rapport du jour (${dateLabel}) : ${operations.length} type(s) d'opération, ${errorCount} erreur(s).`,
+    generatedAt: new Date().toISOString(),
+    dateLabel,
+    operations,
+    totalsByCurrency,
+    errorCount,
+  };
+}
+
 interface DiagnosticReportResponse {
   ok: boolean;
   message: string;
@@ -817,83 +954,8 @@ function handleRendererError(context: string, message: string, stack: string | u
   historyStore.record("error", `renderer:${context}`, { message, stack });
 }
 
-/** Dernier résultat de vérification de licence connu du processus main —
- * lu par le handler IPC `license:get-status` (l'écran d'activation ne
- * relance pas la vérification réseau lui-même à l'ouverture, il affiche ce
- * qui a déjà été déterminé par `gateOnLicense()`). */
-let lastLicenseCheck: LicenseCheckResult | null = null;
-
 function loadMainApp(): void {
   mainWindow?.loadFile(path.join(__dirname, "..", "ui", "index.html"));
-}
-
-function loadLicenseScreen(): void {
-  mainWindow?.loadFile(path.join(__dirname, "..", "ui", "license.html"));
-}
-
-/**
- * Vérifie la licence en ligne et charge l'écran approprié. Appelée au
- * démarrage de l'app et après chaque tentative d'activation/nouvelle
- * vérification réussie depuis l'écran de licence. **Aucun mode hors-ligne** :
- * si le serveur de licence est injoignable, l'accès est refusé (choix
- * explicite du client — voir docs/development-notes.md) ; l'écran
- * d'activation affiche alors un message clair avec un bouton "Réessayer"
- * plutôt qu'un échec silencieux.
- */
-async function gateOnLicense(): Promise<void> {
-  lastLicenseCheck = await recheckStoredLicense(LICENSE_SERVER_URL, DATA_DIR);
-  historyStore.record("app-lifecycle", "license-check", lastLicenseCheck);
-  if (lastLicenseCheck.status === "valid") {
-    loadMainApp();
-  } else {
-    loadLicenseScreen();
-  }
-}
-
-interface LicenseStatusResponse {
-  /** "checking" : `gateOnLicense()` n'a pas encore renvoyé de résultat (page
-   * tout juste chargée, appel réseau en cours) — distinct de "invalid" pour
-   * que l'écran de licence ne flashe pas un message d'erreur avant que le
-   * vrai résultat soit connu (il poll ce statut jusqu'à ce qu'il change). */
-  status: LicenseCheckResult["status"] | "checking";
-  reason?: string;
-  expiresAt?: string;
-  clientName?: string | null;
-  /** Renseigné uniquement si une licence était déjà stockée localement —
-   * permet à l'écran d'activation de proposer "Réessayer" (revérifier la
-   * même clé) plutôt que de forcer une nouvelle saisie. */
-  hasStoredKey: boolean;
-}
-
-function handleLicenseGetStatus(): LicenseStatusResponse {
-  const stored = readStoredLicense(DATA_DIR);
-  const check = lastLicenseCheck;
-  return {
-    status: check?.status ?? "checking",
-    reason: check && "reason" in check ? check.reason : undefined,
-    expiresAt: check && "expiresAt" in check ? check.expiresAt : (stored?.expiresAt ?? undefined),
-    clientName: check?.status === "valid" ? check.record.clientName : stored?.clientName,
-    hasStoredKey: stored !== null,
-  };
-}
-
-/** Revérifie en ligne la clé déjà stockée (bouton "Réessayer" de l'écran de
- * licence — utile après une coupure réseau temporaire, sans re-saisir la
- * clé). Charge l'app principale en cas de succès. */
-async function handleLicenseRetry(): Promise<LicenseStatusResponse> {
-  await gateOnLicense();
-  return handleLicenseGetStatus();
-}
-
-/** Valide et active une nouvelle clé saisie par l'utilisateur. Charge l'app
- * principale en cas de succès. */
-async function handleLicenseActivate(key: string): Promise<LicenseStatusResponse> {
-  lastLicenseCheck = await verifyAndStoreLicense(LICENSE_SERVER_URL, DATA_DIR, key.trim());
-  historyStore.record("app-lifecycle", "license-activate", lastLicenseCheck);
-  if (lastLicenseCheck.status === "valid") {
-    loadMainApp();
-  }
-  return handleLicenseGetStatus();
 }
 
 function createWindow(): void {
@@ -920,15 +982,7 @@ function createWindow(): void {
       sandbox: false,
     },
   });
-  if (LICENSE_GATE_ENABLED) {
-    // Écran de vérification (spinner) le temps du premier appel réseau —
-    // évite une fenêtre blanche pendant que gateOnLicense() attend la
-    // réponse du serveur de licence.
-    loadLicenseScreen();
-    void gateOnLicense();
-  } else {
-    loadMainApp();
-  }
+  loadMainApp();
 }
 
 ipcMain.handle(IpcChannels.SessionConnect, async (_event: IpcMainInvokeEvent) => handleConnect());
@@ -984,11 +1038,7 @@ ipcMain.handle(
   async (_event: IpcMainInvokeEvent, context: string, message: string, stack: string | undefined) =>
     handleRendererError(context, message, stack)
 );
-ipcMain.handle(IpcChannels.LicenseGetStatus, async (_event: IpcMainInvokeEvent) => handleLicenseGetStatus());
-ipcMain.handle(IpcChannels.LicenseRetry, async (_event: IpcMainInvokeEvent) => handleLicenseRetry());
-ipcMain.handle(IpcChannels.LicenseActivate, async (_event: IpcMainInvokeEvent, key: string) =>
-  handleLicenseActivate(key)
-);
+ipcMain.handle(IpcChannels.DiagnosticDayReport, async (_event: IpcMainInvokeEvent) => handleDayReport());
 ipcMain.handle(IpcChannels.FccConfigGet, async (_event: IpcMainInvokeEvent) => handleFccConfigGet());
 ipcMain.handle(IpcChannels.FccConfigSave, async (_event: IpcMainInvokeEvent, config: FccConnectionConfig) =>
   handleFccConfigSave(config)

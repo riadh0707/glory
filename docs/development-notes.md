@@ -396,6 +396,72 @@ référence future, à activer sur demande explicite plutôt que par anticipatio
 - **Explicitement exclu, pas juste différé** : `CounterClearOperation` —
   marqué "*** Do not use this Method ***" dans le WSDL lui-même.
 
+## Mise à jour 2026-09-26 — retrait du système de licence, UI orientée client final
+
+Suite aux retours du client réel (bring-up matériel terminé avec succès, voir
+plus haut) et à une demande de fonctionnalités concrètes côté UI :
+
+- **Système de licence entièrement retiré** (pas seulement désactivé) :
+  `client/src/core/license/`, `client/src/ui/license.html`/`license.ts`, et
+  tout le dossier `license-server/` (Cloudflare Worker) ont été supprimés du
+  dépôt, ainsi que tous les canaux IPC/handlers associés dans `main.ts`,
+  `preload.ts`, `ipc-channels.ts`, `global.d.ts`. Décision explicite du
+  client : « on en aura pas besoin [pour l'instant] ». L'app charge
+  désormais toujours `index.html` directement au démarrage
+  (`createWindow()` → `loadMainApp()`, plus de branchement conditionnel).
+  Si le besoin de licence revient, repartir de l'historique git (commit
+  `7ba1aeb` et suivants) plutôt que de reconstruire à partir de zéro — la
+  logique de vérification en ligne / stockage local y était déjà correcte
+  et testée.
+
+- **UI réorganisée autour d'un "mode technique" masquable** (attribut
+  `data-tech` + classe `.tech-on` sur `.app`, bouton "Mode technique" dans le
+  header, préférence mémorisée en `localStorage`). Tout ce qui ressemble à du
+  code/log brut pour un utilisateur final (panneau JSON `#status-output`,
+  journal SOAP brut, événements TCP bruts, dénominations cc/fv/devid, taux de
+  change, cashout manuel, lecture de fichier de config) est masqué par défaut
+  mais reste entièrement fonctionnel — accessible en un clic pour le support.
+  Rien n'a été supprimé fonctionnellement, seulement caché par défaut.
+
+- **Inventaire lisible** : nouvelle fonction `extractInventoryLines()` +
+  `flattenCashDenoms()` dans `main.ts` — parse la réponse XML→JS brute
+  d'`InventoryOperation` (`Cash.Denomination` et `CashUnits[].CashUnit[].
+  Denomination`, deux niveaux d'imbrication différents selon le champ, voir
+  WSDL lignes 390-401/560-574) et regroupe par devise/valeur faciale pour un
+  tableau simple (billets/pièces + total) affiché côté renderer
+  (`aggregateDenoms()`, `denomTableHtml()`). Le JSON brut reste disponible en
+  mode technique.
+
+- **Rapport du jour** (`handleDayReport()`, canal IPC
+  `diagnostic:day-report`) : agrège les événements `historyStore` du jour
+  courant pour les opérations qui manipulent des espèces (`Change`,
+  `EndCashin`, `Cashout`, `EndReplenishmentFromEntrance`,
+  `CashinCancel`, `ReplenishmentFromEntranceCancel`) en un résumé par
+  opération/devise. **Distinct du rapport de diagnostic** (`generateDiagnosticReport`,
+  volontairement conservé tel quel — outil de support technique, pas un
+  document pour le client). Piège évité : le logger interne de
+  `FccSoapClient.call()` écrit déjà une entrée `soap-response` brute (sans
+  `resultDescription`) pour CHAQUE appel, en plus de l'entrée typée écrite
+  par chaque `handleXxx` de `main.ts` — `handleDayReport()` ne doit lire que
+  les entrées typées (discriminées par la présence de `resultDescription`)
+  sous peine de compter les opérations en double.
+
+- **Impression via le dialogue système** (`printHtml()` dans `renderer.ts` +
+  `#print-area` masqué + règle `@media print` dans `styles.css`, qui masque
+  tout sauf `#print-area` au moment de l'impression). Décision explicite du
+  client : utiliser l'impression standard du système (`window.print()`),
+  pas d'intégration pilote spécifique — Windows/Linux/le navigateur gèrent
+  le choix de l'imprimante. Trois usages : reçu de transaction (après
+  Démarrer/Terminer encaissement, Change, Annulation), inventaire, rapport
+  du jour.
+
+- **Fonctionnalité explicitement mise de côté** : « scanner un ticket pour
+  obtenir son prix » — le FCC (API SOAP BrueBoxService) ne gère ni scanner
+  ni catalogue de prix, c'est un boîtier de gestion d'espèces, pas une
+  caisse produit. Nécessite une clarification du client (source des prix :
+  fichier ? logiciel de caisse existant ?) avant toute implémentation — voir
+  `open-questions.md` si cette demande revient.
+
 ## Points à vérifier avant le matériel réel
 
 Voir la section dédiée dans **[open-questions.md](open-questions.md)**

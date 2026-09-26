@@ -39,9 +39,7 @@ contextBridge.exposeInMainWorld("api", {
   generateDiagnosticReport: () => ipcRenderer.invoke(IpcChannels.DiagnosticGenerateReport),
   reportRendererError: (context: string, message: string, stack: string | undefined) =>
     ipcRenderer.invoke(IpcChannels.DiagnosticReportRendererError, context, message, stack),
-  licenseGetStatus: () => ipcRenderer.invoke(IpcChannels.LicenseGetStatus),
-  licenseRetry: () => ipcRenderer.invoke(IpcChannels.LicenseRetry),
-  licenseActivate: (key: string) => ipcRenderer.invoke(IpcChannels.LicenseActivate, key),
+  dayReport: () => ipcRenderer.invoke(IpcChannels.DiagnosticDayReport),
   fccConfigGet: () => ipcRenderer.invoke(IpcChannels.FccConfigGet),
   fccConfigSave: (config: unknown) => ipcRenderer.invoke(IpcChannels.FccConfigSave, config),
   onLogLine: (callback: (line: string) => void) => {

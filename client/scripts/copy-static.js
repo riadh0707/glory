@@ -12,6 +12,5 @@ function copy(src, dest) {
 }
 
 copy("src/ui/index.html", "dist/ui/index.html");
-copy("src/ui/license.html", "dist/ui/license.html");
 copy("src/ui/styles.css", "dist/ui/styles.css");
 copy("resources/BrueBoxService.wsdl", "dist/resources/BrueBoxService.wsdl");

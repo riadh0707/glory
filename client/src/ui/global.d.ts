@@ -24,14 +24,37 @@ interface FccConnectionConfig {
   userPwd: string;
 }
 
-type LicenseStatus = "checking" | "valid" | "invalid" | "network-error";
+interface DenomLine {
+  cc: string;
+  fv: string;
+  devid: string;
+  piece: number;
+}
 
-interface LicenseStatusResponse {
-  status: LicenseStatus;
-  reason?: string;
-  expiresAt?: string;
-  clientName?: string | null;
-  hasStoredKey: boolean;
+interface InventoryResponse {
+  ok: boolean;
+  message: string;
+  raw?: unknown;
+  lines?: DenomLine[];
+  state: SessionState;
+}
+
+interface DayReportOperationTotal {
+  operation: string;
+  label: string;
+  count: number;
+  lines: DenomLine[];
+  totalsByCurrency: Record<string, number>;
+}
+
+interface DayReportResponse {
+  ok: boolean;
+  message: string;
+  generatedAt: string;
+  dateLabel: string;
+  operations: DayReportOperationTotal[];
+  totalsByCurrency: Record<string, number>;
+  errorCount: number;
 }
 
 interface GloryClientApi {
@@ -45,7 +68,7 @@ interface GloryClientApi {
   endReplenishEntrance(): Promise<TransactionResult>;
   lockUnit(): Promise<TransactionResult>;
   unlockUnit(): Promise<TransactionResult>;
-  inventory(): Promise<{ ok: boolean; message: string; raw?: unknown; state: SessionState }>;
+  inventory(): Promise<InventoryResponse>;
   openExitCover(): Promise<TransactionResult>;
   closeExitCover(): Promise<TransactionResult>;
   romVersion(): Promise<{ ok: boolean; message: string; raw?: unknown; state: SessionState }>;
@@ -62,9 +85,7 @@ interface GloryClientApi {
   returnCash(): Promise<TransactionResult>;
   generateDiagnosticReport(): Promise<{ ok: boolean; message: string; jsonPath?: string; markdownPath?: string }>;
   reportRendererError(context: string, message: string, stack: string | undefined): Promise<void>;
-  licenseGetStatus(): Promise<LicenseStatusResponse>;
-  licenseRetry(): Promise<LicenseStatusResponse>;
-  licenseActivate(key: string): Promise<LicenseStatusResponse>;
+  dayReport(): Promise<DayReportResponse>;
   fccConfigGet(): Promise<FccConnectionConfig>;
   fccConfigSave(config: FccConnectionConfig): Promise<FccConnectionConfig>;
   onLogLine(callback: (line: string) => void): void;
