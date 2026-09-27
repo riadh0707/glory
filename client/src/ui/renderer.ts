@@ -58,7 +58,7 @@ function aggregateDenoms(lines: DenomLine[]): Array<{ cc: string; fv: string; pi
 }
 
 function formatAmount(fvCents: string | number): string {
-  return (Number(fvCents) / 100).toFixed(2);
+  return (Number(fvCents) / 100).toFixed(2).replace(".", ",");
 }
 
 function denomTableHtml(lines: DenomLine[]): string {
@@ -71,11 +71,11 @@ function denomTableHtml(lines: DenomLine[]): string {
     .map((d) => {
       const value = (d.piece * Number(d.fv)) / 100;
       totalsByCurrency.set(d.cc, (totalsByCurrency.get(d.cc) ?? 0) + value);
-      return `<tr><td>${escapeHtml(d.cc)}</td><td>${formatAmount(d.fv)}</td><td>${d.piece}</td><td>${value.toFixed(2)}</td></tr>`;
+      return `<tr><td>${escapeHtml(d.cc)}</td><td>${formatAmount(d.fv)}</td><td>${d.piece}</td><td>${value.toFixed(2).replace(".", ",")}</td></tr>`;
     })
     .join("");
   const footRows = [...totalsByCurrency.entries()]
-    .map(([cc, total]) => `<tr><td colspan="3">Total ${escapeHtml(cc)}</td><td>${total.toFixed(2)}</td></tr>`)
+    .map(([cc, total]) => `<tr><td colspan="3">Total ${escapeHtml(cc)}</td><td>${total.toFixed(2).replace(".", ",")}</td></tr>`)
     .join("");
   return `<table class="denom-table">
     <thead><tr><th>Devise</th><th>Valeur unitaire</th><th>Quantité</th><th>Total</th></tr></thead>
@@ -91,13 +91,13 @@ function dayReportTableHtml(report: DayReportResponse): string {
   const rows = report.operations
     .map((op) => {
       const totals = Object.entries(op.totalsByCurrency)
-        .map(([cc, total]) => `${total.toFixed(2)} ${cc}`)
+        .map(([cc, total]) => `${total.toFixed(2).replace(".", ",")} ${cc}`)
         .join(", ") || "—";
       return `<tr><td>${escapeHtml(op.label)}</td><td>${op.count}</td><td>${escapeHtml(totals)}</td></tr>`;
     })
     .join("");
   const footRows = Object.entries(report.totalsByCurrency)
-    .map(([cc, total]) => `<tr><td colspan="2">Total ${escapeHtml(cc)}</td><td>${total.toFixed(2)}</td></tr>`)
+    .map(([cc, total]) => `<tr><td colspan="2">Total ${escapeHtml(cc)}</td><td>${total.toFixed(2).replace(".", ",")}</td></tr>`)
     .join("");
   return `<table class="op-table">
     <thead><tr><th>Opération</th><th>Nb</th><th>Montant</th></tr></thead>

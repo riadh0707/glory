@@ -190,12 +190,12 @@ main {
   gap: 18px;
 }
 .grid.two {
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(320px, 100%), 1fr));
   align-items: start;
 }
 .tech-grid {
   margin-top: 18px;
-  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(340px, 100%), 1fr));
   align-items: start;
 }
 .tech-logs {
@@ -388,6 +388,12 @@ input.amount {
 }
 .field-row input[type="text"] {
   flex: 1;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+.tech-grid > *,
+.grid > * {
+  min-width: 0;
 }
 select:focus,
 input:focus {
@@ -506,7 +512,13 @@ pre#status-output {
   .sidebar {
     width: 64px;
   }
-  .brand > div:last-child,
+  .brand > div:last-child {
+    display: none;
+  }
+  .brand {
+    padding: 4px 0 20px 0;
+    justify-content: center;
+  }
   .nav-item {
     font-size: 0;
   }
