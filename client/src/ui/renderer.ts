@@ -173,7 +173,18 @@ function receiptHtml(s: ReceiptSettings, ticketNumber: number, amountCents: numb
   </div>`;
 }
 
-function printReceipt(html: string): void {
+/** Adapte la page d'impression au papier choisi (@page ne peut pas être
+ * piloté par une classe CSS, d'où le <style> injecté). */
+function printReceipt(html: string, paper: ReceiptSettings["paperFormat"]): void {
+  const width = paper === "58mm" ? "54mm" : paper === "80mm" ? "76mm" : "110mm";
+  const page = paper === "A4" ? "A4" : `${paper} auto`;
+  let style = document.getElementById("paper-style") as HTMLStyleElement | null;
+  if (!style) {
+    style = document.createElement("style");
+    style.id = "paper-style";
+    document.head.appendChild(style);
+  }
+  style.textContent = `@page { size: ${page}; margin: 4mm; } .receipt { width: ${width}; }`;
   const area = document.getElementById("print-area") as HTMLDivElement;
   area.innerHTML = html;
   window.print();
@@ -243,6 +254,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const companyLine2Input = document.getElementById("input-company-line2") as HTMLInputElement;
   const operatorNameInput = document.getElementById("input-operator-name") as HTMLInputElement;
   const footerMessageInput = document.getElementById("input-footer-message") as HTMLInputElement;
+  const paperFormatInput = document.getElementById("input-paper-format") as HTMLSelectElement;
   const saveReceiptSettingsBtn = document.getElementById("btn-save-receipt-settings") as HTMLButtonElement;
 
   function readReceiptSettings(nextTicketNumber: number): ReceiptSettings {
@@ -251,6 +263,7 @@ window.addEventListener("DOMContentLoaded", () => {
       companyLine2: companyLine2Input.value.trim(),
       operatorName: operatorNameInput.value.trim(),
       footerMessage: footerMessageInput.value.trim(),
+      paperFormat: paperFormatInput.value as ReceiptSettings["paperFormat"],
       nextTicketNumber,
     };
   }
@@ -261,6 +274,7 @@ window.addEventListener("DOMContentLoaded", () => {
     companyLine2Input.value = s.companyLine2;
     operatorNameInput.value = s.operatorName;
     footerMessageInput.value = s.footerMessage;
+    paperFormatInput.value = s.paperFormat;
     currentNextTicket = s.nextTicketNumber;
   });
 
@@ -436,7 +450,7 @@ window.addEventListener("DOMContentLoaded", () => {
     const settings = readReceiptSettings(currentNextTicket);
     const ticketNumber = await window.api.receiptTakeNumber();
     currentNextTicket = ticketNumber + 1;
-    printReceipt(receiptHtml(settings, ticketNumber, amountCents));
+    printReceipt(receiptHtml(settings, ticketNumber, amountCents), settings.paperFormat);
   });
 
   guardedClick(startReplenishBtn, "Démarrer remplissage", async () => {

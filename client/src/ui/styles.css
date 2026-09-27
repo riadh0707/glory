@@ -391,6 +391,7 @@ table.op-table tfoot td {
   }
 }
 
+select,
 input[type="text"] {
   font-family: Consolas, "Cascadia Mono", monospace;
   font-size: 13px;

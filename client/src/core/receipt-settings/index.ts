@@ -12,6 +12,8 @@ export interface ReceiptSettings {
   companyLine2: string;
   operatorName: string;
   footerMessage: string;
+  /** Format du papier d'impression. */
+  paperFormat: "58mm" | "80mm" | "A4";
   /** Prochain numéro de ticket, incrémenté à chaque impression. */
   nextTicketNumber: number;
 }
@@ -21,6 +23,7 @@ const DEFAULTS: ReceiptSettings = {
   companyLine2: "",
   operatorName: "",
   footerMessage: "Merci et à bientôt",
+  paperFormat: "80mm",
   nextTicketNumber: 1,
 };
 
@@ -36,6 +39,7 @@ export function loadReceiptSettings(userDataDir: string): ReceiptSettings {
       companyLine2: stored.companyLine2 ?? DEFAULTS.companyLine2,
       operatorName: stored.operatorName ?? DEFAULTS.operatorName,
       footerMessage: stored.footerMessage ?? DEFAULTS.footerMessage,
+      paperFormat: stored.paperFormat === "58mm" || stored.paperFormat === "A4" ? stored.paperFormat : "80mm",
       nextTicketNumber: Number(stored.nextTicketNumber) > 0 ? Number(stored.nextTicketNumber) : DEFAULTS.nextTicketNumber,
     };
   } catch {

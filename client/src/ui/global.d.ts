@@ -23,6 +23,7 @@ interface ReceiptSettings {
   companyLine2: string;
   operatorName: string;
   footerMessage: string;
+  paperFormat: "58mm" | "80mm" | "A4";
   nextTicketNumber: number;
 }
 
