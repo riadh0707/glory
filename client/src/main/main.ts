@@ -1075,6 +1075,26 @@ historyStore.record("app-lifecycle", "start", {
 
 app.whenReady().then(createWindow);
 
+/**
+ * **Bug réel identifié via l'historique client (2026-09-27)** : sur 65
+ * `OpenOperation` cumulées, seulement 2 `CloseOperation` — la quasi-totalité
+ * des sessions ont été abandonnées côté FCC (fenêtre fermée directement,
+ * sans cliquer "Déconnecter" d'abord). Le FCC n'expire ces sessions
+ * qu'après un délai non documenté (`session-lifecycle.md`), ce qui a fini
+ * par bloquer toute nouvelle connexion avec `result=20` "session not
+ * available" pendant des jours. Best-effort : si une session est ouverte au
+ * moment de quitter, on tente un Release/Close propre avant de fermer pour
+ * de vrai — n'aide pas contre un crash ou un arrêt forcé du processus, mais
+ * couvre le cas le plus fréquent (fermeture normale de la fenêtre).
+ */
+let isQuittingCleanly = false;
+app.on("before-quit", (event) => {
+  if (isQuittingCleanly || !soapClient || !sessionId) return;
+  event.preventDefault();
+  isQuittingCleanly = true;
+  void handleDisconnect().finally(() => app.quit());
+});
+
 app.on("window-all-closed", () => {
   historyStore.record("app-lifecycle", "stop", { ts: new Date().toISOString() });
   historyStore.close();
