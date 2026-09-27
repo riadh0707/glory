@@ -296,6 +296,24 @@ window.addEventListener("DOMContentLoaded", () => {
     // simplement désactivé par défaut, sans bloquer le reste de l'UI.
   }
 
+  const navItems = document.querySelectorAll<HTMLButtonElement>(".nav-item");
+  const pages = document.querySelectorAll<HTMLElement>(".page");
+  const pageTitleEl = document.getElementById("page-title") as HTMLElement;
+  const pageSubEl = document.getElementById("page-sub") as HTMLElement;
+  navItems.forEach((item) => {
+    item.addEventListener("click", () => {
+      navItems.forEach((n) => n.classList.toggle("active", n === item));
+      pages.forEach((p) => {
+        const isTarget = p.dataset.page === item.dataset.nav;
+        p.classList.toggle("active", isTarget);
+        if (isTarget) {
+          pageTitleEl.textContent = p.dataset.title ?? "";
+          pageSubEl.textContent = p.dataset.sub ?? "";
+        }
+      });
+    });
+  });
+
   toggleTechBtn.addEventListener("click", () => {
     const isOn = appEl.classList.toggle("tech-on");
     try {

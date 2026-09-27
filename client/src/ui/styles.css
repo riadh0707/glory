@@ -1,34 +1,40 @@
 :root {
-  --bg: #f4f5f7;
+  --bg: #eef1f6;
   --panel: #ffffff;
-  --ink: #1b2430;
-  --ink-dim: #5b6472;
-  --rule: #dde1e6;
-  --accent: #2f6fed;
-  --accent-ink: #1c4fc4;
-  --mono-bg: #eef0f3;
-  --ok: #1c7c3f;
-  --ok-bg: #e3f5e9;
-  --warn: #9a6a06;
-  --warn-bg: #fbf0d9;
+  --ink: #16202e;
+  --ink-dim: #5f6b7d;
+  --rule: #e0e5ee;
+  --accent: #2456e6;
+  --accent-deep: #1a3fb0;
+  --accent-soft: #e6edfd;
+  --mono-bg: #f3f5f9;
+  --side-bg: #0f1b34;
+  --side-ink: #b9c4dc;
+  --side-active: #ffffff;
+  --side-active-bg: rgba(255, 255, 255, 0.1);
+  --ok: #157a3c;
+  --ok-bg: #e0f4e8;
+  --warn: #93660a;
+  --warn-bg: #fbf0d6;
   --bad: #b3261e;
-  --bad-bg: #fbe3e1;
-  --shadow: 0 1px 2px rgba(20, 24, 30, 0.06), 0 6px 16px rgba(20, 24, 30, 0.06);
+  --bad-bg: #fbe4e1;
+  --shadow: 0 1px 2px rgba(15, 27, 52, 0.05), 0 8px 24px rgba(15, 27, 52, 0.06);
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #12151a;
-    --panel: #191d24;
-    --ink: #e7e9ec;
-    --ink-dim: #93999f;
-    --rule: #2a2f38;
-    --accent: #5b93f5;
-    --accent-ink: #8ab2ff;
-    --mono-bg: #10131822;
-    --mono-bg: #0e1116;
+    --bg: #0d1220;
+    --panel: #151c2e;
+    --ink: #e6eaf3;
+    --ink-dim: #8e9ab0;
+    --rule: #26304a;
+    --accent: #5b8cff;
+    --accent-deep: #3f6ff0;
+    --accent-soft: #1b2a52;
+    --mono-bg: #0f1526;
+    --side-bg: #0a0f1d;
     --ok: #6fd08c;
-    --ok-bg: #12291a;
+    --ok-bg: #11291b;
     --warn: #e0b64d;
     --warn-bg: #2c250f;
     --bad: #f28b7f;
@@ -43,7 +49,7 @@
 
 body {
   margin: 0;
-  font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: "Segoe UI", -apple-system, Roboto, "Helvetica Neue", sans-serif;
   background: var(--bg);
   color: var(--ink);
   font-size: 14px;
@@ -51,64 +57,172 @@ body {
 
 .app {
   display: flex;
-  flex-direction: column;
   height: 100vh;
 }
 
-header.masthead {
+/* ---------- Sidebar ---------- */
+.sidebar {
+  width: 216px;
+  flex-shrink: 0;
+  background: var(--side-bg);
+  color: var(--side-ink);
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 20px;
-  border-bottom: 1px solid var(--rule);
-  background: var(--panel);
+  flex-direction: column;
+  padding: 18px 12px;
 }
-
-.title-block h1 {
-  font-size: 15px;
-  font-weight: 700;
-  margin: 0;
-  letter-spacing: 0.01em;
-}
-
-.title-block p {
-  margin: 2px 0 0 0;
-  font-size: 11.5px;
-  color: var(--ink-dim);
-  font-family: Consolas, monospace;
-}
-
-.masthead-right {
+.brand {
   display: flex;
   align-items: center;
   gap: 10px;
+  padding: 4px 8px 20px 8px;
+}
+.brand-mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #4d7dff, #1a3fb0);
+  color: #fff;
+  font-weight: 800;
+  font-size: 18px;
+  display: grid;
+  place-items: center;
+}
+.brand-name {
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1.1;
+}
+.brand-sub {
+  font-size: 11px;
+  opacity: 0.7;
+}
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  background: transparent;
+  color: var(--side-ink);
+  border: 0;
+  border-radius: 9px;
+  padding: 10px 12px;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+}
+.nav-item svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+.nav-item.active {
+  background: var(--side-active-bg);
+  color: var(--side-active);
+}
+.sidebar-foot {
+  margin-top: auto;
+  padding: 0 4px;
 }
 
-button.small {
-  padding: 5px 10px;
-  font-size: 11.5px;
+/* ---------- Topbar / content ---------- */
+.content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 28px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--rule);
+}
+.topbar h1 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.topbar p {
+  margin: 2px 0 0 0;
+  font-size: 12.5px;
+  color: var(--ink-dim);
+}
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+main {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 24px 28px 32px 28px;
+}
+.page {
+  display: none;
+  max-width: 1080px;
+}
+.page.active {
+  display: block;
+}
+.grid {
+  display: grid;
+  gap: 18px;
+}
+.grid.two {
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  align-items: start;
+}
+.tech-grid {
+  margin-top: 18px;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  align-items: start;
+}
+.tech-logs {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
 
+/* ---------- Status pill ---------- */
 .status-pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 12px;
+  gap: 7px;
+  padding: 6px 13px;
   border-radius: 999px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   background: var(--mono-bg);
   color: var(--ink-dim);
   border: 1px solid var(--rule);
 }
-
 .status-pill .dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background: var(--ink-dim);
 }
-
 .status-pill.state-Occupied {
   background: var(--ok-bg);
   color: var(--ok);
@@ -117,125 +231,97 @@ button.small {
 .status-pill.state-Occupied .dot {
   background: var(--ok);
 }
-.status-pill.state-Open .dot,
-.status-pill.state-Released .dot {
-  background: var(--warn);
-}
 .status-pill.state-Open,
 .status-pill.state-Released {
   background: var(--warn-bg);
   color: var(--warn);
   border-color: transparent;
 }
-
-main {
-  flex: 1;
-  min-height: 0;
-  display: grid;
-  grid-template-columns: 300px 1fr;
-  gap: 16px;
-  padding: 16px 20px;
+.status-pill.state-Open .dot,
+.status-pill.state-Released .dot {
+  background: var(--warn);
 }
 
-@media (max-width: 820px) {
-  main {
-    grid-template-columns: 1fr;
-  }
-}
-
-.col-left {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  min-height: 0;
-  overflow-y: auto;
-  /* Reserve room for the scrollbar so it doesn't sit flush against card
-     borders/shadows — avoids content jumping against the rail on resize. */
-  padding-right: 4px;
-}
-
-.col-right {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  min-height: 0;
-  overflow-y: auto;
-}
-
+/* ---------- Cards ---------- */
 .card {
   background: var(--panel);
   border: 1px solid var(--rule);
-  border-radius: 10px;
+  border-radius: 14px;
   box-shadow: var(--shadow);
   display: flex;
   flex-direction: column;
   min-height: 0;
-  /* Cards keep their natural content height and never get squeezed by
-     flexbox — .col-left scrolls instead. Without this, too many cards for
-     the window height caused flex-shrink to compress every card below its
-     content size, and the overflowing content visually overlapped the next
-     card (observed 2026-07-29 once the left column grew past ~6 cards). */
-  flex-shrink: 0;
 }
-
-/* The one card meant to fill remaining vertical space (Statut JSON) opts
-   back into growing/shrinking instead of the fixed-height default above. */
-.card--fill {
-  flex: 1 1 auto;
-  min-height: 120px;
-  flex-shrink: 1;
-}
-
 .card > h2 {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+  padding: 15px 18px 13px 18px;
+  border-bottom: 1px solid var(--rule);
+}
+.controls {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.controls h3 {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.07em;
   color: var(--ink-dim);
-  margin: 0;
-  padding: 12px 14px 10px 14px;
-  border-bottom: 1px solid var(--rule);
+  margin: 12px 0 0 0;
+  padding-top: 12px;
+  border-top: 1px solid var(--rule);
+}
+.muted {
+  color: var(--ink-dim);
+  font-size: 12.5px;
+  margin: 2px 0;
+  line-height: 1.45;
 }
 
-.controls {
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
+/* ---------- Buttons ---------- */
 button {
   font-family: inherit;
   font-size: 13px;
   font-weight: 600;
-  padding: 9px 14px;
-  border-radius: 7px;
+  padding: 10px 15px;
+  border-radius: 9px;
   border: 1px solid transparent;
   cursor: pointer;
-  transition: filter 0.1s ease;
+  transition: filter 0.12s ease, background 0.12s ease;
 }
-
 button:disabled {
   opacity: 0.5;
   cursor: default;
 }
-
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 button.primary {
   background: var(--accent);
-  color: white;
+  color: #fff;
 }
 button.primary:hover:not(:disabled) {
-  filter: brightness(1.08);
+  background: var(--accent-deep);
 }
-
+button.big {
+  padding: 14px 18px;
+  font-size: 15px;
+}
 button.secondary {
-  background: var(--mono-bg);
+  background: var(--panel);
   color: var(--ink);
   border-color: var(--rule);
 }
 button.secondary:hover:not(:disabled) {
-  filter: brightness(0.97);
+  background: var(--mono-bg);
 }
-
 button.danger {
   background: transparent;
   color: var(--bad);
@@ -244,64 +330,123 @@ button.danger {
 button.danger:hover:not(:disabled) {
   background: var(--bad-bg);
 }
-
-.field-label {
+button.ghost {
+  background: transparent;
+  color: var(--side-ink);
+  border-color: rgba(255, 255, 255, 0.2);
+  width: 100%;
+}
+button.ghost:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+}
+button.small {
+  padding: 7px 10px;
   font-size: 12px;
-  color: var(--ink-dim);
-  margin-top: 4px;
 }
-
-.field-row,
-.button-row {
+.button-row,
+.field-row {
   display: flex;
-  gap: 6px;
+  gap: 8px;
 }
-
 .button-row button {
   flex: 1;
 }
 
-.controls h3 {
+/* ---------- Form fields ---------- */
+.field-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-dim);
+  margin-top: 4px;
+}
+.check-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--ink-dim);
+  margin-top: 4px;
+}
+select,
+input[type="text"],
+input[type="password"] {
+  font-family: inherit;
+  font-size: 13.5px;
+  padding: 10px 11px;
+  border-radius: 9px;
+  border: 1px solid var(--rule);
+  background: var(--mono-bg);
+  color: var(--ink);
+  width: 100%;
+  min-width: 0;
+}
+input.amount {
+  font-size: 22px;
+  font-weight: 700;
+  padding: 12px 14px;
+  font-variant-numeric: tabular-nums;
+}
+.field-row input[type="text"] {
+  flex: 1;
+}
+select:focus,
+input:focus {
+  border-color: var(--accent);
+}
+
+/* ---------- Tables ---------- */
+.report-table-wrap {
+  overflow-x: auto;
+}
+table.denom-table,
+table.op-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+table.denom-table th,
+table.op-table th {
   font-size: 11px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--ink-dim);
-  margin: 10px 0 -2px 0;
-  padding-top: 8px;
-  border-top: 1px solid var(--rule);
+  font-weight: 700;
+}
+table.denom-table th,
+table.denom-table td,
+table.op-table th,
+table.op-table td {
+  text-align: right;
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--rule);
+  font-variant-numeric: tabular-nums;
+}
+table.denom-table th:first-child,
+table.denom-table td:first-child,
+table.op-table th:first-child,
+table.op-table td:first-child {
+  text-align: left;
+}
+table.denom-table tfoot td,
+table.op-table tfoot td {
+  font-weight: 700;
+  border-top: 2px solid var(--rule);
+  border-bottom: none;
+  background: var(--accent-soft);
 }
 
-.muted {
-  color: var(--ink-dim);
-  font-size: 12px;
-  margin: 4px 0;
-}
-
-/* Mode technique : masqué par défaut, révélé via le bouton "Mode technique"
-   du header (classe `tech-on` sur .app) — l'idée est de retirer du champ de
-   vision par défaut tout ce qui ressemble à du code/log brut (JSON, XML
-   SOAP), pas de le supprimer : le support en a besoin pour diagnostiquer un
-   problème avec le client au téléphone. */
+/* ---------- Mode technique (masqué par défaut) ---------- */
 [data-tech] {
   display: none;
 }
-.app.tech-on [data-tech] {
-  display: flex;
-}
-.app.tech-on details[data-tech] {
-  display: block;
-}
-
-details.card {
-  padding: 0;
+.app.tech-on .grid[data-tech] {
+  display: grid;
 }
 details.card summary {
   cursor: pointer;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: var(--ink-dim);
-  padding: 12px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 15px 18px;
   list-style: none;
 }
 details.card summary::-webkit-details-marker {
@@ -309,6 +454,7 @@ details.card summary::-webkit-details-marker {
 }
 details.card summary::before {
   content: "▸ ";
+  color: var(--ink-dim);
 }
 details.card[open] summary::before {
   content: "▾ ";
@@ -316,143 +462,35 @@ details.card[open] summary::before {
 details.card .controls {
   border-top: 1px solid var(--rule);
 }
-
-.report-table-wrap {
-  overflow-x: auto;
-}
-
-table.denom-table,
-table.op-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12.5px;
-}
-
-table.denom-table th,
-table.denom-table td,
-table.op-table th,
-table.op-table td {
-  text-align: right;
-  padding: 6px 8px;
-  border-bottom: 1px solid var(--rule);
-  font-variant-numeric: tabular-nums;
-}
-
-table.denom-table th:first-child,
-table.denom-table td:first-child,
-table.op-table th:first-child,
-table.op-table td:first-child {
-  text-align: left;
-}
-
-table.denom-table tfoot td,
-table.op-table tfoot td {
-  font-weight: 700;
-  border-top: 2px solid var(--rule);
-  border-bottom: none;
-}
-
-/* Zone hors-écran remplie juste avant window.print() (voir renderer.ts,
-   printHtml()) — seul son contenu reste visible en mode impression, le
-   reste de l'app (boutons, journaux) est masqué via @media print ci-dessous. */
-#print-area {
-  display: none;
-}
-
-@media print {
-  body * {
-    visibility: hidden;
-  }
-  #print-area,
-  #print-area * {
-    visibility: visible;
-  }
-  #print-area {
-    display: block;
-    position: absolute;
-    inset: 0;
-    padding: 24px;
-    color: #000;
-    background: #fff;
-  }
-  #print-area table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  #print-area th,
-  #print-area td {
-    border-bottom: 1px solid #999;
-    padding: 4px 8px;
-    text-align: right;
-  }
-  #print-area th:first-child,
-  #print-area td:first-child {
-    text-align: left;
-  }
-}
-
-select,
-input[type="text"] {
-  font-family: Consolas, "Cascadia Mono", monospace;
-  font-size: 13px;
-  padding: 8px;
-  border-radius: 7px;
-  border: 1px solid var(--rule);
-  background: var(--mono-bg);
-  color: var(--ink);
-  /* width:100% lets a standalone input fill its .controls column; inside a
-     .field-row, flex:1 + min-width:0 lets it shrink below its intrinsic
-     content width instead of forcing the row (and the whole card) wider
-     than the window — the other resize bug: 3-4 inputs side by side would
-     otherwise overflow the card on a narrow window. */
-  width: 100%;
-  min-width: 0;
-}
-
-.field-row input[type="text"] {
-  flex: 1;
-}
-
-input[type="text"]:focus {
-  outline: 2px solid var(--accent);
-  outline-offset: -1px;
-}
-
 pre#status-output {
   margin: 0;
-  padding: 12px 14px;
+  padding: 12px;
   font-family: Consolas, "Cascadia Mono", monospace;
   font-size: 12px;
   color: var(--ink-dim);
+  background: var(--mono-bg);
+  border-radius: 9px;
   overflow: auto;
-  flex: 1;
+  max-height: 260px;
   white-space: pre-wrap;
 }
-
-.log-panel {
-  flex: 1 1 120px;
-  min-height: 90px;
-}
-
 .log-body {
-  flex: 1;
+  height: 220px;
   overflow-y: auto;
   font-family: Consolas, "Cascadia Mono", monospace;
   font-size: 12px;
-  padding: 8px 14px;
+  padding: 10px 16px;
   line-height: 1.6;
 }
-
 .log-line {
   color: var(--ink-dim);
 }
 .log-line .ts {
-  color: var(--ink-dim);
   opacity: 0.6;
   margin-right: 6px;
 }
 .log-line.dir-req {
-  color: var(--accent-ink);
+  color: var(--accent);
 }
 .log-line.dir-res {
   color: var(--ink);
@@ -461,20 +499,35 @@ pre#status-output {
   color: var(--bad);
 }
 .log-line.tag-ui {
-  color: var(--ink-dim);
   font-style: italic;
 }
 
-.events-panel {
-  /* Prefers 180px but shrinks down to 90px before .log-panel gives up any
-     more of its own space — previously flex:none (no shrink at all) meant
-     this panel stayed rigid at 180px and crushed .log-panel to near-zero
-     height on short windows, with the "Journal" heading text visibly
-     bleeding out of its collapsed box. */
-  flex: 0 1 180px;
-  min-height: 90px;
+@media (max-width: 760px) {
+  .sidebar {
+    width: 64px;
+  }
+  .brand > div:last-child,
+  .nav-item {
+    font-size: 0;
+  }
+  .nav-item {
+    justify-content: center;
+  }
+  .sidebar-foot {
+    display: none;
+  }
+  .topbar {
+    padding: 12px 16px;
+  }
+  main {
+    padding: 16px;
+  }
 }
 
+/* ---------- Impression ---------- */
+#print-area {
+  display: none;
+}
 .receipt {
   width: 76mm;
   margin: 0 auto;
@@ -514,13 +567,41 @@ pre#status-output {
   font-weight: 700;
   margin-top: 8px;
 }
+
 @media print {
+  body * {
+    visibility: hidden;
+  }
+  #print-area,
+  #print-area * {
+    visibility: visible;
+  }
+  #print-area {
+    display: block;
+    position: absolute;
+    inset: 0;
+    padding: 24px;
+    color: #000;
+    background: #fff;
+  }
+  #print-area table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  #print-area th,
+  #print-area td {
+    border-bottom: 1px solid #999;
+    padding: 4px 8px;
+    text-align: right;
+    background: none;
+    color: #000;
+  }
+  #print-area th:first-child,
+  #print-area td:first-child {
+    text-align: left;
+  }
   #print-area .receipt-row,
   #print-area .receipt-total {
     display: flex;
-  }
-  #print-area .receipt td,
-  #print-area .receipt th {
-    border: 0;
   }
 }
