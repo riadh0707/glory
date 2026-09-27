@@ -13,6 +13,17 @@ interface TransactionResult {
   ok: boolean;
   message: string;
   state: SessionState;
+  /** Montant encaissé en centimes, quand l'opération le connaît (Change,
+   * EndCashin) — sert à imprimer le ticket. */
+  amountCents?: number;
+}
+
+interface ReceiptSettings {
+  companyName: string;
+  companyLine2: string;
+  operatorName: string;
+  footerMessage: string;
+  nextTicketNumber: number;
 }
 
 interface FccConnectionConfig {
@@ -86,6 +97,9 @@ interface GloryClientApi {
   generateDiagnosticReport(): Promise<{ ok: boolean; message: string; jsonPath?: string; markdownPath?: string }>;
   reportRendererError(context: string, message: string, stack: string | undefined): Promise<void>;
   dayReport(): Promise<DayReportResponse>;
+  receiptSettingsGet(): Promise<ReceiptSettings>;
+  receiptSettingsSave(settings: ReceiptSettings): Promise<ReceiptSettings>;
+  receiptTakeNumber(): Promise<number>;
   fccConfigGet(): Promise<FccConnectionConfig>;
   fccConfigSave(config: FccConnectionConfig): Promise<FccConnectionConfig>;
   onLogLine(callback: (line: string) => void): void;

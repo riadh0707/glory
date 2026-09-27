@@ -473,3 +473,53 @@ pre#status-output {
   flex: 0 1 180px;
   min-height: 90px;
 }
+
+.receipt {
+  width: 76mm;
+  margin: 0 auto;
+  font-family: "Courier New", monospace;
+  font-size: 12px;
+  color: #000;
+}
+.receipt-title {
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+}
+.receipt-sub {
+  text-align: center;
+  margin-bottom: 8px;
+}
+.receipt-row,
+.receipt-total {
+  display: flex;
+  justify-content: space-between;
+}
+.receipt-total {
+  font-size: 18px;
+  font-weight: 700;
+}
+.receipt hr {
+  border: 0;
+  border-top: 1px dashed #000;
+  margin: 8px 0;
+}
+.receipt-barcode {
+  text-align: center;
+  margin-top: 8px;
+}
+.receipt-footer {
+  text-align: center;
+  font-weight: 700;
+  margin-top: 8px;
+}
+@media print {
+  #print-area .receipt-row,
+  #print-area .receipt-total {
+    display: flex;
+  }
+  #print-area .receipt td,
+  #print-area .receipt th {
+    border: 0;
+  }
+}

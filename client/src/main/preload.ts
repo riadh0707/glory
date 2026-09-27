@@ -40,6 +40,9 @@ contextBridge.exposeInMainWorld("api", {
   reportRendererError: (context: string, message: string, stack: string | undefined) =>
     ipcRenderer.invoke(IpcChannels.DiagnosticReportRendererError, context, message, stack),
   dayReport: () => ipcRenderer.invoke(IpcChannels.DiagnosticDayReport),
+  receiptSettingsGet: () => ipcRenderer.invoke(IpcChannels.ReceiptSettingsGet),
+  receiptSettingsSave: (settings: unknown) => ipcRenderer.invoke(IpcChannels.ReceiptSettingsSave, settings),
+  receiptTakeNumber: () => ipcRenderer.invoke(IpcChannels.ReceiptTakeNumber),
   fccConfigGet: () => ipcRenderer.invoke(IpcChannels.FccConfigGet),
   fccConfigSave: (config: unknown) => ipcRenderer.invoke(IpcChannels.FccConfigSave, config),
   onLogLine: (callback: (line: string) => void) => {

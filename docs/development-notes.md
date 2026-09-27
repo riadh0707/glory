@@ -455,7 +455,9 @@ plus haut) et à une demande de fonctionnalités concrètes côté UI :
   Démarrer/Terminer encaissement, Change, Annulation), inventaire, rapport
   du jour.
 
-- **Fonctionnalité explicitement mise de côté** : « scanner un ticket pour
+- **Ticket d'encaissement imprimable** (2026-09-27, modèle client : ticket de caisse type BV JASPAERT). Pas de scan ni de prix d'articles : le ticket ne montre que l'argent entré (« Espèces reçues » + TOTAL). Infos du commerce (nom, ligne tel/TVA, opérateur, message de fin) configurables par chaque client final via la carte « Ticket — informations du commerce » (`core/receipt-settings`, `userData/receipt-settings.json`), n° de ticket auto-incrémenté. Code-barres EAN-13 en SVG sans librairie : `2` + `5` + n° ticket (5 chiffres) + montant en centimes (5 chiffres, plafonné à 999,99) + chiffre de contrôle — reproduit exactement le code du ticket exemple (`2501131040357`). Montant = comptage réel de EndCashin (`sumCashCents`) ou montant saisi pour Change.
+
+- **Fonctionnalité ANNULÉE le 2026-09-27 (le client n'en veut plus)** : « scanner un ticket pour
   obtenir son prix » — le FCC (API SOAP BrueBoxService) ne gère ni scanner
   ni catalogue de prix, c'est un boîtier de gestion d'espèces, pas une
   caisse produit. Nécessite une clarification du client (source des prix :

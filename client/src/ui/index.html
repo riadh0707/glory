@@ -57,7 +57,22 @@
           <input id="input-amount" type="text" inputmode="numeric" placeholder="ex. 1000" />
           <button id="btn-change" class="primary">Encaisser (Change)</button>
           <button id="btn-cashin-cancel" class="danger">Annuler l'encaissement</button>
-          <button id="btn-print-receipt" class="secondary">🖨 Imprimer le reçu</button>
+          <button id="btn-print-receipt" class="secondary">🖨 Imprimer le ticket</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Ticket — informations du commerce</h2>
+        <div class="controls">
+          <label for="input-company-name" class="field-label">Nom du commerce</label>
+          <input id="input-company-name" type="text" />
+          <label for="input-company-line2" class="field-label">Téléphone / n° TVA / adresse</label>
+          <input id="input-company-line2" type="text" />
+          <label for="input-operator-name" class="field-label">Nom de l'opérateur (caissier)</label>
+          <input id="input-operator-name" type="text" />
+          <label for="input-footer-message" class="field-label">Message de fin de ticket</label>
+          <input id="input-footer-message" type="text" />
+          <button id="btn-save-receipt-settings" class="secondary">Enregistrer</button>
         </div>
       </div>
 

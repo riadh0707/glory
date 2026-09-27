@@ -423,7 +423,7 @@ Occupy→GetStatus→Release→Close, 6/6 `result=0`, contre la VM simulateur
   `models.md`.
   **Bloquant : non**, detail mineur de gestion d'erreur.
 
-- [ ] **Scan de ticket/code-barres pour obtenir un prix** (demandé par le
+- [x] **(Annulé 2026-09-27, remplacé par un ticket imprimable) Scan de ticket/code-barres pour obtenir un prix** (demandé par le
   client le 2026-09-26) : reste flou — quel type de ticket, d'où vient le
   prix (fichier ? logiciel de caisse existant ?). Hors du périmètre du FCC
   (aucune opération SOAP de catalogue produit dans `soap-operations.md`) —

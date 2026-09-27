@@ -121,6 +121,64 @@ function printHtml(title: string, bodyHtml: string): void {
   window.print();
 }
 
+const EAN_L = ["0001101", "0011001", "0010011", "0111101", "0100011", "0110001", "0101111", "0111011", "0110111", "0001011"];
+const EAN_G = ["0100111", "0110011", "0011011", "0100001", "0011101", "0111001", "0000101", "0010001", "0001001", "0010111"];
+const EAN_R = ["1110010", "1100110", "1101100", "1000010", "1011100", "1001110", "1010000", "1000100", "1001000", "1110100"];
+const EAN_PARITY = ["LLLLLL", "LLGLGG", "LLGGLG", "LLGGGL", "LGLLGG", "LGGLLG", "LGGGLL", "LGLGLG", "LGLGGL", "LGGLGL"];
+
+/** Ajoute le chiffre de contrôle EAN-13 à 12 chiffres. */
+function ean13WithCheck(digits12: string): string {
+  let sum = 0;
+  for (let i = 0; i < 12; i++) sum += Number(digits12[i]) * (i % 2 === 0 ? 1 : 3);
+  return digits12 + String((10 - (sum % 10)) % 10);
+}
+
+/** Code-barres EAN-13 en SVG (aucune librairie — 95 modules). */
+function ean13Svg(digits13: string): string {
+  const first = Number(digits13[0]);
+  let bits = "101";
+  for (let i = 1; i <= 6; i++) {
+    const d = Number(digits13[i]);
+    bits += EAN_PARITY[first][i - 1] === "L" ? EAN_L[d] : EAN_G[d];
+  }
+  bits += "01010";
+  for (let i = 7; i <= 12; i++) bits += EAN_R[Number(digits13[i])];
+  bits += "101";
+  const bars = [...bits].map((b, i) => (b === "1" ? `<rect x="${i}" y="0" width="1" height="50"/>` : "")).join("");
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${bits.length} 50" width="240" height="70" preserveAspectRatio="none" fill="#000">${bars}</svg>`;
+}
+
+/** Ticket d'encaissement : en-tête commerce, date/heure, opérateur, n° de
+ * ticket, ligne d'espèces reçues, total, code-barres (2 + 5 + n° ticket sur
+ * 5 chiffres + montant en centimes sur 5 chiffres + contrôle), message. */
+function receiptHtml(s: ReceiptSettings, ticketNumber: number, amountCents: number): string {
+  const now = new Date();
+  const date = now.toLocaleDateString("fr-BE", { day: "2-digit", month: "short", year: "2-digit" }).toUpperCase().replace(/\./g, "");
+  const time = now.toLocaleTimeString("fr-BE", { hour: "2-digit", minute: "2-digit" });
+  const amount = (amountCents / 100).toFixed(2).replace(".", ",");
+  const code = ean13WithCheck(
+    "25" + String(ticketNumber % 100000).padStart(5, "0") + String(Math.min(amountCents, 99999)).padStart(5, "0")
+  );
+  return `<div class="receipt">
+    <div class="receipt-title">${escapeHtml(s.companyName)}</div>
+    <div class="receipt-sub">${escapeHtml(s.companyLine2)}</div>
+    <div class="receipt-row"><span>${escapeHtml(date)}</span><span>${escapeHtml(time)}</span><span>NrT:${String(ticketNumber).padStart(6, "0")}</span></div>
+    <div>${escapeHtml(s.operatorName)}</div>
+    <hr/>
+    <div class="receipt-row"><span>Espèces reçues</span><span>${amount}</span></div>
+    <hr/>
+    <div class="receipt-total"><span>TOTAL</span><span>${amount}</span></div>
+    <div class="receipt-barcode">${ean13Svg(code)}<div>${code[0]} ${code.slice(1, 7)} ${code.slice(7)}</div></div>
+    <div class="receipt-footer">${escapeHtml(s.footerMessage)}</div>
+  </div>`;
+}
+
+function printReceipt(html: string): void {
+  const area = document.getElementById("print-area") as HTMLDivElement;
+  area.innerHTML = html;
+  window.print();
+}
+
 window.addEventListener("DOMContentLoaded", () => {
   const appEl = document.querySelector(".app") as HTMLDivElement;
   const logEl = document.getElementById("log") as HTMLDivElement;
@@ -180,7 +238,37 @@ window.addEventListener("DOMContentLoaded", () => {
 
   let lastInventoryLines: DenomLine[] = [];
   let lastDayReport: DayReportResponse | null = null;
-  let lastReceiptHtml = `<p class="muted">Aucune opération d'encaissement effectuée pour l'instant.</p>`;
+  let lastAmountCents = 0;
+  const companyNameInput = document.getElementById("input-company-name") as HTMLInputElement;
+  const companyLine2Input = document.getElementById("input-company-line2") as HTMLInputElement;
+  const operatorNameInput = document.getElementById("input-operator-name") as HTMLInputElement;
+  const footerMessageInput = document.getElementById("input-footer-message") as HTMLInputElement;
+  const saveReceiptSettingsBtn = document.getElementById("btn-save-receipt-settings") as HTMLButtonElement;
+
+  function readReceiptSettings(nextTicketNumber: number): ReceiptSettings {
+    return {
+      companyName: companyNameInput.value.trim(),
+      companyLine2: companyLine2Input.value.trim(),
+      operatorName: operatorNameInput.value.trim(),
+      footerMessage: footerMessageInput.value.trim(),
+      nextTicketNumber,
+    };
+  }
+
+  let currentNextTicket = 1;
+  void window.api.receiptSettingsGet().then((s) => {
+    companyNameInput.value = s.companyName;
+    companyLine2Input.value = s.companyLine2;
+    operatorNameInput.value = s.operatorName;
+    footerMessageInput.value = s.footerMessage;
+    currentNextTicket = s.nextTicketNumber;
+  });
+
+  guardedClick(saveReceiptSettingsBtn, "Enregistrer infos ticket", async () => {
+    const saved = await window.api.receiptSettingsSave(readReceiptSettings(currentNextTicket));
+    currentNextTicket = saved.nextTicketNumber;
+    appendLine(logEl, "[UI] Informations du ticket enregistrées.", "tag-ui");
+  });
 
   // Préférence d'affichage locale au navigateur (pas de synchronisation
   // multi-poste nécessaire) — mémorise si le mode technique était ouvert,
@@ -262,18 +350,9 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  /** Met à jour la zone imprimable "reçu" après une opération d'encaissement
-   * (Démarrer/Terminer/Change/Annuler) — le client peut imprimer ce résumé
-   * juste après l'opération sans avoir à ouvrir le mode technique. */
-  function recordReceipt(label: string, message: string, ok: boolean): void {
-    lastReceiptHtml = `
-      <table class="op-table">
-        <tbody>
-          <tr><td>Opération</td><td>${escapeHtml(label)}</td></tr>
-          <tr><td>Résultat</td><td>${ok ? "OK" : "Échec"}</td></tr>
-          <tr><td>Détail</td><td>${escapeHtml(message)}</td></tr>
-        </tbody>
-      </table>`;
+  /** Mémorise le montant du dernier encaissement réussi pour le ticket. */
+  function recordReceipt(_label: string, _message: string, ok: boolean, amountCents?: number): void {
+    if (ok && amountCents && amountCents > 0) lastAmountCents = amountCents;
   }
 
   guardedClick(connectBtn, "Connecter", async () => {
@@ -324,7 +403,7 @@ window.addEventListener("DOMContentLoaded", () => {
   guardedClick(endCashinBtn, "Terminer encaissement", async () => {
     const result = await window.api.endCashin();
     appendLine(logEl, `[UI] Terminer encaissement → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
-    recordReceipt("Terminer encaissement", result.message, result.ok);
+    recordReceipt("Terminer encaissement", result.message, result.ok, result.amountCents);
     setStatePill(result.state);
   });
 
@@ -336,7 +415,7 @@ window.addEventListener("DOMContentLoaded", () => {
     }
     const result = await window.api.change(amount);
     appendLine(logEl, `[UI] Encaisser (Change, ${amount}) → ${result.message}`, result.ok ? "tag-ui" : "tag-error");
-    recordReceipt(`Encaisser (Change, ${amount})`, result.message, result.ok);
+    recordReceipt(`Encaisser (Change, ${amount})`, result.message, result.ok, result.amountCents);
     setStatePill(result.state);
   });
 
@@ -347,8 +426,17 @@ window.addEventListener("DOMContentLoaded", () => {
     setStatePill(result.state);
   });
 
-  printReceiptBtn.addEventListener("click", () => {
-    printHtml("Reçu — Glory FCC Client", lastReceiptHtml);
+  guardedClick(printReceiptBtn, "Imprimer le ticket", async () => {
+    const typed = Math.round(Number(amountInput.value.trim()));
+    const amountCents = lastAmountCents || typed;
+    if (!amountCents) {
+      appendLine(logEl, "[UI] Ticket → aucun montant encaissé à imprimer", "tag-error");
+      return;
+    }
+    const settings = readReceiptSettings(currentNextTicket);
+    const ticketNumber = await window.api.receiptTakeNumber();
+    currentNextTicket = ticketNumber + 1;
+    printReceipt(receiptHtml(settings, ticketNumber, amountCents));
   });
 
   guardedClick(startReplenishBtn, "Démarrer remplissage", async () => {

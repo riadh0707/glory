@@ -8,6 +8,7 @@ import { HistoryStore } from "../core/history-store";
 import { getModelConfig, isConfirmedModel } from "../core/model-adapter";
 import { generateDiagnosticReport, DiagnosticReportEnvironment } from "../core/diagnostic-report";
 import { loadFccConfig, saveFccConfig, FccConnectionConfig } from "../core/fcc-config";
+import { loadReceiptSettings, saveReceiptSettings, takeNextTicketNumber, ReceiptSettings } from "../core/receipt-settings";
 
 // Modèle actif : CI-10, seule instance dont l'endpoint a été vérifié
 // empiriquement (docs/architecture.md). CI-10X/CI-50 sont déclarés dans
@@ -301,6 +302,13 @@ interface TransactionResult {
   ok: boolean;
   message: string;
   state: SessionState;
+  amountCents?: number;
+}
+
+/** Somme en centimes de toutes les dénominations d'un champ `cash` (fv en
+ * centimes, voir aggregateDenoms côté renderer). */
+function sumCashCents(cash: unknown): number {
+  return flattenCashDenoms(cash).reduce((sum, l) => sum + l.piece * Number(l.fv), 0);
 }
 
 async function handleStartCashin(): Promise<TransactionResult> {
@@ -332,7 +340,7 @@ async function handleEndCashin(): Promise<TransactionResult> {
     const message = `${result.resultDescription} — espèces comptées : ${JSON.stringify(result.cash ?? "aucune")}`;
     sendLog(`EndCashin → result ${message}`);
     historyStore.record("soap-response", "EndCashinOperation", result);
-    return { ok: result.result === 0, message, state: stateMachine.getState() };
+    return { ok: result.result === 0, message, state: stateMachine.getState(), amountCents: sumCashCents(result.cash) };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     sendLog(`[ERREUR] ${message}`);
@@ -351,7 +359,7 @@ async function handleChange(amount: string): Promise<TransactionResult> {
     const message = `${result.resultDescription} — espèces : ${JSON.stringify(result.cash ?? "aucune")}`;
     sendLog(`Change(${amount}) → result ${message}`);
     historyStore.record("soap-response", "ChangeOperation", result);
-    return { ok: result.result === 0, message, state: stateMachine.getState() };
+    return { ok: result.result === 0, message, state: stateMachine.getState(), amountCents: Number(amount) || 0 };
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     sendLog(`[ERREUR] ${message}`);
@@ -1039,7 +1047,13 @@ ipcMain.handle(
     handleRendererError(context, message, stack)
 );
 ipcMain.handle(IpcChannels.DiagnosticDayReport, async (_event: IpcMainInvokeEvent) => handleDayReport());
-ipcMain.handle(IpcChannels.FccConfigGet, async (_event: IpcMainInvokeEvent) => handleFccConfigGet());
+ipcMain.handle(IpcChannels.ReceiptSettingsGet, async () => loadReceiptSettings(DATA_DIR));
+ipcMain.handle(IpcChannels.ReceiptSettingsSave, async (_event: IpcMainInvokeEvent, settings: ReceiptSettings) => {
+  saveReceiptSettings(DATA_DIR, settings);
+  return loadReceiptSettings(DATA_DIR);
+});
+ipcMain.handle(IpcChannels.ReceiptTakeNumber, async () => takeNextTicketNumber(DATA_DIR));
+ipcMain.handle(IpcChannels.FccConfigGet,async (_event: IpcMainInvokeEvent) => handleFccConfigGet());
 ipcMain.handle(IpcChannels.FccConfigSave, async (_event: IpcMainInvokeEvent, config: FccConnectionConfig) =>
   handleFccConfigSave(config)
 );
