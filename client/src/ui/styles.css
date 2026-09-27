@@ -617,3 +617,155 @@ pre#status-output {
     display: flex;
   }
 }
+
+/* ---------- Accueil : tuiles ---------- */
+.tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+  max-width: 780px;
+}
+.tile {
+  background: var(--panel);
+  border: 1px solid var(--rule);
+  border-radius: 16px;
+  box-shadow: var(--shadow);
+  padding: 26px 14px 20px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--ink);
+  aspect-ratio: 1 / 0.85;
+}
+.tile:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+.tile-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: var(--accent-soft);
+  display: grid;
+  place-items: center;
+}
+.tile-icon svg {
+  width: 26px;
+  height: 26px;
+  fill: none;
+  stroke: var(--accent-deep);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* ---------- Montant : affichage + pavé numérique ---------- */
+.amount-display {
+  font-size: 30px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  padding: 18px 16px;
+  background: var(--mono-bg);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  color: var(--ink);
+  text-align: left;
+  width: 100%;
+}
+.amount-display:hover {
+  border-color: var(--accent);
+}
+
+.keypad-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 15, 28, 0.55);
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+.keypad-overlay.open {
+  display: flex;
+}
+.keypad-modal {
+  background: var(--panel);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+  padding: 22px;
+  width: 320px;
+  max-width: calc(100vw - 32px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.keypad-amount {
+  text-align: center;
+  font-size: 34px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  padding: 10px;
+  background: var(--mono-bg);
+  border-radius: 12px;
+}
+.keypad-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.keypad-grid button {
+  font-size: 22px;
+  font-weight: 700;
+  padding: 18px 0;
+  border-radius: 12px;
+  background: var(--mono-bg);
+  border: 1px solid var(--rule);
+  color: var(--ink);
+}
+.keypad-grid button:hover {
+  background: var(--accent-soft);
+}
+.keypad-grid button.keypad-clear {
+  color: var(--bad);
+}
+.keypad-grid button.keypad-ok {
+  background: var(--accent);
+  color: #fff;
+  border-color: transparent;
+}
+.keypad-grid button.keypad-ok:hover {
+  background: var(--accent-deep);
+}
+.keypad-actions {
+  display: flex;
+  gap: 10px;
+}
+.keypad-actions button {
+  flex: 1;
+}
+
+/* ---------- Barre de niveau (inventaire) ---------- */
+.stock-bar {
+  width: 84px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--mono-bg);
+  overflow: hidden;
+  margin-left: auto;
+}
+.stock-bar-fill {
+  height: 100%;
+  border-radius: 999px;
+}
+.stock-bar-fill.ok {
+  background: var(--ok);
+}
+.stock-bar-fill.mid {
+  background: var(--warn);
+}
+.stock-bar-fill.low {
+  background: var(--bad);
+}

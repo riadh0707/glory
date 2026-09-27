@@ -61,24 +61,39 @@ function formatAmount(fvCents: string | number): string {
   return (Number(fvCents) / 100).toFixed(2).replace(".", ",");
 }
 
+/**
+ * Repère visuel de niveau de stock par dénomination — seuils indicatifs
+ * (pas une règle métier confirmée par le client, juste un signal rapide type
+ * "à surveiller / correct" inspiré de l'écran Inventory du logiciel Glory
+ * de référence, qui colore chaque ligne selon son taux de remplissage).
+ */
+function stockLevel(piece: number, maxPiece: number): { pct: number; cls: string } {
+  const pct = maxPiece > 0 ? Math.max(6, Math.round((piece / maxPiece) * 100)) : 0;
+  const cls = piece < 5 ? "low" : piece < 20 ? "mid" : "ok";
+  return { pct, cls };
+}
+
 function denomTableHtml(lines: DenomLine[]): string {
   const aggregated = aggregateDenoms(lines);
   if (aggregated.length === 0) {
     return `<p class="muted">Aucune dénomination détectée.</p>`;
   }
+  const maxPiece = Math.max(...aggregated.map((d) => d.piece));
   const totalsByCurrency = new Map<string, number>();
   const rows = aggregated
     .map((d) => {
       const value = (d.piece * Number(d.fv)) / 100;
       totalsByCurrency.set(d.cc, (totalsByCurrency.get(d.cc) ?? 0) + value);
-      return `<tr><td>${escapeHtml(d.cc)}</td><td>${formatAmount(d.fv)}</td><td>${d.piece}</td><td>${value.toFixed(2).replace(".", ",")}</td></tr>`;
+      const level = stockLevel(d.piece, maxPiece);
+      const bar = `<div class="stock-bar"><div class="stock-bar-fill ${level.cls}" style="width:${level.pct}%"></div></div>`;
+      return `<tr><td>${escapeHtml(d.cc)}</td><td>${formatAmount(d.fv)}</td><td>${d.piece}</td><td>${bar}</td><td>${value.toFixed(2).replace(".", ",")}</td></tr>`;
     })
     .join("");
   const footRows = [...totalsByCurrency.entries()]
-    .map(([cc, total]) => `<tr><td colspan="3">Total ${escapeHtml(cc)}</td><td>${total.toFixed(2).replace(".", ",")}</td></tr>`)
+    .map(([cc, total]) => `<tr><td colspan="4">Total ${escapeHtml(cc)}</td><td>${total.toFixed(2).replace(".", ",")}</td></tr>`)
     .join("");
   return `<table class="denom-table">
-    <thead><tr><th>Devise</th><th>Valeur unitaire</th><th>Quantité</th><th>Total</th></tr></thead>
+    <thead><tr><th>Devise</th><th>Valeur unitaire</th><th>Quantité</th><th>Niveau</th><th>Total</th></tr></thead>
     <tbody>${rows}</tbody>
     <tfoot>${footRows}</tfoot>
   </table>`;
@@ -202,6 +217,11 @@ window.addEventListener("DOMContentLoaded", () => {
   const endCashinBtn = document.getElementById("btn-end-cashin") as HTMLButtonElement;
   const changeBtn = document.getElementById("btn-change") as HTMLButtonElement;
   const amountInput = document.getElementById("input-amount") as HTMLInputElement;
+  const openKeypadBtn = document.getElementById("btn-open-keypad") as HTMLButtonElement;
+  const keypadOverlay = document.getElementById("keypad-overlay") as HTMLDivElement;
+  const keypadAmountEl = document.getElementById("keypad-amount") as HTMLDivElement;
+  const keypadCancelBtn = document.getElementById("btn-keypad-cancel") as HTMLButtonElement;
+  const keypadConfirmBtn = document.getElementById("btn-keypad-confirm") as HTMLButtonElement;
   const startReplenishBtn = document.getElementById("btn-start-replenish") as HTMLButtonElement;
   const endReplenishBtn = document.getElementById("btn-end-replenish") as HTMLButtonElement;
   const lockBtn = document.getElementById("btn-lock") as HTMLButtonElement;
@@ -300,19 +320,30 @@ window.addEventListener("DOMContentLoaded", () => {
   const pages = document.querySelectorAll<HTMLElement>(".page");
   const pageTitleEl = document.getElementById("page-title") as HTMLElement;
   const pageSubEl = document.getElementById("page-sub") as HTMLElement;
-  navItems.forEach((item) => {
-    item.addEventListener("click", () => {
-      navItems.forEach((n) => n.classList.toggle("active", n === item));
-      pages.forEach((p) => {
-        const isTarget = p.dataset.page === item.dataset.nav;
-        p.classList.toggle("active", isTarget);
-        if (isTarget) {
-          pageTitleEl.textContent = p.dataset.title ?? "";
-          pageSubEl.textContent = p.dataset.sub ?? "";
-        }
-      });
+  function goToPage(pageName: string): void {
+    navItems.forEach((n) => n.classList.toggle("active", n.dataset.nav === pageName));
+    pages.forEach((p) => {
+      const isTarget = p.dataset.page === pageName;
+      p.classList.toggle("active", isTarget);
+      if (isTarget) {
+        pageTitleEl.textContent = p.dataset.title ?? "";
+        pageSubEl.textContent = p.dataset.sub ?? "";
+      }
     });
+  }
+
+  navItems.forEach((item) => {
+    item.addEventListener("click", () => goToPage(item.dataset.nav ?? ""));
   });
+
+  // Tuiles de la page Accueil (voir index.html, .tiles) — même destination
+  // que les entrées de la barre latérale, juste un point d'entrée plus
+  // visuel/tactile (inspiré de l'écran d'accueil du logiciel Glory de
+  // référence : de grandes tuiles à icône plutôt qu'une liste de menu).
+  document.querySelectorAll<HTMLButtonElement>(".tile[data-goto]").forEach((tile) => {
+    tile.addEventListener("click", () => goToPage(tile.dataset.goto ?? ""));
+  });
+  document.getElementById("tile-toggle-tech")?.addEventListener("click", () => toggleTechBtn.click());
 
   toggleTechBtn.addEventListener("click", () => {
     const isOn = appEl.classList.toggle("tech-on");
@@ -322,6 +353,66 @@ window.addEventListener("DOMContentLoaded", () => {
       // Ignoré (voir ci-dessus) — la préférence ne survivra pas au
       // redémarrage, sans conséquence fonctionnelle.
     }
+  });
+
+  /**
+   * Pavé numérique tactile pour saisir un montant — inspiré de l'écran de
+   * saisie du logiciel Glory de référence (les chiffres tapés poussent la
+   * valeur par la droite, les deux derniers restant les centimes, comme sur
+   * un terminal de paiement) plutôt qu'un clavier physique, plus adapté à un
+   * écran tactile en caisse. `input-amount` (caché) garde la valeur en
+   * centimes pour le reste du code, inchangé.
+   */
+  let keypadDigits = amountInput.value.trim() || "0";
+
+  function keypadRender(): void {
+    const cents = Number(keypadDigits) || 0;
+    keypadAmountEl.textContent = `${(cents / 100).toFixed(2).replace(".", ",")} €`;
+  }
+
+  function updateAmountDisplay(): void {
+    const cents = Number(amountInput.value) || 0;
+    openKeypadBtn.textContent = `${(cents / 100).toFixed(2).replace(".", ",")} €`;
+  }
+  updateAmountDisplay();
+
+  function openKeypad(): void {
+    keypadDigits = amountInput.value.trim() || "0";
+    keypadRender();
+    keypadOverlay.classList.add("open");
+  }
+  function closeKeypad(): void {
+    keypadOverlay.classList.remove("open");
+  }
+
+  openKeypadBtn.addEventListener("click", openKeypad);
+  keypadCancelBtn.addEventListener("click", closeKeypad);
+  keypadOverlay.addEventListener("click", (e) => {
+    if (e.target === keypadOverlay) closeKeypad();
+  });
+
+  document.querySelectorAll<HTMLButtonElement>(".keypad-grid button").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const k = btn.dataset.k ?? "";
+      if (k === "OK") {
+        amountInput.value = String(Number(keypadDigits) || 0);
+        updateAmountDisplay();
+        closeKeypad();
+        return;
+      }
+      if (k === "C") {
+        keypadDigits = "0";
+      } else {
+        keypadDigits = (keypadDigits + k).replace(/^0+(?=\d)/, "");
+        if (keypadDigits.length > 9) keypadDigits = keypadDigits.slice(0, 9);
+      }
+      keypadRender();
+    });
+  });
+  keypadConfirmBtn.addEventListener("click", () => {
+    amountInput.value = String(Number(keypadDigits) || 0);
+    updateAmountDisplay();
+    closeKeypad();
   });
 
   window.api.onLogLine((line) => appendLine(logEl, line, classifyLogLine(line)));
@@ -441,8 +532,8 @@ window.addEventListener("DOMContentLoaded", () => {
 
   guardedClick(changeBtn, "Encaisser (Change)", async () => {
     const amount = amountInput.value.trim();
-    if (!amount) {
-      appendLine(logEl, "[UI] Encaisser (Change) → montant requis", "tag-error");
+    if (!amount || Number(amount) <= 0) {
+      appendLine(logEl, "[UI] Encaisser (Change) → montant requis (touchez le montant pour l'ouvrir)", "tag-error");
       return;
     }
     const result = await window.api.change(amount);

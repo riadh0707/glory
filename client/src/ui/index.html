@@ -17,7 +17,11 @@
       </div>
     </div>
     <nav class="nav">
-      <button class="nav-item active" data-nav="caisse">
+      <button class="nav-item active" data-nav="accueil">
+        <svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7"/><path d="M6 10v10h12V10"/></svg>
+        Accueil
+      </button>
+      <button class="nav-item" data-nav="caisse">
         <svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg>
         Caisse
       </button>
@@ -46,8 +50,8 @@
   <div class="content">
     <header class="topbar">
       <div>
-        <h1 id="page-title">Caisse</h1>
-        <p id="page-sub">Encaissement et remplissage</p>
+        <h1 id="page-title">Accueil</h1>
+        <p id="page-sub">Que voulez-vous faire ?</p>
       </div>
       <div class="topbar-right">
         <span id="state-pill" class="status-pill state-Closed">
@@ -61,14 +65,45 @@
     </header>
 
     <main>
+      <!-- ============ ACCUEIL ============ -->
+      <section class="page active" data-page="accueil" data-title="Accueil" data-sub="Que voulez-vous faire ?">
+        <div class="tiles">
+          <button class="tile" data-goto="caisse">
+            <span class="tile-icon"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/></svg></span>
+            Caisse
+          </button>
+          <button class="tile" data-goto="inventaire">
+            <span class="tile-icon"><svg viewBox="0 0 24 24"><path d="M4 7l8-4 8 4-8 4-8-4z"/><path d="M4 12l8 4 8-4"/><path d="M4 17l8 4 8-4"/></svg></span>
+            Inventaire
+          </button>
+          <button class="tile" data-goto="rapports">
+            <span class="tile-icon"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7"/></svg></span>
+            Rapports
+          </button>
+          <button class="tile" data-goto="maintenance">
+            <span class="tile-icon"><svg viewBox="0 0 24 24"><path d="M14 6a4 4 0 0 0 4 4l-9 9a2.1 2.1 0 0 1-3-3l9-9a4 4 0 0 0-1-1z"/></svg></span>
+            Maintenance
+          </button>
+          <button class="tile" data-goto="reglages">
+            <span class="tile-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg></span>
+            Réglages
+          </button>
+          <button class="tile" id="tile-toggle-tech">
+            <span class="tile-icon"><svg viewBox="0 0 24 24"><path d="M4 4l7 7M11 4l-7 7"/><rect x="9" y="9" width="12" height="12" rx="2"/></svg></span>
+            Mode technique
+          </button>
+        </div>
+      </section>
+
       <!-- ============ CAISSE ============ -->
-      <section class="page active" data-page="caisse" data-title="Caisse" data-sub="Encaissement et remplissage">
+      <section class="page" data-page="caisse" data-title="Caisse" data-sub="Encaissement et remplissage">
         <div class="grid two">
           <div class="card">
             <h2>Encaissement</h2>
             <div class="controls">
-              <label for="input-amount" class="field-label">Montant à encaisser (en centimes)</label>
-              <input id="input-amount" class="amount" type="text" inputmode="numeric" placeholder="ex. 1000 = 10,00" />
+              <label class="field-label">Montant à encaisser</label>
+              <button id="btn-open-keypad" type="button" class="amount-display">0,00 €</button>
+              <input id="input-amount" type="hidden" value="0" />
               <button id="btn-change" class="primary big">Encaisser</button>
               <div class="button-row">
                 <button id="btn-start-cashin" class="secondary">Démarrer</button>
@@ -269,6 +304,30 @@
 </div>
 
 <div id="print-area"></div>
+
+<div id="keypad-overlay" class="keypad-overlay">
+  <div class="keypad-modal">
+    <div class="keypad-amount" id="keypad-amount">0,00 €</div>
+    <div class="keypad-grid">
+      <button type="button" data-k="7">7</button>
+      <button type="button" data-k="8">8</button>
+      <button type="button" data-k="9">9</button>
+      <button type="button" data-k="4">4</button>
+      <button type="button" data-k="5">5</button>
+      <button type="button" data-k="6">6</button>
+      <button type="button" data-k="1">1</button>
+      <button type="button" data-k="2">2</button>
+      <button type="button" data-k="3">3</button>
+      <button type="button" class="keypad-clear" data-k="C">✕</button>
+      <button type="button" data-k="0">0</button>
+      <button type="button" class="keypad-ok" data-k="OK">✓</button>
+    </div>
+    <div class="keypad-actions">
+      <button type="button" id="btn-keypad-cancel" class="secondary big">Annuler</button>
+      <button type="button" id="btn-keypad-confirm" class="primary big">Valider</button>
+    </div>
+  </div>
+</div>
 
 <script src="./renderer.js"></script>
 </body>
