@@ -936,7 +936,15 @@ async function handleGenerateReport(): Promise<DiagnosticReportResponse> {
       platform: `${process.platform} ${process.arch}`,
       nodeVersion: process.version,
     };
-    const events = historyStore.getAllEvents();
+    // Bug réel (2026-09-27) : `getAllEvents()` renvoie TOUT l'historique
+    // jamais enregistré (potentiellement des semaines, plusieurs Mo) —
+    // le rapport devenait illisible et noyait le problème réel du jour
+    // sous des mois de sessions passées. On ne garde que les événements de
+    // la session en cours (depuis le démarrage de l'app), plafonnés en plus
+    // à 2000 par sécurité si une même session tourne très longtemps.
+    const allEvents = historyStore.getAllEvents();
+    const sessionEvents = allEvents.filter((e) => e.ts >= APP_STARTED_AT);
+    const events = sessionEvents.length > 2000 ? sessionEvents.slice(-2000) : sessionEvents;
     const result = generateDiagnosticReport(path.join(DATA_DIR, "reports"), env, events);
     const message = `Rapport généré (${result.eventCount} événements, ${result.errorCount} erreurs) → ${result.markdownPath}`;
     sendLog(`[UI] Rapport de diagnostic → ${message}`);

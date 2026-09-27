@@ -345,14 +345,33 @@ window.addEventListener("DOMContentLoaded", () => {
   });
   document.getElementById("tile-toggle-tech")?.addEventListener("click", () => toggleTechBtn.click());
 
+  /**
+   * **Bug réel remonté par le client (2026-09-27)** : le bouton "Mode
+   * technique" changeait bien l'état interne (classe `tech-on` posée sur
+   * `.app`), mais les éléments `[data-tech]` n'existent QUE sur la page
+   * Maintenance (panneau "Outils techniques" + journaux SOAP/TCP) — en
+   * cliquant depuis n'importe quelle autre page (Accueil, Caisse...), rien
+   * ne change visiblement à l'écran, ce qui donnait l'impression que le
+   * bouton ne faisait rien. Corrigé en (1) amenant automatiquement sur la
+   * page Maintenance à l'activation, pour que l'effet soit immédiatement
+   * visible, et (2) donnant un état visuel clair au bouton lui-même.
+   */
+  function setTechButtonLabel(isOn: boolean): void {
+    toggleTechBtn.textContent = isOn ? "Mode technique (actif)" : "Mode technique";
+    toggleTechBtn.classList.toggle("active", isOn);
+  }
+  setTechButtonLabel(appEl.classList.contains("tech-on"));
+
   toggleTechBtn.addEventListener("click", () => {
     const isOn = appEl.classList.toggle("tech-on");
+    setTechButtonLabel(isOn);
     try {
       localStorage.setItem("glory-tech-mode", isOn ? "1" : "0");
     } catch {
       // Ignoré (voir ci-dessus) — la préférence ne survivra pas au
       // redémarrage, sans conséquence fonctionnelle.
     }
+    if (isOn) goToPage("maintenance");
   });
 
   /**

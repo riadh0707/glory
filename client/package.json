@@ -1,7 +1,7 @@
 {
   "name": "glory-fcc-client",
   "productName": "Glory FCC Client",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "private": true,
   "description": "Client Electron pilotant un FCC Glory (ISP-K05B) via BrueBoxService (SOAP). Voir docs/ à la racine du SDK pour la documentation de référence.",
   "author": {

@@ -769,3 +769,9 @@ pre#status-output {
 .stock-bar-fill.low {
   background: var(--bad);
 }
+
+button.ghost.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: transparent;
+}
