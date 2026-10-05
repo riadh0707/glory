@@ -36,53 +36,117 @@ function cashDetail(lines: DenomLine[]): string {
 
 function renderSale(root: HTMLElement): void {
   root.innerHTML = `<div class="sale">
-    <section class="card sale-entry">
-      <div class="card-head"><h2>Montant à encaisser</h2></div>
-      <div class="amount-big" id="sale-amount">0,00 €</div>
+    <section class="sale-entry">
+      <div class="display">
+        <span class="display-label">Montant de la vente</span>
+        <span class="display-amount" id="sale-amount">0,00 €</span>
+      </div>
       <div id="sale-pad"></div>
-      <button class="btn btn-primary btn-xl" id="sale-go">Encaisser</button>
+      <div class="sale-actions">
+        <button class="btn btn-lg" id="sale-clear">Effacer</button>
+        <button class="btn btn-primary btn-xl" id="sale-go">Encaisser</button>
+      </div>
     </section>
-    <section class="card sale-live" id="sale-live"></section>
+    <section class="sale-live" id="sale-live"></section>
   </div>`;
-  if (S.cashier.connection !== "connected") {
-    $("#sale-live", root).innerHTML = `<div class="empty small"><h2>Terminal non connecté</h2><p>Connectez-le pour encaisser.</p><button class="btn btn-primary" id="sale-connect">Connecter</button></div>`;
-    $("#sale-connect", root).addEventListener("click", async (e) => {
-      await connectTerminal(e.currentTarget as HTMLButtonElement);
-      goTo("sale");
-    });
-  } else idlePanel();
 
   const amountEl = $("#sale-amount", root);
-  const pad = keypad($("#sale-pad", root), { mode: "money", onChange: (v) => (amountEl.textContent = money(Number(v || "0"))), onEnter: () => void start() });
   const goBtn = $<HTMLButtonElement>("#sale-go", root);
+  const pad = keypad($("#sale-pad", root), {
+    mode: "money",
+    onChange: (text, cents) => {
+      amountEl.innerHTML = amountDisplay(text);
+      amountEl.classList.toggle("is-empty", cents === 0);
+      goBtn.disabled = cents === 0;
+    },
+    onEnter: () => void start(),
+  });
+  pad.set("");
+  $("#sale-clear", root).addEventListener("click", () => pad.set(""));
   goBtn.addEventListener("click", () => void start());
+  idlePanel();
 
   function idlePanel(): void {
     const live = $("#sale-live", root);
-    live.innerHTML = `<div class="card-head"><h2>Dernières ventes</h2></div><div id="recent" class="recent"><p class="muted">Chargement…</p></div>`;
-    void window.api.call<TransactionRow[]>("history.list", ymd(new Date()), ymd(new Date())).then((rows) => {
+    if (S.cashier.connection !== "connected") {
+      live.innerHTML = `<div class="panel panel-center">
+        <div class="big-icon">${icon("plug")}</div>
+        <h2>Terminal non connecté</h2>
+        <p class="muted">Branchez le terminal pour encaisser.</p>
+        <button class="btn btn-primary btn-lg" id="sale-connect">Connecter le terminal</button></div>`;
+      $("#sale-connect", live).addEventListener("click", async (e) => {
+        await connectTerminal(e.currentTarget as HTMLButtonElement);
+        idlePanel();
+      });
+      return;
+    }
+    live.innerHTML = `<div class="panel">
+      <div class="panel-head"><h2>Aujourd'hui</h2></div>
+      <div class="day-kpis">
+        <div class="day-kpi day-kpi-main"><span>Chiffre d'affaires</span><strong id="k-ca">…</strong></div>
+        <div class="day-kpi"><span>Ventes</span><strong id="k-n">…</strong></div>
+        <div class="day-kpi"><span>Panier moyen</span><strong id="k-avg">…</strong></div>
+        <div class="day-kpi" id="k-change-box"><span>Monnaie pour rendre</span><strong id="k-change">…</strong></div>
+      </div>
+      <div class="panel-head"><h2>Dernières ventes</h2></div>
+      <div id="recent" class="recent"></div>
+    </div>`;
+    const today = ymd(new Date());
+    void window.api.call<PeriodStats>("stats.period", today, today).then((s) => {
+      if (!document.body.contains(live) || !s) return;
+      $("#k-ca", live).textContent = money(s.salesCents);
+      $("#k-n", live).textContent = String(s.salesCount);
+      $("#k-avg", live).textContent = money(s.averageSaleCents);
+    });
+    void window.api.call<OpResult & { inventory?: InventorySnapshot }>("fcc.inventory").then((r) => {
+      if (!document.body.contains(live)) return;
+      const box = document.getElementById("k-change-box");
+      if (!r.ok || !r.inventory || !box) return void (($("#k-change", live).textContent = "—"));
+      const disp = r.inventory.dispensable;
+      const coins = sumCents(disp.filter((l) => Number(l.fv) < 500));
+      $("#k-change", live).textContent = money(sumCents(disp));
+      // Peu de pièces = risque de ne pas pouvoir rendre la monnaie.
+      if (coins < 2000) {
+        box.classList.add("day-kpi-warn");
+        box.insertAdjacentHTML("beforeend", `<small>Peu de pièces (${money(coins)})</small>`);
+      }
+    });
+    void window.api.call<TransactionRow[]>("history.list", today, today).then((rows) => {
       const el = document.getElementById("recent");
-      if (!el) return;
-      const sales = rows.filter((r) => r.kind === "sale" && r.ok).slice(0, 8);
+      if (!el || !Array.isArray(rows)) return;
+      const sales = rows.filter((r) => r.kind === "sale" && r.ok).slice(0, 7);
       el.innerHTML = sales.length
-        ? sales.map((r) => `<div class="recent-row"><span>${new Date(r.ts).toLocaleTimeString("fr-BE", { hour: "2-digit", minute: "2-digit" })}</span><span>${esc(r.user)}</span><strong>${money(r.dueCents)}</strong></div>`).join("")
-        : `<p class="muted">Aucune vente aujourd'hui.</p>`;
+        ? sales
+            .map(
+              (r) => `<div class="recent-row"><span class="recent-time">${new Date(r.ts).toLocaleTimeString("fr-BE", { hour: "2-digit", minute: "2-digit" })}</span>
+              <span class="recent-user">${esc(r.user)}</span>
+              <span class="recent-change">${r.outCents ? `rendu ${money(r.outCents)}` : ""}</span>
+              <strong>${money(r.dueCents)}</strong></div>`
+            )
+            .join("")
+        : `<p class="muted empty-line">Aucune vente pour l'instant.</p>`;
     });
   }
 
   async function start(): Promise<void> {
     const due = pad.cents();
-    if (due <= 0) return toast("Saisissez le montant à encaisser.", "error");
+    if (due <= 0) return toast("Tapez le montant de la vente.", "error");
     if (S.cashier.connection !== "connected") return toast("Terminal non connecté.", "error");
     goBtn.disabled = true;
+    $<HTMLButtonElement>("#sale-clear", root).disabled = true;
+    $("#sale-pad", root).classList.add("is-locked");
     let received = 0;
+    const inserted = new Map<string, DenomLine>();
     const live = $("#sale-live", root);
-    live.innerHTML = `<div class="pay">
-      <div class="pay-row"><span>À payer</span><strong>${money(due)}</strong></div>
-      <div class="pay-row pay-in"><span>Reçu</span><strong id="pay-in">${money(0)}</strong></div>
-      <div class="pay-row pay-rest"><span id="pay-rest-label">Reste à payer</span><strong id="pay-rest">${money(due)}</strong></div>
+    live.innerHTML = `<div class="panel pay">
+      <div class="pay-state"><span class="pulse"></span><span id="pay-status">Invitez le client à insérer billets et pièces</span></div>
+      <div class="pay-grid">
+        <div class="pay-fig"><span>À payer</span><strong>${money(due)}</strong></div>
+        <div class="pay-fig pay-fig-in"><span>Reçu</span><strong id="pay-in">${money(0)}</strong></div>
+        <div class="pay-fig pay-fig-rest"><span id="pay-rest-label">Reste à payer</span><strong id="pay-rest">${money(due)}</strong></div>
+      </div>
       <div class="pay-progress"><span id="pay-bar"></span></div>
-      <p class="pay-status" id="pay-status">Invitez le client à insérer billets et pièces.</p>
+      <div id="pay-cash" class="pay-cash"></div>
       <button class="btn btn-danger btn-lg btn-block" id="pay-cancel">Annuler la vente</button>
     </div>`;
     const update = () => {
@@ -90,14 +154,21 @@ function renderSale(root: HTMLElement): void {
       $("#pay-in", live).textContent = money(received);
       $("#pay-rest-label", live).textContent = rest > 0 ? "Reste à payer" : "À rendre";
       $("#pay-rest", live).textContent = money(Math.abs(rest));
+      $(".pay-fig-rest", live).classList.toggle("is-change", rest < 0);
       $<HTMLElement>("#pay-bar", live).style.width = `${Math.min(100, (received / due) * 100)}%`;
     };
     onFcc((e) => {
       if (e.kind === "status") {
         if (e.amountCents > 0 || e.status === 3) received = e.amountCents;
         const st = document.getElementById("pay-status");
-        if (st) st.textContent = e.label;
+        if (st) st.textContent = e.status === 3 ? "Insérez billets et pièces" : e.label;
         update();
+      }
+      if (e.kind === "deposit") {
+        for (const k of [...inserted.keys()]) if (inserted.get(k)!.devid === e.devid) inserted.delete(k);
+        for (const l of e.lines) inserted.set(`${l.devid}|${l.fv}`, l);
+        const box = document.getElementById("pay-cash");
+        if (box) box.innerHTML = cashDetail([...inserted.values()]);
       }
     });
     $<HTMLButtonElement>("#pay-cancel", live).addEventListener("click", async (ev) => {
@@ -114,29 +185,31 @@ function renderSale(root: HTMLElement): void {
 
     const r = await window.api.call<MoneyResult>("sale.start", due);
     screenListeners = [];
-    goBtn.disabled = false;
+    $<HTMLButtonElement>("#sale-clear", root).disabled = false;
+    $("#sale-pad", root).classList.remove("is-locked");
     if (!document.body.contains(live)) return;
     if (r.ok) {
       pad.set("");
-      live.innerHTML = `<div class="pay pay-done">
-        <div class="done-badge">✓ Paiement accepté</div>
-        <div class="pay-row"><span>Total</span><strong>${money(due)}</strong></div>
-        <div class="pay-row"><span>Reçu</span><strong>${money(r.inCents)}</strong></div>
-        <div class="pay-row pay-change"><span>Rendu</span><strong>${money(r.outCents)}</strong></div>
-        <h3>Reçu</h3>${cashDetail(r.inLines)}
-        ${r.outLines.length ? `<h3>Rendu</h3>${cashDetail(r.outLines)}` : ""}
-        <div class="row-actions"><button class="btn btn-lg" id="pay-print">Imprimer le ticket</button><button class="btn btn-primary btn-lg" id="pay-new">Nouvelle vente</button></div>
+      live.innerHTML = `<div class="panel pay pay-done">
+        <div class="done-head"><span class="done-check">✓</span><div><h2>Paiement accepté</h2><p class="muted">${money(due)} encaissés</p></div></div>
+        <div class="change-hero ${r.outCents ? "" : "no-change"}"><span>${r.outCents ? "Monnaie rendue" : "Pas de monnaie à rendre"}</span><strong>${money(r.outCents)}</strong></div>
+        <div class="pay-grid pay-grid-2">
+          <div class="pay-fig"><span>Total</span><strong>${money(due)}</strong></div>
+          <div class="pay-fig"><span>Reçu</span><strong>${money(r.inCents)}</strong></div>
+        </div>
+        <div class="cash-cols"><div><h3>Reçu</h3>${cashDetail(r.inLines)}</div>${r.outLines.length ? `<div><h3>Rendu</h3>${cashDetail(r.outLines)}</div>` : ""}</div>
+        <div class="row-actions"><button class="btn btn-lg" id="pay-print">${icon("print")} Imprimer le ticket</button><button class="btn btn-primary btn-lg" id="pay-new">Nouvelle vente</button></div>
       </div>`;
       const ticketLines: TicketLine[] = [{ label: "TOTAL", value: money(due), strong: true }];
       $("#pay-print", live).addEventListener("click", () => void printMoneyTicket("Vente", r, ticketLines));
       $("#pay-new", live).addEventListener("click", () => idlePanel());
       if (S.settings?.autoPrintReceipt) void printMoneyTicket("Vente", r, ticketLines);
     } else {
-      live.innerHTML = `<div class="pay pay-fail">
-        <div class="fail-badge">Vente non aboutie</div>
-        <p>${esc(r.message)}</p>
+      goBtn.disabled = pad.cents() === 0;
+      live.innerHTML = `<div class="panel pay pay-fail">
+        <div class="done-head"><span class="done-check fail">!</span><div><h2>Vente non aboutie</h2><p>${esc(r.message)}</p></div></div>
         ${r.inLines?.length ? `<h3>Espèces rendues au client</h3>${cashDetail(r.inLines)}` : ""}
-        <button class="btn btn-primary btn-lg" id="pay-back">Retour</button></div>`;
+        <div class="row-actions"><button class="btn btn-primary btn-lg" id="pay-back">Retour</button></div></div>`;
       $("#pay-back", live).addEventListener("click", () => idlePanel());
     }
   }
@@ -226,24 +299,70 @@ function stockHtml(inv: InventorySnapshot): string {
 
 // ================================================================= OPÉRATIONS
 
-function tabs(root: HTMLElement, items: Array<{ id: string; label: string; render: (el: HTMLElement) => void }>): void {
-  root.innerHTML = `<div class="tabs">${items.map((t) => `<button class="tab" data-tab="${t.id}">${esc(t.label)}</button>`).join("")}</div><div class="tab-body"></div>`;
-  const body = $(".tab-body", root);
-  const show = (id: string) => {
+interface HubTile {
+  id: string;
+  label: string;
+  desc: string;
+  icon: string;
+  tone?: "danger";
+  /** Ouvre un panneau dédié (avec bouton Retour). */
+  render?: (el: HTMLElement) => void;
+  /** Ou lance directement l'action (avec confirmation éventuelle). */
+  action?: (btn: HTMLButtonElement) => Promise<void>;
+}
+
+/**
+ * Grille de grandes tuiles, comme le menu du logiciel Glory de référence
+ * du client : une tuile = une tâche, avec une phrase qui dit à quoi elle
+ * sert. Une tuile ouvre un panneau ou lance directement l'action.
+ */
+function hub(root: HTMLElement, items: HubTile[]): void {
+  const grid = () => {
     screenListeners = [];
-    for (const b of $$(".tab", root)) b.classList.toggle("active", b.dataset.tab === id);
-    body.innerHTML = "";
-    items.find((t) => t.id === id)!.render(body);
+    root.innerHTML = `<div class="tiles">${items
+      .map(
+        (t) =>
+          `<button class="tile ${t.tone === "danger" ? "tile-danger" : ""}" data-tile="${t.id}"><span class="tile-icon">${icon(t.icon)}</span><span class="tile-label">${esc(t.label)}</span><span class="tile-desc">${esc(t.desc)}</span></button>`
+      )
+      .join("")}</div>`;
+    for (const b of $$<HTMLButtonElement>("[data-tile]", root)) {
+      b.addEventListener("click", () => {
+        const t = items.find((x) => x.id === b.dataset.tile)!;
+        if (t.action) void busy(b, () => t.action!(b));
+        else open(t);
+      });
+    }
   };
-  for (const b of $$<HTMLButtonElement>(".tab", root)) b.addEventListener("click", () => show(b.dataset.tab!));
-  show(items[0].id);
+  const open = (t: HubTile) => {
+    screenListeners = [];
+    root.innerHTML = `<div class="subhead"><button class="btn btn-back" id="hub-back">${icon("back")}<span>Retour</span></button><h2>${esc(t.label)}</h2></div><div class="subbody"></div>`;
+    $("#hub-back", root).addEventListener("click", grid);
+    t.render!($(".subbody", root));
+  };
+  grid();
+}
+
+/** Tuile d'action simple : confirmation éventuelle puis appel au terminal. */
+function actionTile(id: string, label: string, desc: string, iconName: string, call: string, confirmText?: string, tone?: "danger"): HubTile {
+  return {
+    id,
+    label,
+    desc,
+    icon: iconName,
+    tone,
+    action: async () => {
+      if (S.cashier.connection !== "connected") return void toast("Terminal non connecté.", "error");
+      if (confirmText && !(await confirmDialog(label, confirmText, "Confirmer", tone === "danger"))) return;
+      report(await window.api.call(call));
+    },
+  };
 }
 
 /** Dépôt « en direct » : start → comptage → fin/annulation. */
 function liveDeposit(el: HTMLElement, cfg: { title: string; intro: string; start: string; end: string; cancel: string; done: (r: MoneyResult) => void }): void {
   el.innerHTML = `<div class="card narrow">
     <p>${esc(cfg.intro)}</p>
-    <div class="live-count"><span>Compté</span><strong id="dep-total">${money(0)}</strong></div>
+    <div class="display display-sm"><span class="display-label">Compté</span><span class="display-amount" id="dep-total">${money(0)}</span></div>
     <div id="dep-lines"></div>
     <div class="row-actions">
       <button class="btn btn-primary btn-lg" id="dep-start">Démarrer</button>
@@ -294,10 +413,12 @@ function liveDeposit(el: HTMLElement, cfg: { title: string; intro: string; start
 
 function renderOps(root: HTMLElement): void {
   if (!requireConnected(root)) return;
-  const items = [
+  const items: HubTile[] = [
     {
       id: "deposit",
       label: "Dépôt",
+      desc: "Ajouter des espèces sans vente (apport, fond de caisse).",
+      icon: "deposit",
       render: (el: HTMLElement) =>
         liveDeposit(el, {
           title: "Dépôt",
@@ -313,19 +434,13 @@ function renderOps(root: HTMLElement): void {
           },
         }),
     },
-    { id: "exchange", label: "Échange de monnaie", render: renderExchange },
-    ...(S.user?.role === "admin" ? [{ id: "payout", label: "Sortie d'espèces", render: renderPayout }] : []),
-    {
-      id: "coins",
-      label: "Restitution des pièces",
-      render: (el: HTMLElement) => {
-        el.innerHTML = `<div class="card narrow"><p>Rend au client les pièces restées dans l'entrée (ex. il a déposé des pièces puis change de moyen de paiement).</p>
-          <button class="btn btn-primary btn-lg" id="c-ret">Restituer les pièces</button></div>`;
-        $("#c-ret", el).addEventListener("click", (e) => void busy(e.currentTarget as HTMLButtonElement, async () => report(await window.api.call("coins.return"))));
-      },
-    },
+    { id: "exchange", label: "Échange de monnaie", desc: "Le client dépose, vous choisissez les billets et pièces à lui rendre.", icon: "exchange", render: renderExchange },
+    ...(S.user?.role === "admin"
+      ? [{ id: "payout", label: "Sortie d'espèces", desc: "Remboursement, paiement fournisseur, retrait de caisse.", icon: "payout", render: renderPayout }]
+      : []),
+    actionTile("coins", "Rendre les pièces", "Rend les pièces restées dans l'entrée (client qui change d'avis).", "coins", "coins.return"),
   ];
-  tabs(root, items);
+  hub(root, items);
 }
 
 function renderExchange(el: HTMLElement): void {
@@ -390,13 +505,13 @@ function renderExchange(el: HTMLElement): void {
 
 function renderPayout(el: HTMLElement): void {
   el.innerHTML = `<div class="split">
-    <div class="card"><div class="card-head"><h2>Montant à sortir</h2></div><div class="amount-big" id="po-amount">0,00 €</div><div id="po-pad"></div></div>
+    <div class="card"><div class="display display-sm"><span class="display-label">Montant à sortir</span><span class="display-amount" id="po-amount">0,00 €</span></div><div id="po-pad"></div></div>
     <div class="card"><div class="card-head"><h2>Motif</h2></div>
       <div class="choice" id="po-reason">${["Remboursement client", "Paiement fournisseur", "Retrait de caisse", "Autre"].map((r, i) => `<button class="btn ${i === 0 ? "active" : ""}" data-r="${esc(r)}">${esc(r)}</button>`).join("")}</div>
       <p class="muted">La machine choisit automatiquement les billets et pièces parmi le stock distribuable.</p>
       <button class="btn btn-primary btn-xl" id="po-go">Sortir les espèces</button></div></div>`;
   const amount = $("#po-amount", el);
-  const pad = keypad($("#po-pad", el), { mode: "money", onChange: (v) => (amount.textContent = money(Number(v || "0"))) });
+  const pad = keypad($("#po-pad", el), { mode: "money", onChange: (text) => (amount.innerHTML = amountDisplay(text)) });
   let reason = "Remboursement client";
   for (const b of $$<HTMLButtonElement>("#po-reason button", el))
     b.addEventListener("click", () => {
@@ -420,10 +535,12 @@ function renderPayout(el: HTMLElement): void {
 
 function renderManage(root: HTMLElement): void {
   if (!requireConnected(root)) return;
-  tabs(root, [
+  hub(root, [
     {
       id: "refill",
-      label: "Réapprovisionnement",
+      label: "Réapprovisionner",
+      desc: "Remettre de la monnaie dans la machine pour pouvoir rendre.",
+      icon: "refill",
       render: (el) =>
         liveDeposit(el, {
           title: "Réapprovisionnement",
@@ -438,10 +555,12 @@ function renderManage(root: HTMLElement): void {
           },
         }),
     },
-    { id: "collect", label: "Collecte", render: renderCollect },
+    { id: "collect", label: "Collecter", desc: "Envoyer le surplus vers la cassette, en gardant un fond de caisse.", icon: "collect", render: renderCollect },
     {
       id: "cassettes",
       label: "Cassettes",
+      desc: "Déverrouiller pour vider la cassette, puis reverrouiller.",
+      icon: "lock",
       render: (el) => {
         el.innerHTML = `<div class="grid-2">
           ${[1, 2]
@@ -700,76 +819,92 @@ async function closing(btn: HTMLButtonElement): Promise<void> {
 
 function renderMaint(root: HTMLElement): void {
   const admin = S.user?.role === "admin";
-  root.innerHTML = `<div class="grid-3">
-    <section class="card"><div class="card-head"><h2>Terminal</h2></div>
-      <p class="muted">En cas d'erreur ou de bourrage : réinitialise les modules (auto-test).</p>
-      <div class="stack"><button class="btn btn-primary btn-lg" data-a="device.reset" data-c="Réinitialiser les modules billets et pièces ?">Réinitialiser</button>
-      <button class="btn btn-lg" data-a="fcc.status">État du terminal</button>
-      ${admin ? `<button class="btn btn-lg" data-a="device.syncTime">Mettre à l'heure</button>` : ""}</div></section>
-    <section class="card"><div class="card-head"><h2>Sortie billets</h2></div>
-      <p class="muted">Ouvre le cache pour récupérer des billets non reconnus.</p>
-      <div class="stack"><button class="btn btn-lg" data-a="cover.open">Ouvrir le couvercle</button><button class="btn btn-lg" data-a="cover.close">Fermer le couvercle</button></div></section>
-    <section class="card"><div class="card-head"><h2>Pièces</h2></div>
-      <p class="muted">Rend les pièces restées dans l'entrée.</p>
-      <div class="stack"><button class="btn btn-lg" data-a="coins.return">Restituer les pièces</button></div></section>
-    ${admin ? `<section class="card"><div class="card-head"><h2>Alimentation</h2></div>
-      <p class="muted">Redémarre ou éteint le terminal Glory (pas cet ordinateur).</p>
-      <div class="stack"><button class="btn btn-lg" data-a="device.reboot" data-c="Redémarrer le terminal ? Il sera indisponible quelques minutes." data-d>Redémarrer le terminal</button>
-      <button class="btn btn-danger btn-lg" data-a="device.shutdown" data-c="Éteindre le terminal ? Il faudra le rallumer manuellement." data-d>Éteindre le terminal</button></div></section>` : ""}
-    <section class="card"><div class="card-head"><h2>Assistance</h2></div>
-      <p class="muted">Crée un rapport à envoyer au support en cas de problème.</p>
-      <div class="stack"><button class="btn btn-lg" id="m-diag">Rapport de diagnostic</button></div></section>
-  </div>
-  ${admin ? `<details class="card tech"><summary>Mode technique (support)</summary><div class="tech-body">
-    <div class="toolbar"><button class="btn" data-a="tech.firmware">Versions firmware</button>
+  const tiles: HubTile[] = [
+    actionTile("reset", "Réinitialiser", "Après un bourrage ou une erreur : les modules refont leur auto-test.", "reset", "device.reset", "Réinitialiser les modules billets et pièces ?"),
+    {
+      id: "status",
+      label: "État du terminal",
+      desc: "Vérifier que le terminal répond et voir son état.",
+      icon: "pulse",
+      action: async () => {
+        if (S.cashier.connection !== "connected") return void toast("Terminal non connecté.", "error");
+        const r = await window.api.call<OpResult & { code?: number }>("fcc.status");
+        toast(r.ok ? `Le terminal répond — ${S.machine?.label ?? "prêt"}.` : r.message, r.ok ? "ok" : "error");
+      },
+    },
+    {
+      id: "cover",
+      label: "Sortie des billets",
+      desc: "Ouvrir le cache pour récupérer des billets refusés.",
+      icon: "door",
+      render: (el) => {
+        el.innerHTML = `<div class="card narrow"><p>Ouvrez le cache, retirez les billets, puis refermez-le.</p>
+          <div class="row-actions"><button class="btn btn-primary btn-lg" data-a="cover.open">Ouvrir le cache</button><button class="btn btn-lg" data-a="cover.close">Fermer le cache</button></div></div>`;
+        for (const b of $$<HTMLButtonElement>("[data-a]", el)) b.addEventListener("click", () => void busy(b, async () => report(await window.api.call(b.dataset.a!))));
+      },
+    },
+    actionTile("coins", "Rendre les pièces", "Rend les pièces restées dans l'entrée.", "coins", "coins.return"),
+    {
+      id: "diag",
+      label: "Rapport d'assistance",
+      desc: "Crée un fichier à envoyer au support en cas de problème.",
+      icon: "doc",
+      action: async () => {
+        report(await window.api.call("diag.report"));
+      },
+    },
+  ];
+  if (admin) {
+    tiles.push(
+      actionTile("time", "Mettre à l'heure", "Règle l'horloge du terminal sur celle de ce PC.", "clock", "device.syncTime"),
+      actionTile("reboot", "Redémarrer le terminal", "Le terminal Glory (pas ce PC) redémarre, quelques minutes.", "power", "device.reboot", "Redémarrer le terminal ? Il sera indisponible quelques minutes.", "danger"),
+      actionTile("shutdown", "Éteindre le terminal", "Il faudra le rallumer à la main.", "power", "device.shutdown", "Éteindre le terminal ? Il faudra le rallumer manuellement.", "danger"),
+      { id: "tech", label: "Mode technique", desc: "Journal, événements, firmware, fichiers de configuration.", icon: "code", render: renderTech }
+    );
+  }
+  hub(root, tiles);
+}
+
+function renderTech(el: HTMLElement): void {
+  el.innerHTML = `<div class="card">
+    <div class="toolbar"><button class="btn" id="t-fw">Versions firmware</button>
       <input id="t-file" placeholder="Fichier (ex. GloryCo.xml)"><button class="btn" id="t-file-go">Lire le fichier</button></div>
-    <div class="toolbar"><input id="t-cc" placeholder="EUR" value="EUR" size="4"><input id="t-fv" placeholder="Valeur (centimes)" size="10"><select id="t-dev"><option value="1">Billets</option><option value="2">Pièces</option></select>
+    <div class="toolbar"><input id="t-cc" value="EUR" size="4" aria-label="Devise"><input id="t-fv" placeholder="Valeur en € (ex. 20 ou 0,50)" size="22"><select id="t-dev"><option value="1">Billets</option><option value="2">Pièces</option></select>
       <button class="btn" id="t-en">Autoriser</button><button class="btn" id="t-dis">Interdire</button></div>
     <pre id="t-out" class="pre"></pre>
     <h3>Journal</h3><div id="tech-log" class="pane"></div>
-    <h3>Événements du terminal</h3><div id="tech-events" class="pane"></div></div></details>` : ""}`;
-
-  for (const b of $$<HTMLButtonElement>("button[data-a]", root)) {
-    b.addEventListener("click", async () => {
-      if (S.cashier.connection !== "connected") return toast("Terminal non connecté.", "error");
-      if (b.dataset.c && !(await confirmDialog(b.textContent ?? "", b.dataset.c, "Confirmer", b.dataset.d !== undefined))) return;
-      await busy(b, async () => {
-        const r = await window.api.call<OpResult & { raw?: unknown; code?: number }>(b.dataset.a!);
-        if (b.dataset.a === "fcc.status") {
-          toast(r.ok ? `Terminal : ${S.machine?.label ?? "OK"} (code ${r.code ?? "?"})` : r.message, r.ok ? "info" : "error");
-        } else report(r);
-        if (r.raw !== undefined) {
-          const out = document.getElementById("t-out");
-          if (out) out.textContent = typeof r.raw === "string" ? r.raw : JSON.stringify(r.raw, null, 2);
-        }
-      });
-    });
-  }
-  $("#m-diag", root).addEventListener("click", (e) => void busy(e.currentTarget as HTMLButtonElement, async () => report(await window.api.call("diag.report"))));
-
-  if (!admin) return;
-  const logPane = $("#tech-log", root);
+    <h3>Événements du terminal</h3><div id="tech-events" class="pane"></div></div>`;
+  const logPane = $("#tech-log", el);
   for (const l of S.logs.slice(-400)) appendPaneLine(logPane, l);
-  const evPane = $("#tech-events", root);
+  const evPane = $("#tech-events", el);
   for (const l of S.events.slice(-200)) appendPaneLine(evPane, l);
-  $("#t-file-go", root).addEventListener("click", async (e) => {
-    const name = $<HTMLInputElement>("#t-file", root).value.trim();
+  const out = (raw: unknown) => ($("#t-out", el).textContent = typeof raw === "string" ? raw : JSON.stringify(raw ?? {}, null, 2));
+  $("#t-fw", el).addEventListener("click", (e) =>
+    void busy(e.currentTarget as HTMLButtonElement, async () => {
+      const r = await window.api.call<OpResult & { raw?: unknown }>("tech.firmware");
+      report(r);
+      out(r.raw);
+    })
+  );
+  $("#t-file-go", el).addEventListener("click", async (e) => {
+    const name = $<HTMLInputElement>("#t-file", el).value.trim();
     if (!name) return toast("Nom de fichier requis.", "error");
     await busy(e.currentTarget as HTMLButtonElement, async () => {
       const r = await window.api.call<OpResult & { raw?: unknown }>("tech.settingFile", name);
       report(r);
-      $("#t-out", root).textContent = typeof r.raw === "string" ? r.raw : JSON.stringify(r.raw ?? {}, null, 2);
+      out(r.raw);
     });
   });
   const denom = (enabled: boolean) => async (e: Event) => {
-    const fv = $<HTMLInputElement>("#t-fv", root).value.trim();
-    if (!/^\d+$/.test(fv)) return toast("Valeur en centimes requise (ex. 2000 pour 20 €).", "error");
+    const raw = $<HTMLInputElement>("#t-fv", el).value.trim().replace(".", ",");
+    if (!/^\d+(,\d{1,2})?$/.test(raw)) return toast("Valeur en euros (ex. 20 ou 0,50).", "error");
+    const fv = String(parseAmount(raw));
     await busy(e.currentTarget as HTMLButtonElement, async () =>
-      report(await window.api.call("tech.denomination", $<HTMLInputElement>("#t-cc", root).value.trim() || "EUR", fv, $<HTMLSelectElement>("#t-dev", root).value, enabled))
+      report(await window.api.call("tech.denomination", $<HTMLInputElement>("#t-cc", el).value.trim() || "EUR", fv, $<HTMLSelectElement>("#t-dev", el).value, enabled))
     );
   };
-  $("#t-en", root).addEventListener("click", denom(true));
-  $("#t-dis", root).addEventListener("click", denom(false));
+  $("#t-en", el).addEventListener("click", denom(true));
+  $("#t-dis", el).addEventListener("click", denom(false));
 }
 
 // =================================================================== RÉGLAGES

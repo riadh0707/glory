@@ -40,6 +40,23 @@ const ICONS: Record<string, string> = {
   stats: '<path d="M4 20V4M4 20h16"/><path d="M8 16v-5M12 16V8M16 16v-3"/>',
   maint: '<path d="M14.5 6.5a4 4 0 0 0 3.9 5L11 19a2.1 2.1 0 0 1-3-3l7.5-7.4a4 4 0 0 0-1-2.1z"/>',
   settings: '<circle cx="12" cy="12" r="3"/><path d="M12 3v2.5M12 18.5V21M3 12h2.5M18.5 12H21M5.6 5.6l1.8 1.8M16.6 16.6l1.8 1.8M18.4 5.6l-1.8 1.8M7.4 16.6l-1.8 1.8"/>',
+  plug: '<path d="M9 3v5M15 3v5M6 8h12v3a6 6 0 0 1-12 0z"/><path d="M12 17v4"/>',
+  print: '<path d="M7 9V3h10v6"/><rect x="3" y="9" width="18" height="8" rx="2"/><path d="M7 14h10v7H7z"/>',
+  back: '<path d="M15 5l-7 7 7 7"/>',
+  deposit: '<path d="M12 3v11M7.5 9.5L12 14l4.5-4.5"/><path d="M4 15v4h16v-4"/>',
+  exchange: '<path d="M4 8h13l-3.5-3.5M20 16H7l3.5 3.5"/>',
+  payout: '<path d="M12 14V3M7.5 7.5L12 3l4.5 4.5"/><path d="M4 15v4h16v-4"/>',
+  coins: '<ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v6c0 1.7 3.1 3 7 3s7-1.3 7-3V6"/><path d="M5 12v6c0 1.7 3.1 3 7 3s7-1.3 7-3v-6"/>',
+  refill: '<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M12 10.5v6M9 13.5h6M8 7V4h8v3"/>',
+  collect: '<path d="M3 7h18v13H3z"/><path d="M3 7l3-4h12l3 4M9 12h6"/>',
+  lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  reset: '<path d="M4 12a8 8 0 1 0 2.4-5.7L4 8.6"/><path d="M4 4v4.6h4.6"/>',
+  pulse: '<path d="M3 12h4l2.5-6 5 12 2.5-6h4"/>',
+  door: '<path d="M5 21V4a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v17"/><path d="M3 21h18M14 12h.01"/>',
+  doc: '<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/>',
+  clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
+  power: '<path d="M12 3v8"/><path d="M6.3 6.8a8 8 0 1 0 11.4 0"/>',
+  code: '<path d="M8 8l-4 4 4 4M16 8l4 4-4 4M13.5 5l-3 14"/>',
 };
 
 function icon(name: string): string {
@@ -251,10 +268,16 @@ function renderShell(): void {
     </aside>
     <div class="main">
       <header class="topbar">
-        <div><h1 id="screen-title"></h1></div>
+        <div class="topbar-title"><h1 id="screen-title"></h1><span class="topbar-date">${esc(longDate())}</span></div>
         <div class="topbar-right">
-          <span id="status-chip" class="chip"></span>
-          <button class="btn" id="btn-conn"></button>
+          <div class="conn">
+            <button id="status-chip" class="chip" aria-haspopup="true" aria-expanded="false"></button>
+            <div class="conn-pop" id="conn-pop" hidden>
+              <p class="conn-title" id="conn-title"></p>
+              <p class="muted small" id="conn-detail"></p>
+              <button class="btn btn-block" id="btn-conn"></button>
+            </div>
+          </div>
           <span class="clock" id="clock">${new Date().toLocaleTimeString("fr-BE", { hour: "2-digit", minute: "2-digit" })}</span>
         </div>
       </header>
@@ -262,12 +285,28 @@ function renderShell(): void {
     </div>`;
   for (const b of $$<HTMLButtonElement>(".rail-item", root)) b.addEventListener("click", () => goTo(b.dataset.screen!));
   $("#btn-logout").addEventListener("click", () => void logout());
+  const pop = $("#conn-pop");
+  const chip = $("#status-chip");
+  const closePop = () => {
+    pop.hidden = true;
+    chip.setAttribute("aria-expanded", "false");
+  };
+  chip.addEventListener("click", (e) => {
+    e.stopPropagation();
+    pop.hidden = !pop.hidden;
+    chip.setAttribute("aria-expanded", String(!pop.hidden));
+  });
+  document.addEventListener("click", (e) => {
+    if (!pop.hidden && !(e.target as HTMLElement).closest(".conn")) closePop();
+  });
   $("#btn-conn").addEventListener("click", async (e) => {
     const b = e.currentTarget as HTMLButtonElement;
     if (S.cashier.connection === "connected") {
       if (S.cashier.busy && !(await confirmDialog("Opération en cours", `« ${S.cashier.busy} » est en cours. Déconnecter quand même ?`, "Déconnecter", true))) return;
       await busy(b, async () => report(await window.api.call("fcc.disconnect")));
     } else await connectTerminal(b);
+    closePop();
+    if (S.screen === "sale") goTo("sale");
   });
   renderStatusChip();
 }
@@ -298,9 +337,21 @@ function renderStatusChip(): void {
     }
   }
   chip.className = cls;
-  chip.innerHTML = `<span class="dot"></span>${esc(text)}`;
-  btn.textContent = c.connection === "connected" ? "Déconnecter" : "Connecter";
+  chip.innerHTML = `<span class="dot"></span><span class="chip-text">${esc(text)}</span><svg class="chip-caret" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5"/></svg>`;
+  btn.textContent = c.connection === "connected" ? "Déconnecter le terminal" : "Connecter le terminal";
+  btn.className = c.connection === "connected" ? "btn btn-block btn-danger" : "btn btn-block btn-primary";
   btn.disabled = c.connection === "connecting";
+  const title = document.getElementById("conn-title");
+  const detail = document.getElementById("conn-detail");
+  if (title && detail) {
+    title.textContent = text;
+    detail.textContent =
+      c.connection === "connected"
+        ? [c.sessionMode ? "Mode session" : "Sans session", c.occupyMode ? "réservé à cette caisse" : "accès partagé", S.lastHeartbeat ? `dernier signal à ${new Date(S.lastHeartbeat).toLocaleTimeString("fr-BE")}` : ""]
+            .filter(Boolean)
+            .join(" · ")
+        : "Le terminal n'est pas joignable par l'application.";
+  }
 }
 
 function goTo(id: string): void {

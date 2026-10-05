@@ -126,23 +126,60 @@ async function busy<T>(btn: HTMLButtonElement | null, fn: () => Promise<T>): Pro
 
 // ------------------------------------------------------------------ pavé numérique
 
+/** "12,5" → 1250 centimes. */
+function parseAmount(text: string): number {
+  if (!text) return 0;
+  const [eur, dec = ""] = text.split(",");
+  return Number(eur || "0") * 100 + Number((dec + "00").slice(0, 2));
+}
+
 /**
- * Pavé numérique tactile. `mode="money"` : les chiffres entrent par la
- * droite (comme un terminal de paiement : 1,2,5,0 → 12,50 €). `mode="pin"` :
- * chiffres masqués.
+ * Affichage pendant la saisie (HTML) : ce qui est tapé en clair, les
+ * décimales pas encore tapées en grisé — « 12 » → 12<gris>,00</gris> €,
+ * « 12,5 » → 12,5<gris>0</gris> €. On voit toujours le montant final.
  */
-function keypad(host: HTMLElement, opts: { mode: "money" | "pin"; onChange?: (v: string) => void; onEnter?: () => void; maxLen?: number }): { value(): string; cents(): number; set(v: string): void } {
-  let digits = "";
-  const maxLen = opts.maxLen ?? (opts.mode === "money" ? 8 : 8);
+function amountDisplay(text: string): string {
+  if (!text) return `0<span class="dim">,00</span> €`;
+  const [eur, dec] = text.split(",");
+  const eurFmt = Number(eur || "0").toLocaleString("fr-BE");
+  if (dec === undefined) return `${eurFmt}<span class="dim">,00</span> €`;
+  return `${eurFmt},${dec}<span class="dim">${"00".slice(dec.length)}</span> €`;
+}
+
+/** « lundi 5 octobre » → « Lundi 5 octobre ». */
+function longDate(d = new Date()): string {
+  const s = d.toLocaleDateString("fr-BE", { weekday: "long", day: "numeric", month: "long" });
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+/**
+ * Pavé numérique tactile.
+ * - `money` : saisie naturelle en euros avec virgule (1, 2, ",", 5 →
+ *   12,50 €), 2 décimales max. Les touches « , » et « . » du clavier
+ *   physique marchent aussi.
+ * - `pin` : chiffres seuls (affichés masqués par l'appelant).
+ */
+function keypad(host: HTMLElement, opts: { mode: "money" | "pin"; onChange?: (text: string, cents: number) => void; onEnter?: () => void }): { value(): string; cents(): number; set(v: string): void } {
+  let text = "";
   host.classList.add("keypad");
-  host.innerHTML = ["7", "8", "9", "4", "5", "6", "1", "2", "3", opts.mode === "money" ? "00" : "C", "0", "⌫"]
-    .map((k) => `<button type="button" class="key ${k === "⌫" || k === "C" ? "key-muted" : ""}" data-k="${k}">${k}</button>`)
+  const keys = ["7", "8", "9", "4", "5", "6", "1", "2", "3", opts.mode === "money" ? "," : "C", "0", "⌫"];
+  host.innerHTML = keys
+    .map((k) => `<button type="button" class="key ${k === "⌫" || k === "C" ? "key-muted" : ""} ${k === "," ? "key-comma" : ""}" data-k="${k}" aria-label="${k === "⌫" ? "Effacer" : k === "," ? "Virgule" : k}">${k === "⌫" ? '<svg viewBox="0 0 24 24"><path d="M9 6h11v12H9l-6-6z"/><path d="M12.5 9.5l5 5M17.5 9.5l-5 5"/></svg>' : k}</button>`)
     .join("");
-  const update = () => opts.onChange?.(digits);
+  const update = () => opts.onChange?.(text, opts.mode === "money" ? parseAmount(text) : 0);
   const press = (k: string) => {
-    if (k === "⌫") digits = digits.slice(0, -1);
-    else if (k === "C") digits = "";
-    else digits = (digits + k).replace(/^0+(?=\d)/, "").slice(0, maxLen);
+    if (k === "⌫") text = text.slice(0, -1);
+    else if (k === "C") text = "";
+    else if (k === ",") {
+      if (opts.mode !== "money" || text.includes(",")) return;
+      text = (text || "0") + ",";
+    } else if (opts.mode === "money") {
+      const [eur, dec] = text.split(",");
+      if (dec !== undefined) {
+        if (dec.length >= 2) return;
+      } else if (eur.replace(/^0+/, "").length >= 6) return;
+      text = (text + k).replace(/^0+(?=\d)/, "");
+    } else if (text.length < 8) text += k;
     update();
   };
   host.addEventListener("click", (e) => {
@@ -151,21 +188,23 @@ function keypad(host: HTMLElement, opts: { mode: "money" | "pin"; onChange?: (v:
   });
   const onKey = (e: KeyboardEvent) => {
     if (!host.isConnected) return document.removeEventListener("keydown", onKey);
-    if ((e.target as HTMLElement).closest("input, textarea, select")) return;
+    if ((e.target as HTMLElement).closest("input, textarea, select") || document.querySelector(".overlay")) return;
     if (/^\d$/.test(e.key)) press(e.key);
+    else if (e.key === "," || e.key === "." || e.key === "Decimal") press(",");
     else if (e.key === "Backspace") press("⌫");
     else if (e.key === "Enter") opts.onEnter?.();
     else if (e.key === "Delete" || e.key === "Escape") {
-      digits = "";
+      text = "";
       update();
-    }
+    } else return;
+    e.preventDefault();
   };
   document.addEventListener("keydown", onKey);
   return {
-    value: () => digits,
-    cents: () => Number(digits || "0"),
+    value: () => text,
+    cents: () => (opts.mode === "money" ? parseAmount(text) : 0),
     set: (v: string) => {
-      digits = v;
+      text = v;
       update();
     },
   };

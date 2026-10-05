@@ -18,6 +18,18 @@ import {
 
 const DEVICE_NAME = "glory-fcc-client";
 
+/** Message compréhensible par un commerçant ; le détail technique reste dans le journal. */
+function friendlyNetworkError(raw: string, cfg: FccConnectionConfig): string {
+  if (/EADDRINUSE/.test(raw)) return `Le port ${cfg.eventTcpPort} est déjà utilisé sur ce PC (l'application est peut-être ouverte deux fois).`;
+  if (/EACCES/.test(raw)) return `Windows refuse l'ouverture du port ${cfg.eventTcpPort} : choisissez un autre port dans Réglages.`;
+  if (/ECONNREFUSED|ETIMEDOUT|EHOSTUNREACH|ENETUNREACH|ENOTFOUND|timeout/i.test(raw)) {
+    return "Le terminal ne répond pas. Vérifiez qu'il est allumé, branché au réseau, et que son adresse est correcte dans Réglages.";
+  }
+  if (/certificate|self.signed|SSL|TLS/i.test(raw)) return "Le certificat HTTPS du terminal est refusé : décochez « Exiger un certificat HTTPS valide » dans Réglages, ou utilisez http://.";
+  if (/404|Not Found/i.test(raw)) return "L'adresse du terminal est joignable mais incorrecte (vérifiez la fin : /axis2/services/BrueBoxService).";
+  return `Connexion impossible : ${raw}`;
+}
+
 export type ConnectionState = "disconnected" | "connecting" | "connected";
 
 export interface OpResult {
@@ -239,7 +251,9 @@ export class Cashier {
       return { ok: true, message: "Terminal connecté." };
     } catch (err) {
       await this.teardown();
-      return this.fail(`Connexion impossible : ${err instanceof Error ? err.message : String(err)}`);
+      const raw = err instanceof Error ? err.message : String(err);
+      this.log(`[ERREUR] Connexion : ${raw}`);
+      return { ok: false, message: friendlyNetworkError(raw, cfg) };
     }
   }
 
