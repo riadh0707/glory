@@ -464,6 +464,48 @@ plus haut) et à une demande de fonctionnalités concrètes côté UI :
   fichier ? logiciel de caisse existant ?) avant toute implémentation — voir
   `open-questions.md` si cette demande revient.
 
+## Cause réelle du blocage `result=20` (2026-10-05)
+
+Pendant un mois, le terminal client (`192.168.0.25`) a répondu `20` à chaque
+`OpenOperation`, malgré redémarrages, identifiants corrects et aucune autre
+appli connectée. Diagnostic erroné au départ (« session bloquée ») : `20` ne
+veut **pas** dire « trop de sessions » (c'est `16`), mais « session not
+available » = **Session mode désactivé** sur le terminal.
+
+Source : Screen Spec WEB Setting (TMB1F073-07) p.94-95, page **App
+Configuration** du Web setting du terminal :
+- **Session mode** (Enable/Disable) : sur Disable, `Open` est refusé et
+  **toutes les commandes SOAP s'envoient sans SessionID**.
+- **Session available time** (1-999 min, défaut 60) : expiration d'une
+  session inactive.
+- **Occupy mode** : **Disable par défaut** → `Occupy` répond `4`
+  ("occupation not available"), ce n'est pas une erreur.
+- **User check** : vérifie le mot de passe à l'Open seulement s'il est sur
+  Enable.
+- IF Spec p.115 : l'utilisateur spécial `glory` **ne doit pas** être utilisé
+  pour `Open`.
+
+Corrections dans `main.ts` / `core/soap-client` :
+- `Open` → `20` : bascule en mode sans session (`sessionId = ""`,
+  `FccSoapClient.call()` omet alors l'élément `SessionID`).
+- `Occupy` → `4` : on continue sans verrou ; `17` (déjà occupé par
+  soi-même) traité comme un succès (était compté comme échec).
+- Ajout de `UnRegisterEventOperation` à la déconnexion (4 destinations max
+  par terminal, chaque connexion en ajoutait une).
+- Échec après un `Open` réussi : `Close` best-effort (la session restait
+  ouverte côté terminal).
+- `handleDisconnect()` : chaque étape tentée indépendamment, état local
+  toujours remis à zéro (avant : un Release raté bloquait toute reconnexion).
+
+Vérifié sur un faux terminal local (`F:\glory\tools\mock-fcc.js`) dans les
+deux configurations (session+Occupy actifs / désactivés). **Pas encore
+vérifié sur le vrai terminal.**
+
+Note sur CI-Activate (logiciel tiers du partenaire Glory, fourni par le
+client) : son code est protégé par PyArmor, il n'a pas été déchiffré. Seuls
+son `config.ini` et son manuel ont été utilisés (il se connecte en
+`http://192.168.0.25`, `session_time = 60`, `unregister = True`).
+
 ## Points à vérifier avant le matériel réel
 
 Voir la section dédiée dans **[open-questions.md](open-questions.md)**

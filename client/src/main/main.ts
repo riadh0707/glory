@@ -57,6 +57,10 @@ const stateMachine = new SessionStateMachine();
 let soapClient: FccSoapClient | null = null;
 let eventListener: EventListener | null = null;
 let sessionId: string | undefined;
+// Modes réellement actifs sur le terminal connecté (voir handleConnect).
+let sessionModeActive = false;
+let occupyActive = false;
+let eventRegistered = false;
 
 /**
  * Toute ligne `[ERREUR]` est aussi persistée dans `historyStore` — avant ce
@@ -156,9 +160,23 @@ async function handleConnect(): Promise<ConnectResult> {
       },
     });
 
+    // "Session mode" et "Occupy mode" sont des réglages du terminal (Web
+    // setting → App Configuration, Screen Spec WEB Setting p.94-95) : chacun
+    // peut être désactivé, et "Occupy mode" l'est PAR DÉFAUT. Cause réelle du
+    // blocage client de septembre 2026 : `result=20` sur Open signifie "mode
+    // session désactivé" (≠ 16 "trop de sessions"), pas une session bloquée —
+    // aucun redémarrage n'y changeait rien. Dans ce cas les commandes SOAP
+    // s'envoient sans SessionID (sessionId = "", voir FccSoapClient.call()).
     const openResult = await soapClient.open(connConfig.userId, connConfig.userPwd, DEVICE_NAME);
     sendLog(`Open → result ${openResult.resultDescription}`);
-    if (openResult.result !== 0 || !openResult.sessionId) {
+    if (openResult.result === 0 && openResult.sessionId) {
+      sessionId = openResult.sessionId;
+      sessionModeActive = true;
+    } else if (openResult.result === 20) {
+      sessionId = "";
+      sessionModeActive = false;
+      sendLog("Mode session désactivé sur le terminal (App Configuration) — fonctionnement sans session.");
+    } else {
       await cleanupFailedConnect();
       return {
         ok: false,
@@ -166,7 +184,6 @@ async function handleConnect(): Promise<ConnectResult> {
         state: stateMachine.getState(),
       };
     }
-    sessionId = openResult.sessionId;
     stateMachine.onOpened();
 
     stateMachine.assertCanRegisterEvent();
@@ -183,11 +200,23 @@ async function handleConnect(): Promise<ConnectResult> {
       port: connConfig.eventTcpPort,
     });
     sendLog(`RegisterEvent → result ${registerResult.resultDescription}`);
+    eventRegistered = registerResult.result === 0;
+    if (!eventRegistered) {
+      sendLog("[ERREUR] RegisterEvent refusé — les événements temps réel du terminal ne seront pas reçus.");
+    }
 
     stateMachine.assertCanOccupy();
     const occupyResult = await soapClient.occupy(sessionId);
     sendLog(`Occupy → result ${occupyResult.resultDescription}`);
-    if (occupyResult.result !== 0) {
+    // 0 = occupé ; 17 = déjà occupé par nous-mêmes (succès, pas un échec) ;
+    // 4 = "occupation not available" = Occupy mode désactivé sur le terminal
+    // (réglage par défaut) — on continue sans verrou exclusif.
+    if (occupyResult.result === 0 || occupyResult.result === 17) {
+      occupyActive = true;
+    } else if (occupyResult.result === 4) {
+      occupyActive = false;
+      sendLog("Mode Occupy désactivé sur le terminal (App Configuration) — fonctionnement sans verrou exclusif.");
+    } else {
       await cleanupFailedConnect();
       return {
         ok: false,
@@ -197,10 +226,18 @@ async function handleConnect(): Promise<ConnectResult> {
     }
     stateMachine.onOccupied();
 
-    historyStore.record("state-transition", null, { state: stateMachine.getState() });
+    historyStore.record("state-transition", null, {
+      state: stateMachine.getState(),
+      sessionMode: sessionModeActive,
+      occupyMode: occupyActive,
+    });
+    const modeInfo = [
+      sessionModeActive ? `session ${sessionId}` : "sans session",
+      occupyActive ? "occupé" : "sans Occupy",
+    ].join(", ");
     return {
       ok: true,
-      message: `Connecté. SessionID=${sessionId}, état=${stateMachine.getState()}.`,
+      message: `Connecté (${modeInfo}).`,
       state: stateMachine.getState(),
     };
   } catch (err) {
@@ -224,6 +261,20 @@ async function handleConnect(): Promise<ConnectResult> {
  * session) sur **tout** chemin d'échec de `handleConnect()`.
  */
 async function cleanupFailedConnect(): Promise<void> {
+  // Une session déjà ouverte (Open réussi, puis échec plus loin) doit être
+  // refermée côté terminal, sinon elle y reste jusqu'à son expiration.
+  if (soapClient && sessionModeActive && sessionId) {
+    try {
+      const closeResult = await soapClient.close(sessionId);
+      sendLog(`Close (nettoyage) → result ${closeResult.resultDescription}`);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      sendLog(`[ERREUR] Close (nettoyage) : ${message}`);
+    }
+  }
+  sessionModeActive = false;
+  occupyActive = false;
+  eventRegistered = false;
   if (eventListener) {
     try {
       await eventListener.stop();
@@ -247,7 +298,7 @@ interface StatusResult {
 }
 
 async function handleStatus(): Promise<StatusResult> {
-  if (!soapClient || !sessionId) {
+  if (!soapClient || sessionId === undefined) {
     return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
   }
   try {
@@ -268,34 +319,64 @@ interface DisconnectResult {
   state: SessionState;
 }
 
+/**
+ * Chaque étape (Release, UnRegisterEvent, Close) est tentée indépendamment :
+ * l'échec de l'une ne doit pas empêcher les suivantes ni laisser l'app dans
+ * un état intermédiaire — avant (rapports client de septembre 2026), un
+ * Release raté laissait l'état local sur "Occupied", et toute reconnexion
+ * était ensuite refusée ("Action open refusée : état courant Occupied").
+ * L'état local est donc TOUJOURS remis à zéro à la fin.
+ */
 async function handleDisconnect(): Promise<DisconnectResult> {
-  if (!soapClient || !sessionId) {
+  if (!soapClient || sessionId === undefined) {
     return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
   }
+  const client = soapClient;
+  const sid = sessionId;
+  const connConfig = currentFccConfig();
+  let allOk = true;
+
+  async function step(label: string, fn: () => Promise<{ result: number; resultDescription: string }>): Promise<void> {
+    try {
+      const r = await fn();
+      sendLog(`${label} → result ${r.resultDescription}`);
+      if (r.result !== 0) allOk = false;
+    } catch (err) {
+      allOk = false;
+      sendLog(`[ERREUR] ${label} : ${err instanceof Error ? err.message : String(err)}`);
+    }
+  }
+
+  if (occupyActive) await step("Release", () => client.release(sid));
+  // Le terminal n'accepte que 4 destinations d'événements (IF Spec p.90) :
+  // sans UnRegisterEvent, chaque connexion en ajoutait une de plus.
+  if (eventRegistered) {
+    await step("UnRegisterEvent", () =>
+      client.unRegisterEvent({ sessionId: sid, url: connConfig.callbackIp, port: connConfig.eventTcpPort })
+    );
+  }
+  if (sessionModeActive) await step("Close", () => client.close(sid));
+
   try {
-    stateMachine.assertCanRelease();
-    const releaseResult = await soapClient.release(sessionId);
-    sendLog(`Release → result ${releaseResult.resultDescription}`);
-    stateMachine.onReleased();
-
-    stateMachine.assertCanClose();
-    const closeResult = await soapClient.close(sessionId);
-    sendLog(`Close → result ${closeResult.resultDescription}`);
-    stateMachine.onClosed();
-
     await eventListener?.stop();
     sendLog("Écouteur TCP arrêté.");
-
-    historyStore.record("state-transition", null, { state: stateMachine.getState() });
-    soapClient = null;
-    eventListener = null;
-    sessionId = undefined;
-    return { ok: true, message: "Déconnecté proprement.", state: stateMachine.getState() };
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    sendLog(`[ERREUR] ${message}`);
-    return { ok: false, message, state: stateMachine.getState() };
+    sendLog(`[ERREUR] Arrêt de l'écouteur TCP : ${err instanceof Error ? err.message : String(err)}`);
   }
+
+  soapClient = null;
+  eventListener = null;
+  sessionId = undefined;
+  sessionModeActive = false;
+  occupyActive = false;
+  eventRegistered = false;
+  stateMachine.forceClosed();
+  historyStore.record("state-transition", null, { state: stateMachine.getState() });
+  return {
+    ok: allOk,
+    message: allOk ? "Déconnecté proprement." : "Déconnecté (certaines étapes ont échoué, voir le journal).",
+    state: stateMachine.getState(),
+  };
 }
 
 interface TransactionResult {
@@ -312,7 +393,7 @@ function sumCashCents(cash: unknown): number {
 }
 
 async function handleStartCashin(): Promise<TransactionResult> {
-  if (!soapClient || !sessionId) {
+  if (!soapClient || sessionId === undefined) {
     return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
   }
   try {
@@ -329,7 +410,7 @@ async function handleStartCashin(): Promise<TransactionResult> {
 }
 
 async function handleEndCashin(): Promise<TransactionResult> {
-  if (!soapClient || !sessionId) {
+  if (!soapClient || sessionId === undefined) {
     return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
   }
   try {
@@ -349,7 +430,7 @@ async function handleEndCashin(): Promise<TransactionResult> {
 }
 
 async function handleChange(amount: string): Promise<TransactionResult> {
-  if (!soapClient || !sessionId) {
+  if (!soapClient || sessionId === undefined) {
     return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
   }
   try {
@@ -368,7 +449,7 @@ async function handleChange(amount: string): Promise<TransactionResult> {
 }
 
 async function handleStartReplenishEntrance(): Promise<TransactionResult> {
-  if (!soapClient || !sessionId) {
+  if (!soapClient || sessionId === undefined) {
     return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
   }
   try {
@@ -385,7 +466,7 @@ async function handleStartReplenishEntrance(): Promise<TransactionResult> {
 }
 
 async function handleEndReplenishEntrance(): Promise<TransactionResult> {
-  if (!soapClient || !sessionId) {
+  if (!soapClient || sessionId === undefined) {
     return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
   }
   try {
@@ -403,7 +484,7 @@ async function handleEndReplenishEntrance(): Promise<TransactionResult> {
 }
 
 async function handleLockUnit(): Promise<TransactionResult> {
-  if (!soapClient || !sessionId) {
+  if (!soapClient || sessionId === undefined) {
     return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
   }
   try {
@@ -420,7 +501,7 @@ async function handleLockUnit(): Promise<TransactionResult> {
 }
 
 async function handleUnlockUnit(): Promise<TransactionResult> {
-  if (!soapClient || !sessionId) {
+  if (!soapClient || sessionId === undefined) {
     return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
   }
   try {
@@ -471,7 +552,7 @@ function extractInventoryLines(raw: unknown): DenomLine[] {
 }
 
 async function handleInventory(): Promise<InventoryResult> {
-  if (!soapClient || !sessionId) {
+  if (!soapClient || sessionId === undefined) {
     return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
   }
   try {
@@ -494,7 +575,7 @@ async function handleInventory(): Promise<InventoryResult> {
 }
 
 async function handleOpenExitCover(): Promise<TransactionResult> {
-  if (!soapClient || !sessionId) {
+  if (!soapClient || sessionId === undefined) {
     return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
   }
   try {
@@ -511,7 +592,7 @@ async function handleOpenExitCover(): Promise<TransactionResult> {
 }
 
 async function handleCloseExitCover(): Promise<TransactionResult> {
-  if (!soapClient || !sessionId) {
+  if (!soapClient || sessionId === undefined) {
     return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
   }
   try {
@@ -528,7 +609,7 @@ async function handleCloseExitCover(): Promise<TransactionResult> {
 }
 
 async function handleRomVersion(): Promise<InventoryResult> {
-  if (!soapClient || !sessionId) {
+  if (!soapClient || sessionId === undefined) {
     return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
   }
   try {
@@ -545,7 +626,7 @@ async function handleRomVersion(): Promise<InventoryResult> {
 }
 
 async function handleAdjustTime(): Promise<TransactionResult> {
-  if (!soapClient || !sessionId) {
+  if (!soapClient || sessionId === undefined) {
     return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
   }
   try {
@@ -570,7 +651,7 @@ async function handleAdjustTime(): Promise<TransactionResult> {
 }
 
 async function handleGetSettingFile(fileName: string): Promise<InventoryResult> {
-  if (!soapClient || !sessionId) {
+  if (!soapClient || sessionId === undefined) {
     return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
   }
   try {
@@ -598,7 +679,7 @@ interface DenomParams {
 }
 
 async function handleEnableDenom(params: DenomParams): Promise<TransactionResult> {
-  if (!soapClient || !sessionId) {
+  if (!soapClient || sessionId === undefined) {
     return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
   }
   try {
@@ -615,7 +696,7 @@ async function handleEnableDenom(params: DenomParams): Promise<TransactionResult
 }
 
 async function handleDisableDenom(params: DenomParams): Promise<TransactionResult> {
-  if (!soapClient || !sessionId) {
+  if (!soapClient || sessionId === undefined) {
     return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
   }
   try {
@@ -632,7 +713,7 @@ async function handleDisableDenom(params: DenomParams): Promise<TransactionResul
 }
 
 async function handleSetExchangeRate(params: { from: string; to: string; rate: string }): Promise<TransactionResult> {
-  if (!soapClient || !sessionId) {
+  if (!soapClient || sessionId === undefined) {
     return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
   }
   try {
@@ -649,7 +730,7 @@ async function handleSetExchangeRate(params: { from: string; to: string; rate: s
 }
 
 async function handleReset(): Promise<TransactionResult> {
-  if (!soapClient || !sessionId) {
+  if (!soapClient || sessionId === undefined) {
     return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
   }
   try {
@@ -677,7 +758,7 @@ async function handleReset(): Promise<TransactionResult> {
 }
 
 async function handleCashinCancel(): Promise<TransactionResult> {
-  if (!soapClient || !sessionId) {
+  if (!soapClient || sessionId === undefined) {
     return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
   }
   try {
@@ -695,7 +776,7 @@ async function handleCashinCancel(): Promise<TransactionResult> {
 }
 
 async function handleChangeCancel(): Promise<TransactionResult> {
-  if (!soapClient || !sessionId) {
+  if (!soapClient || sessionId === undefined) {
     return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
   }
   try {
@@ -712,7 +793,7 @@ async function handleChangeCancel(): Promise<TransactionResult> {
 }
 
 async function handleReplenishEntranceCancel(): Promise<TransactionResult> {
-  if (!soapClient || !sessionId) {
+  if (!soapClient || sessionId === undefined) {
     return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
   }
   try {
@@ -730,7 +811,7 @@ async function handleReplenishEntranceCancel(): Promise<TransactionResult> {
 }
 
 async function handleCashout(params: { cc: string; fv: string; devid: string; piece: number }): Promise<TransactionResult> {
-  if (!soapClient || !sessionId) {
+  if (!soapClient || sessionId === undefined) {
     return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
   }
   try {
@@ -748,7 +829,7 @@ async function handleCashout(params: { cc: string; fv: string; devid: string; pi
 }
 
 async function handleReturnCash(): Promise<TransactionResult> {
-  if (!soapClient || !sessionId) {
+  if (!soapClient || sessionId === undefined) {
     return { ok: false, message: "Non connecté.", state: stateMachine.getState() };
   }
   try {
@@ -1089,7 +1170,7 @@ app.whenReady().then(createWindow);
  */
 let isQuittingCleanly = false;
 app.on("before-quit", (event) => {
-  if (isQuittingCleanly || !soapClient || !sessionId) return;
+  if (isQuittingCleanly || !soapClient || sessionId === undefined) return;
   event.preventDefault();
   isQuittingCleanly = true;
   void handleDisconnect().finally(() => app.quit());

@@ -143,6 +143,12 @@ export class FccSoapClient {
   }
 
   private async call<TArgs, TResult>(operation: string, args: TArgs): Promise<TResult> {
+    // SessionID vide = terminal en "Session mode" désactivé : l'élément doit
+    // alors être omis (optionnel partout dans le WSDL), pas envoyé vide.
+    const record = args as unknown as Record<string, unknown>;
+    if (record && record.SessionID === "") {
+      delete record.SessionID;
+    }
     this.logger("request", operation, args);
     const method = (this.client as unknown as Record<string, (a: TArgs) => Promise<[TResult, string]>>)[
       `${operation}Async`
@@ -200,6 +206,22 @@ export class FccSoapClient {
       { SeqNo: string; SessionID: string; Url: string; Port: string },
       { attributes?: Record<string, unknown> }
     >("RegisterEventOperation", {
+      SeqNo: this.nextSeqNo(),
+      SessionID: params.sessionId,
+      Url: params.url,
+      Port: String(params.port),
+    });
+    const result = extractResultAttribute(response);
+    return { result, resultDescription: describeResultCode(result) };
+  }
+
+  /** Supprime une destination d'événements (WSDL BrueBoxService.wsdl:828-836
+   * — SeqNo, SessionID?, Url, Port?). Le terminal n'en garde que 4. */
+  async unRegisterEvent(params: RegisterEventParams): Promise<SimpleResult> {
+    const response = await this.call<
+      { SeqNo: string; SessionID: string; Url: string; Port: string },
+      { attributes?: Record<string, unknown> }
+    >("UnRegisterEventOperation", {
       SeqNo: this.nextSeqNo(),
       SessionID: params.sessionId,
       Url: params.url,
