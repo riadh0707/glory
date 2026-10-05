@@ -150,7 +150,7 @@ export class FccSoapClient {
       delete record.SessionID;
     }
     this.logger("request", operation, args);
-    const method = (this.client as unknown as Record<string, (a: TArgs) => Promise<[TResult, string]>>)[
+    const method = (this.client as unknown as Record<string, (a: TArgs, o: { timeout: number }) => Promise<[TResult, string]>>)[
       `${operation}Async`
     ];
     if (!method) {
@@ -159,7 +159,16 @@ export class FccSoapClient {
           `elle n'existe probablement pas dans BrueBoxService.wsdl (voir docs/soap-operations.md).`
       );
     }
-    const [result] = await method.call(this.client, args);
+    // Sans délai maximum, une coupure réseau en pleine opération bloquait
+    // l'app indéfiniment. Change attend le client (plusieurs minutes
+    // possibles) ; collecte/distribution/comptage peuvent être longs.
+    const timeout =
+      operation === "ChangeOperation"
+        ? 15 * 60_000
+        : /^(Collect|Cashout|EndCashin|EndReplenishment|Reset|StartReplenishmentFromCassette)/.test(operation)
+          ? 5 * 60_000
+          : 60_000;
+    const [result] = await method.call(this.client, args, { timeout });
     this.logger("response", operation, result);
     return result;
   }
@@ -210,6 +219,20 @@ export class FccSoapClient {
       SessionID: params.sessionId,
       Url: params.url,
       Port: String(params.port),
+    });
+    const result = extractResultAttribute(response);
+    return { result, resultDescription: describeResultCode(result) };
+  }
+
+  /** Arrêt (0) ou redémarrage (1) du terminal — IF Spec §3.29 p.133. */
+  async powerControl(sessionId: string, action: 0 | 1): Promise<SimpleResult> {
+    const response = await this.call<
+      { SeqNo: string; SessionID: string; Option: { attributes: { type: number } } },
+      { attributes?: Record<string, unknown> }
+    >("PowerControlOperation", {
+      SeqNo: this.nextSeqNo(),
+      SessionID: sessionId,
+      Option: { attributes: { type: action } },
     });
     const result = extractResultAttribute(response);
     return { result, resultDescription: describeResultCode(result) };

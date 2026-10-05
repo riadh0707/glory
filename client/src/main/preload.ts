@@ -2,53 +2,19 @@ import { contextBridge, ipcRenderer } from "electron";
 import { IpcChannels } from "../shared/ipc-channels";
 
 /**
- * Pont contextIsolation : le renderer n'a aucun accès Node/Electron direct
- * (nodeIntegration: false dans main.ts) — seules ces fonctions explicites
- * sont exposées via `window.api`.
+ * Pont contextIsolation : le renderer n'a aucun accès Node/Electron, seulement
+ * `window.api.call(action, ...args)` (liste blanche côté main) et trois flux
+ * d'abonnement.
  */
 contextBridge.exposeInMainWorld("api", {
-  connect: () => ipcRenderer.invoke(IpcChannels.SessionConnect),
-  status: () => ipcRenderer.invoke(IpcChannels.SessionStatus),
-  disconnect: () => ipcRenderer.invoke(IpcChannels.SessionDisconnect),
-  startCashin: () => ipcRenderer.invoke(IpcChannels.SessionStartCashin),
-  endCashin: () => ipcRenderer.invoke(IpcChannels.SessionEndCashin),
-  change: (amount: string) => ipcRenderer.invoke(IpcChannels.SessionChange, amount),
-  startReplenishEntrance: () => ipcRenderer.invoke(IpcChannels.SessionStartReplenishEntrance),
-  endReplenishEntrance: () => ipcRenderer.invoke(IpcChannels.SessionEndReplenishEntrance),
-  lockUnit: () => ipcRenderer.invoke(IpcChannels.SessionLockUnit),
-  unlockUnit: () => ipcRenderer.invoke(IpcChannels.SessionUnlockUnit),
-  inventory: () => ipcRenderer.invoke(IpcChannels.SessionInventory),
-  openExitCover: () => ipcRenderer.invoke(IpcChannels.SessionOpenExitCover),
-  closeExitCover: () => ipcRenderer.invoke(IpcChannels.SessionCloseExitCover),
-  romVersion: () => ipcRenderer.invoke(IpcChannels.SessionRomVersion),
-  adjustTime: () => ipcRenderer.invoke(IpcChannels.SessionAdjustTime),
-  getSettingFile: (fileName: string) => ipcRenderer.invoke(IpcChannels.SessionGetSettingFile, fileName),
-  enableDenom: (params: { cc: string; fv: string; devid: string }) =>
-    ipcRenderer.invoke(IpcChannels.SessionEnableDenom, params),
-  disableDenom: (params: { cc: string; fv: string; devid: string }) =>
-    ipcRenderer.invoke(IpcChannels.SessionDisableDenom, params),
-  setExchangeRate: (params: { from: string; to: string; rate: string }) =>
-    ipcRenderer.invoke(IpcChannels.SessionSetExchangeRate, params),
-  reset: () => ipcRenderer.invoke(IpcChannels.SessionReset),
-  cashinCancel: () => ipcRenderer.invoke(IpcChannels.SessionCashinCancel),
-  changeCancel: () => ipcRenderer.invoke(IpcChannels.SessionChangeCancel),
-  replenishEntranceCancel: () => ipcRenderer.invoke(IpcChannels.SessionReplenishEntranceCancel),
-  cashout: (params: { cc: string; fv: string; devid: string; piece: number }) =>
-    ipcRenderer.invoke(IpcChannels.SessionCashout, params),
-  returnCash: () => ipcRenderer.invoke(IpcChannels.SessionReturnCash),
-  generateDiagnosticReport: () => ipcRenderer.invoke(IpcChannels.DiagnosticGenerateReport),
-  reportRendererError: (context: string, message: string, stack: string | undefined) =>
-    ipcRenderer.invoke(IpcChannels.DiagnosticReportRendererError, context, message, stack),
-  dayReport: () => ipcRenderer.invoke(IpcChannels.DiagnosticDayReport),
-  receiptSettingsGet: () => ipcRenderer.invoke(IpcChannels.ReceiptSettingsGet),
-  receiptSettingsSave: (settings: unknown) => ipcRenderer.invoke(IpcChannels.ReceiptSettingsSave, settings),
-  receiptTakeNumber: () => ipcRenderer.invoke(IpcChannels.ReceiptTakeNumber),
-  fccConfigGet: () => ipcRenderer.invoke(IpcChannels.FccConfigGet),
-  fccConfigSave: (config: unknown) => ipcRenderer.invoke(IpcChannels.FccConfigSave, config),
-  onLogLine: (callback: (line: string) => void) => {
-    ipcRenderer.on(IpcChannels.LogLine, (_event, line: string) => callback(line));
+  call: (action: string, ...args: unknown[]) => ipcRenderer.invoke(IpcChannels.Call, action, ...args),
+  onLog: (cb: (line: string) => void) => {
+    ipcRenderer.on(IpcChannels.Log, (_e, line: string) => cb(line));
   },
-  onEvent: (callback: (line: string) => void) => {
-    ipcRenderer.on(IpcChannels.EventReceived, (_event, line: string) => callback(line));
+  onFccEvent: (cb: (e: unknown) => void) => {
+    ipcRenderer.on(IpcChannels.FccEvent, (_e, ev: unknown) => cb(ev));
+  },
+  onState: (cb: (s: unknown) => void) => {
+    ipcRenderer.on(IpcChannels.State, (_e, s: unknown) => cb(s));
   },
 });

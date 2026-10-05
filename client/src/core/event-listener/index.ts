@@ -15,7 +15,8 @@ import * as net from "net";
  */
 export type EventListenerMode = "tcp" | "soap-callback";
 
-export type RawEventLogger = (source: string, rawData: string) => void;
+/** `text` : contenu décodé en UTF-8 (absent pour les notifications de connexion). */
+export type RawEventLogger = (source: string, rawData: string, text?: string) => void;
 
 export interface EventListenerConfig {
   mode: EventListenerMode;
@@ -57,7 +58,7 @@ export class EventListener {
           // format exact des trames TCP — non deviné ici).
           const utf8 = chunk.toString("utf8").replace(/\0/g, "\\0");
           const hex = chunk.toString("hex");
-          this.config.logger(peer, `utf8="${utf8}" hex=${hex}`);
+          this.config.logger(peer, `utf8="${utf8}" hex=${hex}`, chunk.toString("utf8"));
         });
         socket.on("close", () => {
           this.config.logger(peer, `[connexion fermée]`);

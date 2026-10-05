@@ -506,6 +506,64 @@ client) : son code est protégé par PyArmor, il n'a pas été déchiffré. Seul
 son `config.ini` et son manuel ont été utilisés (il se connecte en
 `http://192.168.0.25`, `session_time = 60`, `unregister = True`).
 
+## Refonte 1.4.0 (2026-10-05) — logiciel de caisse complet
+
+Demande client : l'app devait devenir un vrai logiciel de caisse pour un
+commerce (supérette, vendeur…), pas une console technique.
+
+### Architecture
+- `src/main/cashier.ts` : **service unique** vers le terminal (connexion,
+  toutes les opérations, journal, événements). Remplace ~30 fonctions
+  quasi identiques de l'ancien `main.ts`. `run()` impose une seule
+  opération à la fois (sauf statut/inventaire/annulation de vente).
+- `src/main/main.ts` : couche IPC fine. **Une seule voie** (`app:call`,
+  nom d'action + arguments) avec liste blanche et **droits vérifiés côté
+  main** (`public` / `user` / `admin`) — masquer un bouton ne suffit pas.
+- `core/cash` : lecture des blocs `Cash` **par type** (IF Spec §7 « Cash
+  Type Matrix » : 1 reçu, 2 rendu, 3 stock machine, 4 distribuable) et des
+  `CashUnits` (unités 4043-4055 = stackers, 4056-4060/4084 = cassettes,
+  `st`/`ne`/`nf`/`max` = seuils réels de la machine, IF Spec p.68-76).
+  Planificateurs : rendu exact (retour arrière, le glouton échoue sur 6 €
+  avec 5×1 + 2×3) et collecte en laissant un fond de caisse.
+- `core/fcc-events` : décodage des trames TCP (`<BbxEventRequest>…\0`,
+  découpage par NUL même si coupées/fusionnées). `StatusChangeEvent`
+  donne l'état + le **montant inséré en direct** (IF Spec §3.51) ;
+  `eventDepositCountChange` le détail par dénomination.
+- `core/ledger` (`caisse.db`) : journal **métier** des opérations
+  (distinct de `glory-client.db`, journal technique pour le diagnostic) +
+  relevés d'encaisse (ouverture auto au 1er branchement du jour, clôture).
+- `core/users` : comptes vendeur/administrateur, PIN haché (scrypt + sel,
+  comparaison à temps constant), 5 échecs → blocage 30 s.
+- `core/stats` : statistiques par période (jour local, pas UTC), par
+  vendeur/heure, export CSV (« ; » + décimales à virgule pour Excel FR/BE).
+- UI (`src/ui/lib.ts`, `screens.ts`, `app.ts`) : scripts globaux sans
+  bundler, CSP stricte dans `index.html`.
+
+### Bugs corrigés par la refonte
+- Inventaire : blocs Cash 3 + 4 + CashUnits additionnés → billets comptés
+  plusieurs fois.
+- Rapport du jour : reçu + rendu additionnés ; date du jour en UTC.
+- Ticket : montant saisi présenté comme « espèces reçues ».
+- « Annuler » pendant une vente envoyait `CashinCancel` au lieu de
+  `ChangeCancel` (qui débloque le `Change` en attente avec `result=1`).
+- Mot de passe du terminal écrit en clair dans le journal technique (et
+  donc dans les rapports de diagnostic) → masqué.
+- Requêtes SOAP sans délai maximum → blocage infini si coupure réseau
+  (maintenant 60 s, 5 min collecte/comptage, 15 min pour une vente).
+- Installation neuve : pare-feu Windows bloquant la connexion entrante
+  des événements → règle ajoutée par l'installateur (`build/installer.nsh`).
+- Perte de liaison invisible → « Pas de signal du terminal » si aucun
+  HeartBeatEvent depuis 70 s.
+
+### Tests
+Faux terminal `F:\glory\tools\mock-fcc.js` (session/Occupy désactivés,
+stock simulé, événements TCP poussés) + pilotage CDP : création admin,
+PIN, vente avec suivi en direct, annulation, dépôt, collecte, droits
+vendeur refusés côté main, 900×600 sans débordement, thème sombre.
+**Non vérifié sur le vrai terminal** : format exact de `EndCashin`,
+`Collect` et `Cashout` en réponse (types Cash), `PowerControl`, unités
+réelles des CashUnits.
+
 ## Points à vérifier avant le matériel réel
 
 Voir la section dédiée dans **[open-questions.md](open-questions.md)**

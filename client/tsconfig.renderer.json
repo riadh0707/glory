@@ -10,5 +10,5 @@
     "forceConsistentCasingInFileNames": true,
     "sourceMap": true
   },
-  "include": ["src/ui/global.d.ts", "src/ui/renderer.ts"]
+  "include": ["src/ui/global.d.ts", "src/ui/lib.ts", "src/ui/screens.ts", "src/ui/app.ts"]
 }

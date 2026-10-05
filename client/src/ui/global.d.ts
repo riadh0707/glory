@@ -1,30 +1,70 @@
 /**
- * Déclarations globales partagées entre les deux scripts renderer
- * (renderer.ts pour index.html, license.ts pour license.html — voir
- * tsconfig.renderer.json). Centralisées ici plutôt que dupliquées dans
- * chaque fichier : deux déclarations globales `interface Window { api: ... }`
- * incompatibles dans la même compilation TypeScript provoquent une erreur de
- * fusion de type (les deux fichiers sont compilés ensemble, sans système de
- * module — `api` doit donc avoir un seul type cohérent pour les deux pages).
+ * Types partagés par les scripts de l'interface (compilés ensemble, sans
+ * système de modules — voir tsconfig.renderer.json). Ils reflètent ce que
+ * renvoient les actions de src/main/main.ts.
  */
-type SessionState = "Closed" | "Open" | "Occupied" | "Released";
 
-interface TransactionResult {
-  ok: boolean;
-  message: string;
-  state: SessionState;
-  /** Montant encaissé en centimes, quand l'opération le connaît (Change,
-   * EndCashin) — sert à imprimer le ticket. */
-  amountCents?: number;
+type Role = "admin" | "vendeur";
+
+interface PublicUser {
+  name: string;
+  role: Role;
 }
 
-interface ReceiptSettings {
-  companyName: string;
-  companyLine2: string;
-  operatorName: string;
-  footerMessage: string;
-  paperFormat: "58mm" | "80mm" | "A4";
-  nextTicketNumber: number;
+interface DenomLine {
+  cc: string;
+  fv: string;
+  devid: string;
+  piece: number;
+}
+
+interface OpResult {
+  ok: boolean;
+  message: string;
+  result?: number;
+}
+
+interface MoneyResult extends OpResult {
+  dueCents?: number;
+  inCents: number;
+  outCents: number;
+  inLines: DenomLine[];
+  outLines: DenomLine[];
+  transactionId?: number;
+}
+
+interface CashUnitInfo {
+  devid: string;
+  unitno: number;
+  kind: "stacker" | "cassette" | "mixed" | "other";
+  status: number;
+  nearFull: number;
+  nearEmpty: number;
+  max: number;
+  lines: DenomLine[];
+}
+
+interface InventorySnapshot {
+  device: DenomLine[];
+  dispensable: DenomLine[];
+  units: CashUnitInfo[];
+}
+
+type FccEvent =
+  | { kind: "heartbeat" }
+  | { kind: "status"; status: number; label: string; amountCents: number; error: number }
+  | { kind: "deposit"; devid: string; lines: DenomLine[] }
+  | { kind: "unit"; devid: string; name: string; label: string }
+  | { kind: "device-status"; devid: string; statusId: number }
+  | { kind: "error"; devid: string; detail: string }
+  | { kind: "response"; name: string; result: number | null }
+  | { kind: "other"; name: string };
+
+interface CashierState {
+  connection: "disconnected" | "connecting" | "connected";
+  sessionMode: boolean;
+  occupyMode: boolean;
+  busy: string | null;
 }
 
 interface FccConnectionConfig {
@@ -36,77 +76,67 @@ interface FccConnectionConfig {
   userPwd: string;
 }
 
-interface DenomLine {
-  cc: string;
-  fv: string;
-  devid: string;
-  piece: number;
+interface ReceiptSettings {
+  companyName: string;
+  companyLine2: string;
+  operatorName: string;
+  footerMessage: string;
+  paperFormat: "58mm" | "80mm" | "A4";
+  nextTicketNumber: number;
 }
 
-interface InventoryResponse {
+interface AppSettings {
+  autoPrintReceipt: boolean;
+  defaultFloatCents: number;
+  autoLockMinutes: number;
+  autoConnect: boolean;
+}
+
+type TransactionKind = "sale" | "deposit" | "payout" | "refill" | "collect" | "exchange" | "cancel";
+
+interface TransactionRow {
+  id: number;
+  ts: string;
+  kind: TransactionKind;
+  user: string;
+  dueCents: number | null;
+  inCents: number;
+  outCents: number;
   ok: boolean;
-  message: string;
-  raw?: unknown;
-  lines?: DenomLine[];
-  state: SessionState;
+  result: number | null;
+  ticketNo: number | null;
+  inLines: DenomLine[];
+  outLines: DenomLine[];
+  note: string;
 }
 
-interface DayReportOperationTotal {
-  operation: string;
-  label: string;
-  count: number;
-  lines: DenomLine[];
-  totalsByCurrency: Record<string, number>;
+interface PeriodStats {
+  fromIso: string;
+  toIso: string;
+  salesCount: number;
+  salesCents: number;
+  salesInCents: number;
+  changeGivenCents: number;
+  cancelledCount: number;
+  depositsCents: number;
+  payoutsCents: number;
+  payoutsCount: number;
+  refillsCents: number;
+  collectsCents: number;
+  exchangesCount: number;
+  netMovementCents: number;
+  averageSaleCents: number;
+  byUser: Array<{ user: string; salesCount: number; salesCents: number }>;
+  byHour: Array<{ hour: number; salesCount: number; salesCents: number }>;
 }
 
-interface DayReportResponse {
-  ok: boolean;
-  message: string;
-  generatedAt: string;
-  dateLabel: string;
-  operations: DayReportOperationTotal[];
-  totalsByCurrency: Record<string, number>;
-  errorCount: number;
-}
-
-interface GloryClientApi {
-  connect(): Promise<{ ok: boolean; message: string; state: SessionState }>;
-  status(): Promise<{ ok: boolean; message: string; raw?: unknown; state: SessionState }>;
-  disconnect(): Promise<{ ok: boolean; message: string; state: SessionState }>;
-  startCashin(): Promise<TransactionResult>;
-  endCashin(): Promise<TransactionResult>;
-  change(amount: string): Promise<TransactionResult>;
-  startReplenishEntrance(): Promise<TransactionResult>;
-  endReplenishEntrance(): Promise<TransactionResult>;
-  lockUnit(): Promise<TransactionResult>;
-  unlockUnit(): Promise<TransactionResult>;
-  inventory(): Promise<InventoryResponse>;
-  openExitCover(): Promise<TransactionResult>;
-  closeExitCover(): Promise<TransactionResult>;
-  romVersion(): Promise<{ ok: boolean; message: string; raw?: unknown; state: SessionState }>;
-  adjustTime(): Promise<TransactionResult>;
-  getSettingFile(fileName: string): Promise<{ ok: boolean; message: string; raw?: unknown; state: SessionState }>;
-  enableDenom(params: { cc: string; fv: string; devid: string }): Promise<TransactionResult>;
-  disableDenom(params: { cc: string; fv: string; devid: string }): Promise<TransactionResult>;
-  setExchangeRate(params: { from: string; to: string; rate: string }): Promise<TransactionResult>;
-  reset(): Promise<TransactionResult>;
-  cashinCancel(): Promise<TransactionResult>;
-  changeCancel(): Promise<TransactionResult>;
-  replenishEntranceCancel(): Promise<TransactionResult>;
-  cashout(params: { cc: string; fv: string; devid: string; piece: number }): Promise<TransactionResult>;
-  returnCash(): Promise<TransactionResult>;
-  generateDiagnosticReport(): Promise<{ ok: boolean; message: string; jsonPath?: string; markdownPath?: string }>;
-  reportRendererError(context: string, message: string, stack: string | undefined): Promise<void>;
-  dayReport(): Promise<DayReportResponse>;
-  receiptSettingsGet(): Promise<ReceiptSettings>;
-  receiptSettingsSave(settings: ReceiptSettings): Promise<ReceiptSettings>;
-  receiptTakeNumber(): Promise<number>;
-  fccConfigGet(): Promise<FccConnectionConfig>;
-  fccConfigSave(config: FccConnectionConfig): Promise<FccConnectionConfig>;
-  onLogLine(callback: (line: string) => void): void;
-  onEvent(callback: (line: string) => void): void;
+interface GloryApi {
+  call<T = OpResult>(action: string, ...args: unknown[]): Promise<T>;
+  onLog(cb: (line: string) => void): void;
+  onFccEvent(cb: (e: FccEvent) => void): void;
+  onState(cb: (s: CashierState) => void): void;
 }
 
 interface Window {
-  api: GloryClientApi;
+  api: GloryApi;
 }

@@ -1,9 +1,9 @@
 {
   "name": "glory-fcc-client",
   "productName": "Glory FCC Client",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "private": true,
-  "description": "Client Electron pilotant un FCC Glory (ISP-K05B) via BrueBoxService (SOAP). Voir docs/ à la racine du SDK pour la documentation de référence.",
+  "description": "Logiciel de caisse pour monnayeurs Glory (CI-10, ISP-K05B) : vente avec rendu de monnaie, encaisse, collecte, historique, statistiques.",
   "author": {
     "name": "Belabbas Mohamed Riadh",
     "email": "belabbas.mohamed.riadh@gmail.com"
@@ -47,7 +47,9 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "icon": "build/icon.ico"
@@ -58,17 +60,22 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Glory FCC Client"
+      "shortcutName": "Glory FCC Client",
+      "include": "build/installer.nsh"
     },
     "linux": {
       "target": [
         {
           "target": "AppImage",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         },
         {
           "target": "deb",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "icon": "build/icons",

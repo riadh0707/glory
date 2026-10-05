@@ -1,7 +1,6 @@
 /**
  * Copie les fichiers statiques (HTML/CSS non compilés par tsc, WSDL requis
- * à l'exécution) vers dist/ après compilation TypeScript — exécuté par le
- * script "build" de package.json.
+ * à l'exécution) vers dist/ après compilation TypeScript.
  */
 const fs = require("fs");
 const path = require("path");
