@@ -190,6 +190,8 @@ action("fcc.connect", "user", async () => {
   const m = getModelConfig(ACTIVE_MODEL_ID);
   const r = await cashier.connect(cfg, isConfirmedModel(m) ? m.eventListener.mode : "tcp");
   if (r.ok) {
+    // État réel du terminal dès la connexion (erreur, prêt...) pour le voyant.
+    await cashier.status();
     await ensureOpeningSnapshot();
     // Comme CI-Activate (time = True) : remet le terminal à l'heure du PC.
     void cashier.syncTime();

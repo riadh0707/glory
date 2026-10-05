@@ -3,7 +3,7 @@ import { EventListener } from "../core/event-listener";
 import { HistoryStore } from "../core/history-store";
 import { Ledger, TransactionKind } from "../core/ledger";
 import { FccConnectionConfig } from "../core/fcc-config";
-import { FrameSplitter, parseFrame, FccEvent } from "../core/fcc-events";
+import { FrameSplitter, parseFrame, FccEvent, MACHINE_STATUS_LABELS } from "../core/fcc-events";
 import {
   CashType,
   DenomLine,
@@ -135,7 +135,16 @@ export class Cashier {
     return { ok: r.result === 0, message: r.result === 0 ? `${label} : OK` : `${label} : ${r.resultDescription}`, result: r.result };
   }
 
-  private record(kind: TransactionKind, r: MoneyResult, extra: { dueCents?: number; note?: string } = {}): number {
+  /**
+   * N'inscrit au journal que ce qui a réellement eu lieu : une opération
+   * refusée d'emblée par le terminal (occupé, en initialisation...) sans
+   * aucun mouvement d'espèces n'est pas une vente annulée — constaté sur la
+   * VM, ça gonflait le compteur « ventes annulées » des statistiques.
+   */
+  private record(kind: TransactionKind, r: MoneyResult, extra: { dueCents?: number; note?: string } = {}): number | undefined {
+    const moved = r.inCents > 0 || r.outCents > 0;
+    const userCancel = kind === "cancel" && (r.result === 1 || r.result === 10);
+    if (!r.ok && !moved && !userCancel) return undefined;
     return this.ledger.add({
       kind,
       user: this.user,
@@ -313,7 +322,15 @@ export class Cashier {
       async (c, sid) => {
         const r = await c.getStatus(sid);
         const status = (r.raw as Record<string, unknown> | undefined)?.Status as Record<string, unknown> | undefined;
-        return { ...this.simple("Statut", r), raw: r.raw, code: Number(status?.Code ?? -1) };
+        const code = Number(status?.Code ?? -1);
+        // Même table de codes que StatusChangeEvent (IF Spec §3.51) : on la
+        // pousse à l'interface comme un événement, sinon le voyant restait
+        // sur « Terminal prêt » alors que le terminal était en erreur
+        // (constaté sur la VM du SDK : code 13 dès la connexion).
+        if (r.result === 0 && code >= 0) {
+          this.hooks.event({ kind: "status", status: code, label: MACHINE_STATUS_LABELS[code] ?? `État ${code}`, amountCents: 0, error: 0 });
+        }
+        return { ...this.simple("Statut", r), raw: r.raw, code };
       },
       false
     );
@@ -512,6 +529,11 @@ export class Cashier {
     return this.run("Restitution pièces", async (c, sid) => this.simple("Restitution des pièces", await c.returnCash(sid, 2)));
   }
 
+  /**
+   * Non bloquant : sur la VM du SDK, AdjustTime a mis ~60 s à répondre, et
+   * tant qu'il était "exclusif" toute la caisse refusait de vendre juste
+   * après la connexion.
+   */
   syncTime(): Promise<OpResult> {
     return this.run("Heure", async (c, sid) => {
       const n = new Date();
@@ -519,7 +541,7 @@ export class Cashier {
         "Mise à l'heure",
         await c.adjustTime(sid, { month: n.getMonth() + 1, day: n.getDate(), year: n.getFullYear() }, { hour: n.getHours(), minute: n.getMinutes(), second: n.getSeconds() })
       );
-    });
+    }, false);
   }
 
   // --------------------------------------------------------------- outils techniques

@@ -261,10 +261,21 @@ function stockHtml(inv: InventorySnapshot): string {
   const dispensable = aggregateLines(inv.dispensable);
   const cassettes = inv.units.filter((u) => u.kind === "cassette");
   const cassetteCents = cassettes.reduce((s, u) => s + sumCents(u.lines), 0);
-  const notes = device.filter((l) => Number(l.fv) >= 500);
-  const coins = device.filter((l) => Number(l.fv) < 500);
+  // Toutes les valeurs que la machine gère (une par stacker), même à 0 :
+  // un commerçant doit voir « 20 € : vide » pour savoir quoi recharger.
+  const known = new Map<string, DenomLine>();
+  for (const u of inv.units) if (u.kind === "stacker") for (const l of u.lines) if (Number(l.fv) > 0) known.set(`${u.devid}|${l.cc}|${l.fv}`, { ...l, devid: u.devid, piece: 0 });
+  for (const l of inv.device) {
+    const key = `${l.devid}|${l.cc}|${l.fv}`;
+    const cur = known.get(key);
+    known.set(key, { ...l, piece: (cur?.piece ?? 0) + l.piece });
+  }
+  const all = [...known.values()].sort((a, b) => Number(b.fv) - Number(a.fv));
+  const isCoin = (l: DenomLine) => l.devid === "2" || Number(l.fv) < 500;
+  const notes = all.filter((l) => !isCoin(l));
+  const coins = all.filter(isCoin);
   const unitFor = (l: DenomLine) =>
-    inv.units.find((u) => u.kind === "stacker" && u.lines.some((x) => x.fv === l.fv && x.cc === l.cc && x.piece >= 0));
+    inv.units.find((u) => u.kind === "stacker" && u.devid === l.devid && u.lines.some((x) => x.fv === l.fv && x.cc === l.cc));
   const card = (l: DenomLine) => {
     const u = unitFor(l);
     const st = u ? (UNIT_STATUS[u.status] ?? { label: `État ${u.status}`, cls: "lvl-off" }) : { label: "", cls: "lvl-off" };

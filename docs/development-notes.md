@@ -564,6 +564,38 @@ vendeur refusés côté main, 900×600 sans débordement, thème sombre.
 `Collect` et `Cashout` en réponse (types Cash), `PowerControl`, unités
 réelles des CashUnits.
 
+## Tests de la 1.5 sur la VM du SDK (2026-10-05)
+
+- **Remise en route de l'environnement** : la carte host-only `VMnet1` du
+  PC avait perdu son adresse (169.254.x au lieu de `192.168.0.1/24`) → VM
+  injoignable. Corrigé avec `New-NetIPAddress` (admin). VMware est installé
+  dans `F:\Vmware\` (`vmrun.exe`). Commandes dans la VM sans SSH :
+  `vmrun -T ws -gu root -gp password runProgramInGuest <vmx> /bin/systemctl restart fccx.service`.
+  Émulateur billets extrait dans `Emulator/Device Emulator/RBW-100/EUR_HVE_10/`
+  (`POWER_ON_CONTROL` passé à `ON`). La VM ne sert le SOAP qu'en **HTTPS**
+  (port 80 fermé, contrairement au terminal du client).
+- **Bugs trouvés et corrigés grâce à la VM** :
+  - la mise à l'heure automatique à la connexion était « exclusive » et la
+    VM a mis ~60 s à répondre → caisse inutilisable une minute après chaque
+    connexion. Maintenant non bloquante ;
+  - l'état réel du terminal (GetStatus, ex. code 13 « Erreur », 0
+    « Initialisation ») n'était jamais affiché, seulement les
+    StatusChangeEvent → lu à la connexion et à chaque « État du terminal » ;
+  - l'encaisse n'affichait que les valeurs présentes → toutes les valeurs
+    des stackers sont affichées, y compris à 0 (« vide ») ;
+  - une opération refusée d'emblée (terminal occupé, code 11) sans argent
+    bougé était journalisée comme « vente annulée » → plus journalisée.
+- **Validé sur VM** : connexion en mode session + Occupy, inventaire réel
+  (CashUnits 4043-4060/4084/4165 avec `st`/`max`), événements TCP (dont
+  HeartBeatEvent ~20 s, eventLocked, eventWaitForOpening), verrouillage /
+  déverrouillage des cassettes, déconnexion propre.
+- **Piège à nouveau rencontré** : `UnLockUnit` sur le module pièces (2)
+  met l'émulateur RCW dans l'état `DevStatus.st=9100` (attente d'ouverture
+  de porte) ; tout le terminal reste ensuite en « Initialisation » (code
+  0), y compris après relance de RCWXSim et de `fccx.service`. Il faut
+  agir dans la fenêtre de l'émulateur pièces (porte/cassette). Les ventes
+  et dépôts réels n'ont donc pas pu être rejoués sur la VM cette fois.
+
 ## Points à vérifier avant le matériel réel
 
 Voir la section dédiée dans **[open-questions.md](open-questions.md)**
