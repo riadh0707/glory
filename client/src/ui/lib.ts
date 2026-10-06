@@ -212,28 +212,26 @@ function keypad(host: HTMLElement, opts: { mode: "money" | "pin"; onChange?: (te
 
 // ------------------------------------------------------------------ visuels espèces
 
-const NOTE_COLORS: Record<number, string> = {
-  500: "#8a9a8b",
-  1000: "#c4504a",
-  2000: "#3f6db3",
-  5000: "#e0892e",
-  10000: "#3c9a5c",
-  20000: "#c7a03a",
-  50000: "#8d5aa0",
-};
+const NOTE_IMAGES = new Set([500, 1000, 2000, 5000, 10000, 20000, 50000]);
+/** Diamètre réel des pièces en mm (pour respecter les proportions à l'écran). */
+const COIN_MM: Record<number, number> = { 1: 16.25, 2: 18.75, 5: 21.25, 10: 19.75, 20: 22.25, 50: 24.25, 100: 23.25, 200: 25.75 };
 
-/** Petit billet stylisé (pas une reproduction : couleur + valeur). */
+/** Billet : image du spécimen BCE (img/note-<centimes>.jpg). */
 function noteHtml(fv: string | number, size: "sm" | "md" = "md"): string {
   const n = Number(fv);
-  const color = NOTE_COLORS[n] ?? "#6b7280";
-  return `<span class="note note-${size}" style="--note:${color}"><span class="note-val">${n / 100}</span><span class="note-cur">EURO</span></span>`;
+  const label = `${n / 100} €`;
+  if (!NOTE_IMAGES.has(n)) return `<span class="note note-${size} note-none">${label}</span>`;
+  return `<img class="note note-${size}" src="img/note-${n}.jpg" alt="${label}" title="${label}" draggable="false">`;
 }
 
+/** Pièce : photo détourée (img/coin-<centimes>.png), à l'échelle de son diamètre réel. */
 function coinHtml(fv: string | number, size: "sm" | "md" = "md"): string {
   const n = Number(fv);
-  const kind = n <= 5 ? "copper" : n < 100 ? "gold" : n === 100 ? "bi1" : "bi2";
-  const label = n >= 100 ? `${n / 100}€` : `${n}`;
-  return `<span class="coin coin-${size} coin-${kind}"><span>${label}</span></span>`;
+  const label = n >= 100 ? `${n / 100} €` : `${n} c`;
+  const mm = COIN_MM[n];
+  if (!mm) return `<span class="coin coin-${size}"><span class="coin-none">${label}</span></span>`;
+  const px = Math.round((mm / 25.75) * (size === "md" ? 54 : 32));
+  return `<span class="coin coin-${size}"><img src="img/coin-${n}.png" alt="${label}" title="${label}" width="${px}" height="${px}" draggable="false"></span>`;
 }
 
 function cashHtml(l: DenomLine, size: "sm" | "md" = "md"): string {

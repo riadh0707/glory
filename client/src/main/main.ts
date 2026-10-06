@@ -223,7 +223,13 @@ action("device.reset", "user", () => cashier.reset());
 action("refill.start", "admin", () => cashier.refillStart());
 action("refill.end", "admin", () => cashier.refillEnd());
 action("refill.cancel", "admin", () => cashier.refillCancel());
-action("collect.plan", "admin", (mode: "all" | "float", floatCents: number) => cashier.collectPlan(mode === "float" ? "float" : "all", Number(floatCents) || 0));
+action("collect.plan", "admin", (mode: string, cents: number, kind: string) =>
+  cashier.collectPlan(
+    mode === "float" || mode === "exact" ? mode : "all",
+    Math.round(Number(cents)) || 0,
+    kind === "notes" || kind === "coins" ? kind : "all"
+  )
+);
 action("collect.run", "admin", (lines: DenomLine[]) => cashier.collect(lines));
 action("unit.unlock", "admin", (unit: 1 | 2) => cashier.unlock(unit === 2 ? 2 : 1));
 action("unit.lock", "admin", (unit: 1 | 2) => cashier.lock(unit === 2 ? 2 : 1));

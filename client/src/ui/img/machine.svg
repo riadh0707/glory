@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 620 820">
+  <defs>
+    <linearGradient id="front" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#fbfdfc"/><stop offset=".55" stop-color="#e8eeec"/><stop offset="1" stop-color="#cfd9d5"/>
+    </linearGradient>
+    <linearGradient id="front2" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#f6f9f8"/><stop offset="1" stop-color="#cbd5d1"/>
+    </linearGradient>
+    <linearGradient id="side" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#a9b6b2"/><stop offset="1" stop-color="#76847f"/>
+    </linearGradient>
+    <linearGradient id="top" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#dfe6e3"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#16302a"/><stop offset="1" stop-color="#050d0b"/>
+    </linearGradient>
+    <linearGradient id="note" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#8fd0b4"/><stop offset=".5" stop-color="#c9ead9"/><stop offset="1" stop-color="#7cc3a5"/>
+    </linearGradient>
+    <radialGradient id="glow" cx=".5" cy=".55" r=".5">
+      <stop offset="0" stop-color="#3ddba8" stop-opacity=".35"/><stop offset="1" stop-color="#3ddba8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="shadow" cx=".5" cy=".5" r=".5">
+      <stop offset="0" stop-color="#000" stop-opacity=".45"/><stop offset="1" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="gold" cx=".35" cy=".3" r=".7">
+      <stop offset="0" stop-color="#fff2b8"/><stop offset="1" stop-color="#c39226"/>
+    </radialGradient>
+    <radialGradient id="silver" cx=".35" cy=".3" r=".7">
+      <stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#9aa4a8"/>
+    </radialGradient>
+    <linearGradient id="led" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#3ddba8" stop-opacity="0"/><stop offset=".5" stop-color="#3ddba8"/><stop offset="1" stop-color="#3ddba8" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <ellipse cx="320" cy="430" rx="300" ry="380" fill="url(#glow)"/>
+  <ellipse cx="320" cy="772" rx="270" ry="30" fill="url(#shadow)"/>
+
+  <!-- module billets -->
+  <path d="M80 190 L120 160 L332 160 L292 190 Z" fill="url(#top)"/>
+  <path d="M292 190 L332 160 L332 720 L292 752 Z" fill="url(#side)"/>
+  <rect x="80" y="190" width="212" height="562" rx="6" fill="url(#front)"/>
+  <!-- écran tactile -->
+  <rect x="100" y="212" width="172" height="118" rx="8" fill="#26302d"/>
+  <rect x="106" y="218" width="160" height="106" rx="5" fill="url(#glass)"/>
+  <rect x="116" y="230" width="62" height="8" rx="4" fill="#3ddba8"/>
+  <rect x="116" y="246" width="98" height="5" rx="2.5" fill="#7fa79b" opacity=".7"/>
+  <rect x="116" y="266" width="66" height="42" rx="6" fill="#0b7a5e"/>
+  <rect x="188" y="266" width="66" height="42" rx="6" fill="#1b3a33"/>
+  <path d="M106 218 L170 218 L120 324 L106 324 Z" fill="#fff" opacity=".06"/>
+  <!-- fente d'insertion des billets + billet -->
+  <rect x="112" y="366" width="148" height="20" rx="10" fill="#1d2523"/>
+  <rect x="124" y="372" width="124" height="7" rx="3.5" fill="#050807"/>
+  <rect x="138" y="336" width="96" height="40" rx="3" fill="url(#note)"/>
+  <circle cx="200" cy="356" r="9" fill="#fff" opacity=".55"/>
+  <rect x="146" y="344" width="26" height="6" rx="2" fill="#2f7d61" opacity=".7"/>
+  <!-- bande lumineuse -->
+  <rect x="96" y="402" width="180" height="4" rx="2" fill="url(#led)"/>
+  <!-- sortie billets -->
+  <rect x="108" y="424" width="156" height="58" rx="10" fill="#c4ceca"/>
+  <rect x="116" y="432" width="140" height="42" rx="7" fill="#27302d"/>
+  <rect x="134" y="448" width="104" height="14" rx="2" fill="url(#note)" opacity=".8"/>
+  <!-- portes -->
+  <path d="M92 510 H280 M92 632 H280" stroke="#b7c3bf" stroke-width="2"/>
+  <rect x="246" y="560" width="22" height="22" rx="11" fill="#c2ccc8"/><circle cx="257" cy="571" r="4" fill="#6f7d78"/>
+  <rect x="246" y="672" width="22" height="22" rx="11" fill="#c2ccc8"/><circle cx="257" cy="683" r="4" fill="#6f7d78"/>
+  <rect x="80" y="738" width="212" height="14" rx="4" fill="#9aa7a3"/>
+
+  <!-- module pièces -->
+  <path d="M302 300 L342 270 L548 270 L508 300 Z" fill="url(#top)"/>
+  <path d="M508 300 L548 270 L548 720 L508 752 Z" fill="url(#side)"/>
+  <rect x="302" y="300" width="206" height="452" rx="6" fill="url(#front2)"/>
+  <!-- trémie d'entrée des pièces (dessus) -->
+  <path d="M352 293 L376 276 L500 276 L476 293 Z" fill="#26302d"/>
+  <path d="M362 291 L380 279 L490 279 L472 291 Z" fill="#0b1210"/>
+  <ellipse cx="410" cy="285" rx="9" ry="4" fill="url(#gold)"/>
+  <ellipse cx="436" cy="284" rx="8" ry="3.6" fill="url(#silver)"/>
+  <!-- voyant -->
+  <rect x="322" y="320" width="166" height="26" rx="6" fill="#26302d"/>
+  <circle cx="338" cy="333" r="5" fill="#3ddba8"/>
+  <rect x="352" y="329" width="80" height="8" rx="4" fill="#7fa79b" opacity=".6"/>
+  <rect x="318" y="362" width="174" height="4" rx="2" fill="url(#led)"/>
+  <!-- godet de sortie des pièces -->
+  <rect x="330" y="392" width="150" height="84" rx="14" fill="#c4ceca"/>
+  <path d="M340 404 H470 V452 Q470 466 456 466 H354 Q340 466 340 452 Z" fill="#1f2826"/>
+  <ellipse cx="380" cy="452" rx="15" ry="6" fill="url(#gold)"/>
+  <ellipse cx="404" cy="456" rx="13" ry="5" fill="url(#silver)"/>
+  <ellipse cx="430" cy="451" rx="14" ry="5.5" fill="url(#gold)"/>
+  <ellipse cx="398" cy="446" rx="12" ry="5" fill="url(#gold)"/>
+  <!-- portes -->
+  <path d="M314 510 H496 M314 632 H496" stroke="#b7c3bf" stroke-width="2"/>
+  <rect x="462" y="560" width="22" height="22" rx="11" fill="#c2ccc8"/><circle cx="473" cy="571" r="4" fill="#6f7d78"/>
+  <rect x="462" y="672" width="22" height="22" rx="11" fill="#c2ccc8"/><circle cx="473" cy="683" r="4" fill="#6f7d78"/>
+  <rect x="302" y="738" width="206" height="14" rx="4" fill="#9aa7a3"/>
+  <!-- reflet -->
+  <path d="M80 190 H120 L96 752 H80 Z" fill="#fff" opacity=".35"/>
+  <path d="M302 300 H336 L316 752 H302 Z" fill="#fff" opacity=".3"/>
+</svg>

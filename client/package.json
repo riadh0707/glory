@@ -1,7 +1,7 @@
 {
   "name": "glory-fcc-client",
   "productName": "Glory FCC Client",
-  "version": "1.5.1",
+  "version": "1.6.0",
   "private": true,
   "description": "Logiciel de caisse pour monnayeurs Glory (CI-10, ISP-K05B) : vente avec rendu de monnaie, encaisse, collecte, historique, statistiques.",
   "author": {

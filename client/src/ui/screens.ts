@@ -45,6 +45,7 @@ function renderSale(root: HTMLElement): void {
       <div class="sale-actions">
         <button class="btn btn-lg" id="sale-clear">Effacer</button>
         <button class="btn btn-primary btn-xl" id="sale-go">Encaisser</button>
+        <button class="btn btn-cancel btn-xl" id="sale-stop" hidden>${icon("cancel")}<span>Annuler l'encaissement</span></button>
       </div>
     </section>
     <section class="sale-live" id="sale-live"></section>
@@ -133,7 +134,11 @@ function renderSale(root: HTMLElement): void {
     if (due <= 0) return toast("Tapez le montant de la vente.", "error");
     if (S.cashier.connection !== "connected") return toast("Terminal non connecté.", "error");
     goBtn.disabled = true;
-    $<HTMLButtonElement>("#sale-clear", root).disabled = true;
+    goBtn.hidden = true;
+    $<HTMLButtonElement>("#sale-clear", root).hidden = true;
+    const stopBtn = $<HTMLButtonElement>("#sale-stop", root);
+    stopBtn.hidden = false;
+    stopBtn.disabled = false;
     $("#sale-pad", root).classList.add("is-locked");
     let received = 0;
     const inserted = new Map<string, DenomLine>();
@@ -147,7 +152,8 @@ function renderSale(root: HTMLElement): void {
       </div>
       <div class="pay-progress"><span id="pay-bar"></span></div>
       <div id="pay-cash" class="pay-cash"></div>
-      <button class="btn btn-danger btn-lg btn-block" id="pay-cancel">Annuler la vente</button>
+      <button class="btn btn-cancel btn-xl btn-block" id="pay-cancel">${icon("cancel")}<span>Annuler l'encaissement</span></button>
+      <p class="muted small pay-hint">L'annulation rend au client toutes les espèces déjà insérées.</p>
     </div>`;
     const update = () => {
       const rest = due - received;
@@ -171,21 +177,29 @@ function renderSale(root: HTMLElement): void {
         if (box) box.innerHTML = cashDetail([...inserted.values()]);
       }
     });
-    $<HTMLButtonElement>("#pay-cancel", live).addEventListener("click", async (ev) => {
-      const b = ev.currentTarget as HTMLButtonElement;
-      b.disabled = true;
-      b.textContent = "Annulation…";
+    const cancelBtns = [$<HTMLButtonElement>("#pay-cancel", live), stopBtn];
+    const cancelPayment = async () => {
+      for (const b of cancelBtns) {
+        b.disabled = true;
+        $("span", b).textContent = "Annulation…";
+      }
       const r = await window.api.call("sale.cancel");
       if (!r.ok) {
         toast(r.message, "error");
-        b.disabled = false;
-        b.textContent = "Annuler la vente";
+        for (const b of cancelBtns) {
+          b.disabled = false;
+          $("span", b).textContent = "Annuler l'encaissement";
+        }
       }
-    });
+    };
+    for (const b of cancelBtns) b.addEventListener("click", () => void cancelPayment());
 
     const r = await window.api.call<MoneyResult>("sale.start", due);
     screenListeners = [];
-    $<HTMLButtonElement>("#sale-clear", root).disabled = false;
+    stopBtn.hidden = true;
+    goBtn.hidden = false;
+    $("span", stopBtn).textContent = "Annuler l'encaissement";
+    $<HTMLButtonElement>("#sale-clear", root).hidden = false;
     $("#sale-pad", root).classList.remove("is-locked");
     if (!document.body.contains(live)) return;
     if (r.ok) {
@@ -370,16 +384,18 @@ function actionTile(id: string, label: string, desc: string, iconName: string, c
 }
 
 /** Dépôt « en direct » : start → comptage → fin/annulation. */
-function liveDeposit(el: HTMLElement, cfg: { title: string; intro: string; start: string; end: string; cancel: string; done: (r: MoneyResult) => void }): void {
+function liveDeposit(el: HTMLElement, cfg: { title: string; intro: string; start: string; end: string; cancel: string; cancelLabel?: string; done: (r: MoneyResult) => void }): void {
+  const cancelLabel = cfg.cancelLabel ?? "Annuler — rendre les espèces";
   el.innerHTML = `<div class="card narrow">
     <p>${esc(cfg.intro)}</p>
     <div class="display display-sm"><span class="display-label">Compté</span><span class="display-amount" id="dep-total">${money(0)}</span></div>
     <div id="dep-lines"></div>
     <div class="row-actions">
       <button class="btn btn-primary btn-lg" id="dep-start">Démarrer</button>
-      <button class="btn btn-primary btn-lg" id="dep-end" hidden>Terminer</button>
-      <button class="btn btn-danger btn-lg" id="dep-cancel" hidden>Annuler</button>
-    </div><p class="muted" id="dep-status"></p></div>`;
+      <button class="btn btn-primary btn-lg" id="dep-end" hidden>Terminer et valider</button>
+    </div>
+    <button class="btn btn-cancel btn-xl btn-block dep-cancel" id="dep-cancel" hidden>${icon("cancel")}<span>${esc(cancelLabel)}</span></button>
+    <p class="muted" id="dep-status"></p></div>`;
   const counted = new Map<string, DenomLine>();
   const render = () => {
     const lines = [...counted.values()];
@@ -414,12 +430,14 @@ function liveDeposit(el: HTMLElement, cfg: { title: string; intro: string; start
       cfg.done(r);
     })
   );
-  cancelBtn.addEventListener("click", () =>
-    void busy(cancelBtn, async () => {
-      const r = await window.api.call(cfg.cancel);
-      if (report(r, "Annulé — espèces restituées.")) liveDeposit(el, cfg);
-    })
-  );
+  cancelBtn.addEventListener("click", async () => {
+    cancelBtn.disabled = true;
+    $("span", cancelBtn).textContent = "Annulation…";
+    const r = await window.api.call(cfg.cancel);
+    if (report(r, "Annulé — espèces restituées.")) return liveDeposit(el, cfg);
+    cancelBtn.disabled = false;
+    $("span", cancelBtn).textContent = cancelLabel;
+  });
 }
 
 function renderOps(root: HTMLElement): void {
@@ -437,6 +455,7 @@ function renderOps(root: HTMLElement): void {
           start: "deposit.start",
           end: "deposit.end",
           cancel: "deposit.cancel",
+          cancelLabel: "Annuler le dépôt — rendre les espèces",
           done: (r) => {
             el.innerHTML = `<div class="card narrow"><div class="done-badge">✓ Dépôt enregistré : ${money(r.inCents)}</div>${cashDetail(r.inLines)}
               <div class="row-actions"><button class="btn btn-lg" id="d-print">Imprimer</button><button class="btn btn-primary btn-lg" id="d-again">Nouveau dépôt</button></div></div>`;
@@ -449,6 +468,15 @@ function renderOps(root: HTMLElement): void {
     ...(S.user?.role === "admin"
       ? [{ id: "payout", label: "Sortie d'espèces", desc: "Remboursement, paiement fournisseur, retrait de caisse.", icon: "payout", render: renderPayout }]
       : []),
+    actionTile(
+      "deposit-cancel",
+      "Annuler un dépôt",
+      "Annule le dépôt ou l'encaissement en cours et rend au client les espèces déjà insérées.",
+      "cancel",
+      "deposit.cancel",
+      "Annuler le dépôt en cours ? Les espèces déjà insérées seront rendues.",
+      "danger"
+    ),
     actionTile("coins", "Rendre les pièces", "Rend les pièces restées dans l'entrée (client qui change d'avis).", "coins", "coins.return"),
   ];
   hub(root, items);
@@ -566,7 +594,7 @@ function renderManage(root: HTMLElement): void {
           },
         }),
     },
-    { id: "collect", label: "Collecter", desc: "Envoyer le surplus vers la cassette, en gardant un fond de caisse.", icon: "collect", render: renderCollect },
+    { id: "collect", label: "Collecter", desc: "Sortir un montant exact, le surplus ou tout, en billets et/ou pièces.", icon: "collect", render: renderCollect },
     {
       id: "cassettes",
       label: "Cassettes",
@@ -585,71 +613,157 @@ function renderManage(root: HTMLElement): void {
         for (const b of $$<HTMLButtonElement>("[data-lock]", el)) b.addEventListener("click", () => void busy(b, async () => report(await window.api.call("unit.lock", Number(b.dataset.lock)))));
       },
     },
+    {
+      id: "cover",
+      label: "Ouverture du cache",
+      desc: "Ouvrir / fermer le cache de sortie pour récupérer des billets refusés.",
+      icon: "door",
+      render: (el) => {
+        el.innerHTML = `<div class="card narrow"><p>Ouvrez le cache, retirez les billets, puis refermez-le.</p>
+          <div class="row-actions"><button class="btn btn-primary btn-lg" data-a="cover.open">Ouvrir le cache</button><button class="btn btn-lg" data-a="cover.close">Fermer le cache</button></div></div>`;
+        for (const b of $$<HTMLButtonElement>("[data-a]", el)) b.addEventListener("click", () => void busy(b, async () => report(await window.api.call(b.dataset.a!))));
+      },
+    },
   ]);
+}
+
+/** Montant tapé en euros (« 12,50 », « 12.5 », « 40 ») → centimes ; NaN si illisible. */
+function readEuros(text: string): number {
+  const t = text.replace(/[\s€]/g, "").replace(".", ",");
+  if (!/^\d+(,\d{0,2})?$/.test(t)) return NaN;
+  return parseAmount(t);
 }
 
 function renderCollect(el: HTMLElement): void {
   const floatDefault = S.settings?.defaultFloatCents ?? 20000;
+  type Mode = "exact" | "float" | "all" | "manual";
+  type Kind = "all" | "notes" | "coins";
+  let mode: Mode = "exact";
+  let kind: Kind = "all";
   el.innerHTML = `<div class="card">
     <p>Transfère des espèces des recycleurs vers la cassette de collecte (à vider ensuite).</p>
-    <div class="choice" id="col-mode">
-      <button class="btn active" data-m="float">Laisser un fond de caisse</button>
-      <button class="btn" data-m="all">Tout collecter</button>
-      <button class="btn" data-m="manual">Choisir manuellement</button>
+    <h3>Quoi collecter</h3>
+    <div class="choice" id="col-kind">
+      <button class="btn active" data-k="all">Billets et pièces</button>
+      <button class="btn" data-k="notes">Billets seulement</button>
+      <button class="btn" data-k="coins">Pièces seulement</button>
     </div>
-    <div class="form inline" id="col-float"><label>Fond de caisse à laisser (€)<input id="col-float-v" type="number" min="0" step="1" value="${floatDefault / 100}"></label></div>
-    <button class="btn btn-primary" id="col-plan">Préparer la collecte</button>
+    <h3>Comment</h3>
+    <div class="choice" id="col-mode">
+      <button class="btn active" data-m="exact">Montant exact</button>
+      <button class="btn" data-m="float">Laisser un fond de caisse</button>
+      <button class="btn" data-m="all">Tout collecter</button>
+      <button class="btn" data-m="manual">Choisir à la main</button>
+    </div>
+    <div class="col-amount" id="col-amount">
+      <label class="field" id="col-amount-field"><span id="col-amount-label">Montant à collecter (€)</span><input id="col-amount-v" inputmode="decimal" autocomplete="off" placeholder="ex. 150,00"></label>
+      <button class="btn btn-primary btn-lg" id="col-plan">Préparer la collecte</button>
+    </div>
     <div id="col-preview"></div></div>`;
-  let mode: "float" | "all" | "manual" = "float";
+
+  const amountInput = $<HTMLInputElement>("#col-amount-v", el);
+  const planBtn = $<HTMLButtonElement>("#col-plan", el);
+  const syncForm = () => {
+    $("#col-amount-label", el).textContent = mode === "float" ? "Fond de caisse à laisser (€)" : "Montant à collecter (€)";
+    $("#col-amount-field", el).hidden = mode === "all" || mode === "manual";
+    if (mode === "float") amountInput.value = String(floatDefault / 100).replace(".", ",");
+    if (mode === "exact") amountInput.value = "";
+    $("#col-preview", el).innerHTML = "";
+    if (mode === "exact") amountInput.focus();
+  };
   for (const b of $$<HTMLButtonElement>("#col-mode button", el))
     b.addEventListener("click", () => {
-      mode = b.dataset.m as typeof mode;
+      mode = b.dataset.m as Mode;
       for (const x of $$("#col-mode button", el)) x.classList.toggle("active", x === b);
-      $("#col-float", el).hidden = mode !== "float";
+      syncForm();
     });
-  $("#col-plan", el).addEventListener("click", (e) =>
-    void busy(e.currentTarget as HTMLButtonElement, async () => {
-      const floatCents = Math.round(Number($<HTMLInputElement>("#col-float-v", el).value || "0") * 100);
-      const r = await window.api.call<OpResult & { plan?: DenomLine[] }>("collect.plan", mode === "float" ? "float" : "all", floatCents);
+  for (const b of $$<HTMLButtonElement>("#col-kind button", el))
+    b.addEventListener("click", () => {
+      kind = b.dataset.k as Kind;
+      for (const x of $$("#col-kind button", el)) x.classList.toggle("active", x === b);
+      $("#col-preview", el).innerHTML = "";
+    });
+  syncForm();
+  amountInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") planBtn.click();
+  });
+
+  planBtn.addEventListener("click", () =>
+    void busy(planBtn, async () => {
+      let cents = 0;
+      if (mode === "exact" || mode === "float") {
+        cents = readEuros(amountInput.value);
+        if (Number.isNaN(cents) || (mode === "exact" && cents <= 0)) return void toast("Tapez un montant, par exemple 150 ou 152,50.", "error");
+      }
+      const r = await window.api.call<OpResult & { plan?: DenomLine[] }>("collect.plan", mode === "manual" ? "all" : mode, cents, kind);
       if (!r.ok || !r.plan) return void toast(r.message, "error");
       const inv = await window.api.call<OpResult & { inventory?: InventorySnapshot }>("fcc.inventory");
-      const avail = inv.inventory?.dispensable ?? [];
-      const plan = mode === "manual" ? avail.map((l) => ({ ...l, piece: 0 })) : r.plan;
-      preview(avail, plan);
+      const isCoin = (l: DenomLine) => l.devid === "2" || Number(l.fv) < 500;
+      const avail = (inv.inventory?.dispensable ?? []).filter((l) => l.piece > 0 && (kind === "all" || (kind === "coins") === isCoin(l)));
+      preview(avail, mode === "manual" ? [] : r.plan, mode === "exact" ? cents : 0);
     })
   );
 
-  function preview(avail: DenomLine[], plan: DenomLine[]): void {
+  function preview(avail: DenomLine[], plan: DenomLine[], target: number): void {
     const box = $("#col-preview", el);
-    const rows = avail
-      .filter((l) => l.piece > 0)
-      .sort((a, b) => Number(b.fv) - Number(a.fv))
-      .map((l) => {
-        const want = plan.find((p) => p.fv === l.fv && p.devid === l.devid)?.piece ?? 0;
-        return `<tr><td>${cashHtml(l, "sm")}</td><td>${l.piece}</td><td><input type="number" min="0" max="${l.piece}" value="${want}" data-fv="${esc(l.fv)}" data-devid="${esc(l.devid)}" data-cc="${esc(l.cc)}"></td><td data-amt>${money(want * Number(l.fv))}</td></tr>`;
-      })
-      .join("");
-    box.innerHTML = `<table class="table"><thead><tr><th>Valeur</th><th>En machine</th><th>À collecter</th><th>Montant</th></tr></thead><tbody>${rows}</tbody>
-      <tfoot><tr><td colspan="3">Total collecté</td><td id="col-total"></td></tr></tfoot></table>
-      <button class="btn btn-primary btn-lg" id="col-run">Lancer la collecte</button>`;
-    const read = (): DenomLine[] =>
-      $$<HTMLInputElement>("input[data-fv]", box)
-        .map((i) => ({ cc: i.dataset.cc!, fv: i.dataset.fv!, devid: i.dataset.devid!, piece: Math.max(0, Math.min(Number(i.max), Math.floor(Number(i.value) || 0))) }))
-        .filter((l) => l.piece > 0);
-    const total = () => {
-      for (const i of $$<HTMLInputElement>("input[data-fv]", box)) i.closest("tr")!.querySelector("[data-amt]")!.textContent = money((Number(i.value) || 0) * Number(i.dataset.fv));
-      $("#col-total", box).textContent = money(sumCents(read()));
+    if (avail.length === 0) return void (box.innerHTML = `<p class="muted empty-line">Rien de disponible à collecter pour ce choix.</p>`);
+    const key = (l: DenomLine) => `${l.devid}|${l.fv}`;
+    const lines = [...avail].sort((a, b) => Number(b.fv) - Number(a.fv));
+    const take = new Map<string, number>(lines.map((l) => [key(l), plan.find((p) => p.fv === l.fv && p.devid === l.devid)?.piece ?? 0]));
+    box.innerHTML = `<div class="col-figs">
+        ${target ? `<div class="pay-fig"><span>Montant demandé</span><strong>${money(target)}</strong></div>` : ""}
+        <div class="pay-fig pay-fig-in"><span>Sélectionné</span><strong id="col-total"></strong></div>
+        ${target ? `<div class="pay-fig" id="col-gap-box"><span>Écart</span><strong id="col-gap"></strong></div>` : ""}
+      </div>
+      <p class="muted small">Ajustez avec − / + si besoin. « Max » prend tout ce qu'il y a dans la machine pour cette valeur.</p>
+      <div class="pick-grid">${lines
+        .map(
+          (l) => `<div class="pick" data-key="${esc(key(l))}">${cashHtml(l)}
+            <div class="pick-ctl"><button class="btn" data-d="-1">−</button><b data-n></b><button class="btn" data-d="1">+</button></div>
+            <small><span data-amt></span> · ${l.piece} en machine</small>
+            <button class="btn btn-sm" data-max>Max</button></div>`
+        )
+        .join("")}</div>
+      <div class="row-actions"><button class="btn btn-primary btn-lg" id="col-run">Lancer la collecte</button></div>`;
+    const selected = (): DenomLine[] => lines.map((l) => ({ ...l, piece: take.get(key(l)) ?? 0 })).filter((l) => l.piece > 0);
+    const refresh = () => {
+      for (const p of $$<HTMLElement>(".pick", box)) {
+        const l = lines.find((x) => key(x) === p.dataset.key)!;
+        const n = take.get(key(l)) ?? 0;
+        $("[data-n]", p).textContent = String(n);
+        $("[data-amt]", p).textContent = money(n * Number(l.fv));
+        p.classList.toggle("is-on", n > 0);
+      }
+      const sel = sumCents(selected());
+      $("#col-total", box).textContent = money(sel);
+      $<HTMLButtonElement>("#col-run", box).disabled = sel === 0 || (target > 0 && sel !== target);
+      if (target) {
+        const gap = sel - target;
+        $("#col-gap", box).textContent = gap === 0 ? "Exact ✓" : `${gap > 0 ? "+" : "−"} ${money(Math.abs(gap))}`;
+        $("#col-gap-box", box).classList.toggle("is-exact", gap === 0);
+        $("#col-gap-box", box).classList.toggle("is-off", gap !== 0);
+      }
     };
-    box.addEventListener("input", total);
-    total();
+    for (const p of $$<HTMLElement>(".pick", box)) {
+      p.addEventListener("click", (e) => {
+        const btn = (e.target as HTMLElement).closest("button") as HTMLButtonElement | null;
+        if (!btn) return;
+        const l = lines.find((x) => key(x) === p.dataset.key)!;
+        const cur = take.get(key(l)) ?? 0;
+        const n = btn.hasAttribute("data-max") ? l.piece : Math.max(0, Math.min(l.piece, cur + Number(btn.dataset.d)));
+        take.set(key(l), n);
+        refresh();
+      });
+    }
+    refresh();
     $("#col-run", box).addEventListener("click", async (e) => {
-      const lines = read();
-      if (lines.length === 0) return toast("Rien à collecter.", "error");
-      if (!(await confirmDialog("Collecte", `Collecter ${money(sumCents(lines))} vers la cassette ?`, "Collecter"))) return;
+      const sel = selected();
+      if (sel.length === 0) return toast("Rien à collecter.", "error");
+      if (!(await confirmDialog("Collecte", `Collecter ${money(sumCents(sel))} vers la cassette ?`, "Collecter"))) return;
       await busy(e.currentTarget as HTMLButtonElement, async () => {
-        const r = await window.api.call<MoneyResult>("collect.run", lines);
+        const r = await window.api.call<MoneyResult>("collect.run", sel);
         if (!report(r, `Collecte effectuée : ${money(r.outCents)}.`)) return;
-        box.innerHTML = `<div class="done-badge">✓ Collecte effectuée : ${money(r.outCents)}</div>${cashDetail(r.outLines)}<button class="btn btn-lg" id="col-print">Imprimer le bordereau</button>`;
+        box.innerHTML = `<div class="done-badge">✓ Collecte effectuée : ${money(r.outCents)}</div>${cashDetail(r.outLines)}<div class="row-actions"><button class="btn btn-lg" id="col-print">Imprimer le bordereau</button></div>`;
         $("#col-print", box).addEventListener("click", () => void printMoneyTicket("Collecte", r, denomTicketLines(r.outLines)));
       });
     });
@@ -670,7 +784,7 @@ const KIND_LABEL: Record<string, string> = {
 
 function renderHistory(root: HTMLElement): void {
   const today = ymd(new Date());
-  root.innerHTML = `<div class="toolbar">
+  root.innerHTML = `<div class="toolbar card toolbar-card">
       <label>Du <input type="date" id="h-from" value="${today}"></label>
       <label>au <input type="date" id="h-to" value="${today}"></label>
       <select id="h-kind"><option value="">Toutes les opérations</option>${Object.entries(KIND_LABEL).map(([k, v]) => `<option value="${k}">${v}</option>`).join("")}</select>
@@ -684,15 +798,62 @@ function renderHistory(root: HTMLElement): void {
     let rows = await window.api.call<TransactionRow[]>("history.list", from, to);
     if (!Array.isArray(rows)) return void toast("Historique indisponible.", "error");
     if (kind) rows = rows.filter((r) => r.kind === kind);
-    const okRows = rows.filter((r) => r.ok);
+    const okRows = rows.filter((r) => r.ok && r.kind !== "cancel");
+    const salesCents = okRows.filter((r) => r.kind === "sale").reduce((s, r) => s + (r.dueCents ?? 0), 0);
+    const inCents = okRows.reduce((s, r) => s + r.inCents, 0);
+    const outCents = okRows.reduce((s, r) => s + r.outCents, 0);
+    // Regroupement par jour (le plus récent d'abord, comme la liste).
+    const days = new Map<string, TransactionRow[]>();
+    for (const r of rows) {
+      const d = new Date(r.ts).toLocaleDateString("fr-BE", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+      if (!days.has(d)) days.set(d, []);
+      days.get(d)!.push(r);
+    }
+    const status = (r: TransactionRow) =>
+      r.kind === "cancel" ? `<span class="pill pill-muted">Annulée</span>` : r.ok ? `<span class="pill pill-ok">Réussie</span>` : `<span class="pill pill-bad">Échec</span>`;
+    const mainAmount = (r: TransactionRow) => {
+      if (r.kind === "cancel") return r.dueCents !== null ? money(r.dueCents) : money(r.inCents);
+      if (r.dueCents !== null) return money(r.dueCents);
+      if (r.kind === "payout" || r.kind === "collect") return `− ${money(r.outCents)}`;
+      return money(r.inCents || r.outCents);
+    };
+    const detail = (r: TransactionRow) => {
+      const parts: string[] = [];
+      if (r.inCents) parts.push(`reçu ${money(r.inCents)}`);
+      if (r.outCents) parts.push(`${r.kind === "sale" || r.kind === "cancel" ? "rendu" : "sorti"} ${money(r.outCents)}`);
+      return parts.join(" · ");
+    };
+    // Les notes techniques (« Vente : OK ») n'apprennent rien à l'utilisateur.
+    const note = (r: TransactionRow) => (r.kind === "cancel" || /:\s*OK$/i.test(r.note) ? "" : r.note);
+    const title = (r: TransactionRow) => (r.kind === "cancel" ? (/dépôt/i.test(r.note) ? "Dépôt annulé" : "Vente annulée") : KIND_LABEL[r.kind] ?? r.kind);
+    const sub = (r: TransactionRow) => [esc(r.user), r.ticketNo ? `ticket n° ${r.ticketNo}` : "", note(r) ? esc(note(r)) : ""].filter(Boolean).join(" · ");
     $("#h-body", root).innerHTML = rows.length
-      ? `<table class="table table-click"><thead><tr><th>Date</th><th>Opération</th><th>Utilisateur</th><th class="num">Montant</th><th class="num">Reçu</th><th class="num">Rendu / sorti</th><th>Statut</th><th>Ticket</th></tr></thead>
-        <tbody>${rows
-          .map((r) => `<tr data-id="${r.id}"><td>${fmtDateTime(r.ts)}</td><td><span class="tag tag-${r.kind}">${KIND_LABEL[r.kind] ?? r.kind}</span></td><td>${esc(r.user)}</td><td class="num">${r.dueCents !== null ? money(r.dueCents) : ""}</td><td class="num">${r.inCents ? money(r.inCents) : ""}</td><td class="num">${r.outCents ? money(r.outCents) : ""}</td><td>${r.ok ? "OK" : r.kind === "cancel" ? "Annulée" : `<span class="error-text">Échec</span>`}</td><td>${r.ticketNo ?? ""}</td></tr>`)
-          .join("")}</tbody>
-        <tfoot><tr><td colspan="3">${rows.length} opération(s)</td><td class="num">${money(okRows.filter((r) => r.kind === "sale").reduce((s, r) => s + (r.dueCents ?? 0), 0))}</td><td class="num">${money(okRows.reduce((s, r) => s + r.inCents, 0))}</td><td class="num">${money(okRows.reduce((s, r) => s + r.outCents, 0))}</td><td colspan="2"></td></tr></tfoot></table>`
-      : `<p class="muted">Aucune opération sur cette période.</p>`;
-    for (const tr of $$<HTMLTableRowElement>("tr[data-id]", root))
+      ? `<div class="hist-kpis">
+          <div class="pay-fig pay-fig-in"><span>Ventes</span><strong>${money(salesCents)}</strong></div>
+          <div class="pay-fig"><span>Espèces reçues</span><strong>${money(inCents)}</strong></div>
+          <div class="pay-fig"><span>Rendu / sorti</span><strong>${money(outCents)}</strong></div>
+          <div class="pay-fig"><span>Opérations</span><strong>${rows.length}</strong></div>
+        </div>
+        ${[...days]
+          .map(
+            ([day, list]) => `<section class="card hist-day">
+              <div class="hist-day-head"><h2>${esc(day.charAt(0).toUpperCase() + day.slice(1))}</h2><span class="muted">${list.length} opération(s)</span></div>
+              ${list
+                .map(
+                  (r) => `<button class="hist-row ${r.ok || r.kind === "cancel" ? "" : "is-failed"}" data-id="${r.id}">
+                    <span class="hist-time">${new Date(r.ts).toLocaleTimeString("fr-BE", { hour: "2-digit", minute: "2-digit" })}</span>
+                    <span class="hist-icon hist-${r.kind}">${icon(r.kind === "cancel" ? "cancel" : r.kind)}</span>
+                    <span class="hist-main"><strong>${title(r)}</strong><small>${sub(r)}</small></span>
+                    <span class="hist-amount"><strong>${mainAmount(r)}</strong><small>${detail(r)}</small></span>
+                    <span class="hist-status">${status(r)}</span>
+                  </button>`
+                )
+                .join("")}
+            </section>`
+          )
+          .join("")}`
+      : `<div class="card empty"><p>Aucune opération sur cette période.</p></div>`;
+    for (const tr of $$<HTMLButtonElement>(".hist-row[data-id]", root))
       tr.addEventListener("click", () => {
         const r = rows.find((x) => x.id === Number(tr.dataset.id))!;
         void modal(
@@ -841,17 +1002,6 @@ function renderMaint(root: HTMLElement): void {
         if (S.cashier.connection !== "connected") return void toast("Terminal non connecté.", "error");
         const r = await window.api.call<OpResult & { code?: number }>("fcc.status");
         toast(r.ok ? `Le terminal répond — ${S.machine?.label ?? "prêt"}.` : r.message, r.ok ? "ok" : "error");
-      },
-    },
-    {
-      id: "cover",
-      label: "Sortie des billets",
-      desc: "Ouvrir le cache pour récupérer des billets refusés.",
-      icon: "door",
-      render: (el) => {
-        el.innerHTML = `<div class="card narrow"><p>Ouvrez le cache, retirez les billets, puis refermez-le.</p>
-          <div class="row-actions"><button class="btn btn-primary btn-lg" data-a="cover.open">Ouvrir le cache</button><button class="btn btn-lg" data-a="cover.close">Fermer le cache</button></div></div>`;
-        for (const b of $$<HTMLButtonElement>("[data-a]", el)) b.addEventListener("click", () => void busy(b, async () => report(await window.api.call(b.dataset.a!))));
       },
     },
     actionTile("coins", "Rendre les pièces", "Rend les pièces restées dans l'entrée.", "coins", "coins.return"),

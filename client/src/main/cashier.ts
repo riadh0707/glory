@@ -431,12 +431,26 @@ export class Cashier {
 
   // ------------------------------------------------------------------ collecte
 
-  async collectPlan(mode: "all" | "float", floatCents = 0): Promise<OpResult & { plan?: DenomLine[] }> {
+  /**
+   * Prépare une collecte. `kind` limite aux billets ou aux pièces ;
+   * `mode` : tout, garder un fond de caisse (`cents` = fond à laisser) ou
+   * montant exact (`cents` = montant à sortir, plus grosses coupures d'abord).
+   */
+  async collectPlan(mode: "all" | "float" | "exact", cents = 0, kind: "all" | "notes" | "coins" = "all"): Promise<OpResult & { plan?: DenomLine[] }> {
     return this.run(
       "Préparation collecte",
       async (c, sid) => {
         const inv = parseInventory((await c.inventory(sid, 0)).raw);
-        const plan = mode === "all" ? inv.dispensable : planCollectKeepFloat(inv.dispensable, floatCents);
+        const isCoin = (l: DenomLine) => l.devid === "2" || Number(l.fv) < 500;
+        const avail = inv.dispensable.filter((l) => kind === "all" || (kind === "coins") === isCoin(l));
+        if (mode === "exact") {
+          if (!Number.isInteger(cents) || cents <= 0) return { ok: false, message: "Montant invalide." };
+          if (cents > totalCents(avail)) return { ok: false, message: `Il n'y a que ${(totalCents(avail) / 100).toFixed(2).replace(".", ",")} € disponibles.` };
+          const plan = planPayout(cents, avail);
+          if (!plan) return { ok: false, message: "Impossible de faire ce montant exact avec les billets et pièces disponibles." };
+          return { ok: true, message: "OK", plan };
+        }
+        const plan = mode === "all" ? avail : planCollectKeepFloat(avail, cents);
         return { ok: true, message: "OK", plan };
       },
       false
