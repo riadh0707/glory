@@ -663,12 +663,24 @@ function renderCollect(el: HTMLElement): void {
 
   const amountInput = $<HTMLInputElement>("#col-amount-v", el);
   const planBtn = $<HTMLButtonElement>("#col-plan", el);
+  const isCoin = (l: DenomLine) => l.devid === "2" || Number(l.fv) < 500;
+  const availableFor = (inv: OpResult & { inventory?: InventorySnapshot }) =>
+    (inv.inventory?.dispensable ?? []).filter((l) => l.piece > 0 && (kind === "all" || (kind === "coins") === isCoin(l)));
+  // Inventaire affiché dès l'ouverture (rien de sélectionné) ; « Préparer » remplit ensuite la sélection.
+  let invSeq = 0;
+  const showInventory = async () => {
+    const seq = ++invSeq;
+    const inv = await window.api.call<OpResult & { inventory?: InventorySnapshot }>("fcc.inventory");
+    if (seq !== invSeq || !el.isConnected) return;
+    if (!inv.ok) return void ($("#col-preview", el).innerHTML = `<p class="error-text">${esc(inv.message)}</p>`);
+    preview(availableFor(inv), [], 0);
+  };
   const syncForm = () => {
     $("#col-amount-label", el).textContent = mode === "float" ? "Fond de caisse à laisser (€)" : "Montant à collecter (€)";
     $("#col-amount-field", el).hidden = mode === "all" || mode === "manual";
     if (mode === "float") amountInput.value = String(floatDefault / 100).replace(".", ",");
     if (mode === "exact") amountInput.value = "";
-    $("#col-preview", el).innerHTML = "";
+    void showInventory();
     if (mode === "exact") amountInput.focus();
   };
   for (const b of $$<HTMLButtonElement>("#col-mode button", el))
@@ -681,7 +693,7 @@ function renderCollect(el: HTMLElement): void {
     b.addEventListener("click", () => {
       kind = b.dataset.k as Kind;
       for (const x of $$("#col-kind button", el)) x.classList.toggle("active", x === b);
-      $("#col-preview", el).innerHTML = "";
+      void showInventory();
     });
   syncForm();
   amountInput.addEventListener("keydown", (e) => {
@@ -697,10 +709,10 @@ function renderCollect(el: HTMLElement): void {
       }
       const r = await window.api.call<OpResult & { plan?: DenomLine[] }>("collect.plan", mode === "manual" ? "all" : mode, cents, kind);
       if (!r.ok || !r.plan) return void toast(r.message, "error");
+      const seq = ++invSeq;
       const inv = await window.api.call<OpResult & { inventory?: InventorySnapshot }>("fcc.inventory");
-      const isCoin = (l: DenomLine) => l.devid === "2" || Number(l.fv) < 500;
-      const avail = (inv.inventory?.dispensable ?? []).filter((l) => l.piece > 0 && (kind === "all" || (kind === "coins") === isCoin(l)));
-      preview(avail, mode === "manual" ? [] : r.plan, mode === "exact" ? cents : 0);
+      if (seq !== invSeq) return;
+      preview(availableFor(inv), mode === "manual" ? [] : r.plan, mode === "exact" ? cents : 0);
     })
   );
 
