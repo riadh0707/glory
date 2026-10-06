@@ -17,4 +17,7 @@ contextBridge.exposeInMainWorld("api", {
   onState: (cb: (s: unknown) => void) => {
     ipcRenderer.on(IpcChannels.State, (_e, s: unknown) => cb(s));
   },
+  onLicense: (cb: (s: unknown) => void) => {
+    ipcRenderer.on(IpcChannels.License, (_e, s: unknown) => cb(s));
+  },
 });

@@ -117,7 +117,11 @@ window.addEventListener("DOMContentLoaded", () => {
     if (c) c.textContent = new Date().toLocaleTimeString("fr-BE", { hour: "2-digit", minute: "2-digit" });
   }, 10_000);
 
-  void showLogin();
+  window.api.onLicense((l) => {
+    if (l.state !== "valid") showActivation(l);
+  });
+
+  void showStart();
 });
 
 function appendPaneLine(pane: HTMLElement, line: string): void {
@@ -137,8 +141,62 @@ function checkAutoLock(): void {
 
 // ------------------------------------------------------------------ connexion utilisateur
 
+// ------------------------------------------------------------------ licence
+
+/** Point d'entrée : licence d'abord, puis connexion utilisateur. */
+async function showStart(): Promise<void> {
+  const s = await window.api.call<LicenseStatus>("license.status");
+  if (s.state === "valid") return showLogin();
+  showActivation(s);
+}
+
+function showActivation(s: LicenseStatus): void {
+  S.user = null;
+  const root = $("#app");
+  root.className = "login-shell";
+  const canRetry = s.state === "invalid" && !!s.keyHint;
+  root.innerHTML = `<div class="login-card activation">
+      <div class="login-brand"><div class="brand-mark">G</div><div><h1>Activation du logiciel</h1><p>Glory FCC Client</p></div></div>
+      <p class="act-intro">Saisissez la clé de produit fournie avec votre licence. Ce PC doit être connecté à internet pour l'activation.</p>
+      <form id="act-form" class="form">
+        <label>Clé de produit<input id="act-key" class="act-key" autocomplete="off" spellcheck="false" placeholder="GFCC-XXXXX-XXXXX-XXXXX-XXXXX" maxlength="29"></label>
+        <p class="act-msg ${s.state === "none" ? "" : "error-text"}" id="act-msg">${esc(s.message)}</p>
+        <button class="btn btn-primary btn-lg btn-block" id="act-go">Activer</button>
+        ${canRetry ? `<button type="button" class="btn btn-lg btn-block" id="act-retry">Revérifier la licence (${esc(s.keyHint!)})</button>` : ""}
+      </form>
+      <div class="act-machine"><span>Code de ce PC</span><strong>${esc(s.machineCode)}</strong><small>À communiquer à votre fournisseur en cas de problème.</small></div>
+    </div>`;
+  const input = $<HTMLInputElement>("#act-key", root);
+  const msg = $("#act-msg", root);
+  // Mise en forme pendant la frappe : majuscules et tirets tous les 5 caractères.
+  input.addEventListener("input", () => {
+    const raw = input.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 24);
+    input.value = raw.match(/.{1,5}/g)?.join("-") ?? "";
+    if (/^GFC/.test(raw) && raw.length > 4) input.value = `GFCC-${raw.slice(4).match(/.{1,5}/g)?.join("-") ?? ""}`;
+  });
+  input.focus();
+  const done = (r: LicenseStatus) => {
+    if (r.state === "valid") {
+      toast(r.client ? `Licence activée — ${r.client}` : "Licence activée.", "ok");
+      void showLogin();
+      return;
+    }
+    msg.textContent = r.message;
+    msg.className = "act-msg error-text";
+  };
+  $<HTMLFormElement>("#act-form", root).addEventListener("submit", (e) => {
+    e.preventDefault();
+    const btn = $<HTMLButtonElement>("#act-go", root);
+    void busy(btn, async () => done(await window.api.call<LicenseStatus>("license.activate", input.value)));
+  });
+  document.getElementById("act-retry")?.addEventListener("click", (e) =>
+    void busy(e.currentTarget as HTMLButtonElement, async () => done(await window.api.call<LicenseStatus>("license.refresh")))
+  );
+}
+
 async function showLogin(): Promise<void> {
   const users = await window.api.call<PublicUser[]>("users.list");
+  if (!Array.isArray(users)) return showStart();
   const root = $("#app");
   root.className = "login-shell";
   if (users.length === 0) return showSetup(root);

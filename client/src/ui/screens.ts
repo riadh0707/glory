@@ -1102,17 +1102,55 @@ async function renderSettings(root: HTMLElement): Promise<void> {
     <section class="card"><div class="card-head"><h2>Préférences</h2></div>
       <form class="form" id="f-app">
         <label class="check"><input type="checkbox" name="autoPrintReceipt" ${app.autoPrintReceipt ? "checked" : ""}> Imprimer le ticket automatiquement après chaque vente</label>
+        <label>Méthode d'impression<select name="printMethod">${(
+          [
+            ["system", "Fenêtre d'impression du système"],
+            ["browser", "Navigateur par défaut (recommandé)"],
+          ] as const
+        )
+          .map(([v, l]) => `<option value="${v}" ${app.printMethod === v ? "selected" : ""}>${l}</option>`)
+          .join("")}</select></label>
+        <p class="muted small">Navigateur : le ticket s'ouvre dans Chrome / Edge / Firefox, qui lance l'impression. Testez avec « Ticket de test ».</p>
         <label class="check"><input type="checkbox" name="autoConnect" ${app.autoConnect ? "checked" : ""}> Connecter le terminal à l'ouverture de session</label>
         <label>Fond de caisse à laisser lors d'une collecte (€)<input name="defaultFloat" type="number" min="0" step="1" value="${app.defaultFloatCents / 100}"></label>
         <label>Verrouillage automatique après (minutes, 0 = jamais)<input name="autoLockMinutes" type="number" min="0" value="${app.autoLockMinutes}"></label>
         <button class="btn btn-primary">Enregistrer</button>
       </form></section>
 
+    <section class="card" id="lic-card"><div class="card-head"><h2>Licence</h2></div><div id="lic-body" class="muted">…</div></section>
+
     <section class="card"><div class="card-head"><h2>Utilisateurs</h2><button class="btn" id="u-add">Ajouter</button></div>
       <table class="table"><tbody>${users
         .map((u) => `<tr><td>${esc(u.name)}</td><td>${u.role === "admin" ? "Administrateur" : "Vendeur"}</td><td class="num"><button class="btn btn-sm" data-edit="${esc(u.name)}" data-role="${u.role}">Modifier</button>${u.name !== S.user?.name ? ` <button class="btn btn-sm btn-danger" data-del="${esc(u.name)}">Supprimer</button>` : ""}</td></tr>`)
         .join("")}</tbody></table></section>
   </div>`;
+
+  const renderLicense = (l: LicenseStatus) => {
+    const body = $("#lic-body", root);
+    body.className = "";
+    body.innerHTML = `<div class="detail">
+        <div class="pay-row"><span>État</span><strong class="${l.state === "valid" ? "ok-text" : "error-text"}">${esc(l.message)}</strong></div>
+        ${l.client ? `<div class="pay-row"><span>Client</span><strong>${esc(l.client)}</strong></div>` : ""}
+        <div class="pay-row"><span>Validité</span><strong>${l.expiresAt ? `jusqu'au ${new Date(l.expiresAt).toLocaleDateString("fr-BE")}` : "définitive"}</strong></div>
+        ${l.keyHint ? `<div class="pay-row"><span>Clé</span><strong>${esc(l.keyHint)}</strong></div>` : ""}
+        <div class="pay-row"><span>Code de ce PC</span><strong>${esc(l.machineCode)}</strong></div>
+        ${l.refreshBy ? `<div class="pay-row"><span>Prochain contrôle en ligne avant le</span><strong>${new Date(l.refreshBy).toLocaleDateString("fr-BE")}</strong></div>` : ""}
+      </div>
+      <div class="row-actions"><button class="btn" id="lic-check">Vérifier maintenant</button><button class="btn btn-danger" id="lic-remove">Retirer la licence de ce PC</button></div>`;
+    $("#lic-check", body).addEventListener("click", (e) =>
+      void busy(e.currentTarget as HTMLButtonElement, async () => {
+        const r = await window.api.call<LicenseStatus>("license.refresh");
+        toast(r.state === "valid" ? "Licence vérifiée." : r.message, r.state === "valid" ? "ok" : "error");
+        if (r.state === "valid") renderLicense(r);
+      })
+    );
+    $("#lic-remove", body).addEventListener("click", async () => {
+      const text = "Le logiciel sera bloqué sur ce PC jusqu'à la saisie d'une clé de produit. Pour l'utiliser sur un autre PC, demandez aussi le transfert de la licence à votre fournisseur.";
+      if (!(await confirmDialog("Retirer la licence", text, "Retirer", true))) return;
+      await window.api.call("license.remove");
+    });
+  };
+  void window.api.call<LicenseStatus>("license.status").then(renderLicense);
 
   const formObj = (f: HTMLFormElement) => Object.fromEntries(new FormData(f).entries()) as Record<string, string>;
 
@@ -1156,6 +1194,7 @@ async function renderSettings(root: HTMLElement): Promise<void> {
       autoConnect: !!v.autoConnect,
       defaultFloatCents: Math.round(Number(v.defaultFloat || 0) * 100),
       autoLockMinutes: Number(v.autoLockMinutes || 0),
+      printMethod: v.printMethod as AppSettings["printMethod"],
     });
     toast("Enregistré.", "ok");
   });

@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, shell } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, net, shell } from "electron";
 import * as fs from "fs";
 import * as path from "path";
 import { IpcChannels } from "../shared/ipc-channels";
@@ -13,11 +13,22 @@ import { listUsers, saveUser, deleteUser, verifyUser, PublicUser, Role } from ".
 import { computeStats, localDayRange, transactionsCsv } from "../core/stats";
 import { aggregate, DenomLine, totalCents } from "../core/cash";
 import { Cashier } from "./cashier";
+import { printDocument, PaperFormat } from "./printing";
+import { LicenseManager, LicenseStatus } from "../core/license";
 
 const ACTIVE_MODEL_ID = "CI-10";
 
 // Avant app.getPath("userData") pour que le dossier de données porte ce nom.
 app.setName("Glory FCC Client");
+
+// Version installée : pas d'outils de développement ni de débogage à distance
+// (sinon on pourrait inspecter ou piloter le logiciel de l'extérieur).
+if (app.isPackaged) {
+  const banned = ["remote-debugging-port", "remote-debugging-pipe", "inspect", "inspect-brk", "js-flags"];
+  if (banned.some((sw) => app.commandLine.hasSwitch(sw)) || process.argv.some((a) => /^--(inspect|remote-debugging)/.test(a))) {
+    app.exit(1);
+  }
+}
 
 /**
  * Toujours `userData` : `dist/` est dans `app.asar`, en lecture seule une
@@ -30,6 +41,7 @@ let mainWindow: BrowserWindow | null = null;
 const history = new HistoryStore(path.join(DATA_DIR, "glory-client.db"));
 const ledger = new Ledger(path.join(DATA_DIR, "caisse.db"));
 let currentUser: PublicUser | null = null;
+const license = new LicenseManager(DATA_DIR, app.getVersion(), (url, init) => net.fetch(url, init));
 
 function send(channel: string, payload: unknown): void {
   if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send(channel, payload);
@@ -111,6 +123,41 @@ function action<A extends unknown[]>(name: string, access: Access, fn: (...args:
   actions[name] = { access, fn: fn as unknown as Handler };
 }
 
+// --- licence (seules actions possibles sans licence valide)
+action("license.status", "public", () => license.status());
+action("license.activate", "public", async (key: string) => {
+  const s = await license.activate(String(key ?? ""));
+  history.record("app-lifecycle", "license-activate", { ok: s.state === "valid", message: s.message });
+  return s;
+});
+action("license.refresh", "public", () => licenseCheck());
+action("license.remove", "admin", async () => {
+  license.clear();
+  await lockForLicense();
+  return license.status();
+});
+
+/** Licence perdue en cours de route : on libère le terminal et on prévient l'interface. */
+async function lockForLicense(status?: LicenseStatus): Promise<void> {
+  currentUser = null;
+  cashier.user = "";
+  if (cashier.isConnected()) await cashier.disconnect().catch(() => undefined);
+  // Garde le motif du refus (le statut recalculé dirait seulement « aucune licence »).
+  send(IpcChannels.License, status ?? license.status());
+}
+
+async function licenseCheck(): Promise<LicenseStatus> {
+  const before = license.isLicensed();
+  const s = await license.refresh();
+  if (before && s.state !== "valid") {
+    log(`[ERREUR] Licence : ${s.message}`);
+    history.record("app-lifecycle", "license-lost", { message: s.message });
+    await lockForLicense(s);
+  }
+  return s;
+}
+setInterval(() => void licenseCheck(), 6 * 3600_000);
+
 // --- comptes
 action("users.list", "public", () => listUsers(DATA_DIR));
 action("users.setupFirstAdmin", "public", (name: string, pin: string) => {
@@ -176,6 +223,7 @@ action("settings.receiptSave", "admin", (s: ReceiptSettings) => {
 });
 action("settings.appGet", "user", () => loadAppSettings(DATA_DIR));
 action("settings.appSave", "admin", (s: AppSettings) => saveAppSettings(DATA_DIR, s));
+action("print.document", "user", (html: string, paper: PaperFormat) => printDocument(html, paper, loadAppSettings(DATA_DIR).printMethod, DATA_DIR));
 action("ticket.next", "user", () => takeNextTicketNumber(DATA_DIR));
 action("ticket.attach", "user", (transactionId: number, ticketNo: number) => {
   ledger.setTicket(Number(transactionId), Number(ticketNo));
@@ -311,6 +359,11 @@ action("app.version", "public", () => app.getVersion());
 ipcMain.handle(IpcChannels.Call, async (_e, name: string, ...args: unknown[]) => {
   const a = actions[name];
   if (!a) return { ok: false, message: `Action inconnue : ${name}` };
+  // Sans licence valide, seul l'écran d'activation fonctionne (vérifié ici,
+  // pas seulement dans l'interface).
+  if (!name.startsWith("license.") && name !== "diag.rendererError" && !license.isLicensed()) {
+    return { ok: false, licenseRequired: true, message: "Licence requise." };
+  }
   if (a.access !== "public" && !currentUser) return { ok: false, message: "Session expirée — reconnectez-vous." };
   if (a.access === "admin" && currentUser?.role !== "admin") return { ok: false, message: "Action réservée à un administrateur." };
   try {
@@ -336,15 +389,22 @@ function createWindow(): void {
       nodeIntegration: false,
       // Le preload sandboxé ne résout pas les require relatifs (vérifié le 2026-07-28).
       sandbox: false,
+      devTools: !app.isPackaged,
     },
   });
   mainWindow.removeMenu();
+  // Pas de navigation ni de fenêtre hors de l'application.
+  mainWindow.webContents.on("will-navigate", (e) => e.preventDefault());
+  mainWindow.webContents.setWindowOpenHandler(() => ({ action: "deny" }));
   void mainWindow.loadFile(path.join(__dirname, "..", "ui", "index.html"));
 }
 
 history.record("app-lifecycle", "start", { appStartedAt: APP_STARTED_AT, version: app.getVersion(), platform: `${process.platform} ${process.arch}` });
 
-app.whenReady().then(createWindow);
+app.whenReady().then(() => {
+  createWindow();
+  void licenseCheck();
+});
 
 /**
  * Libère proprement le terminal à la fermeture (avant : 65 Open pour 2

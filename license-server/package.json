@@ -1,0 +1,13 @@
+{
+  "name": "glory-fcc-license-server",
+  "private": true,
+  "version": "2.0.0",
+  "type": "module",
+  "scripts": {
+    "deploy": "wrangler deploy",
+    "licences": "node scripts/licences.js"
+  },
+  "devDependencies": {
+    "wrangler": "^4.147.0"
+  }
+}

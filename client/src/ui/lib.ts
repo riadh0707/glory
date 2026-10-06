@@ -294,19 +294,15 @@ function ticketHtml(s: ReceiptSettings, title: string, ticketNo: number | null, 
   </div>`;
 }
 
-/** Imprime via le dialogue système, page adaptée au papier choisi. */
-function printTicket(html: string, paper: ReceiptSettings["paperFormat"]): void {
-  const width = paper === "58mm" ? "54mm" : paper === "80mm" ? "76mm" : "120mm";
-  const page = paper === "A4" ? "A4" : `${paper} auto`;
-  let style = document.getElementById("paper-style") as HTMLStyleElement | null;
-  if (!style) {
-    style = document.createElement("style");
-    style.id = "paper-style";
-    document.head.appendChild(style);
-  }
-  style.textContent = `@page { size: ${page}; margin: 3mm; } .receipt { width: ${width}; }`;
-  $("#print-area").innerHTML = html;
-  window.print();
+/**
+ * Imprime un ticket. L'application choisit la voie selon le réglage
+ * (fenêtre d'impression du système, ou navigateur par défaut en secours).
+ */
+async function printTicket(html: string, paper: ReceiptSettings["paperFormat"]): Promise<void> {
+  const r = await window.api.call<OpResult & { via?: string; cancelled?: boolean }>("print.document", html, paper);
+  if (r.cancelled) return;
+  if (!r.ok) return void toast(r.message, "error");
+  if (r.via === "browser") toast(r.message, "info");
 }
 
 /** Lignes de ticket pour une liste de dénominations. */

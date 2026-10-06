@@ -1,0 +1,10 @@
+/* Mise en page des tickets (écran d'aperçu et impression). */
+.receipt { width: 76mm; margin: 0 auto; font-family: "Courier New", monospace; font-size: 12px; color: #000; }
+.r-title { text-align: center; font-size: 19px; font-weight: 700; }
+.r-sub { text-align: center; margin-bottom: 6px; }
+.r-head { text-align: center; font-weight: 700; border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 4px 0; margin: 6px 0; text-transform: uppercase; }
+.r-row { display: flex; justify-content: space-between; gap: 8px; }
+.r-strong { font-weight: 700; font-size: 15px; }
+.r-barcode { text-align: center; margin-top: 8px; }
+.r-foot { text-align: center; font-weight: 700; margin-top: 8px; }
+.r-barcode svg { max-width: 100%; height: auto; }

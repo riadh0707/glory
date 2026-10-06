@@ -1,0 +1,4 @@
+node_modules/
+.wrangler/
+# Secrets d'administration (jeton admin, clé privée de signature) : JAMAIS dans git.
+.admin.json

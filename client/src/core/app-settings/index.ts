@@ -10,6 +10,8 @@ export interface AppSettings {
   autoLockMinutes: number;
   /** Se connecter au terminal automatiquement à l'ouverture de session. */
   autoConnect: boolean;
+  /** Fenêtre d'impression du système, ou ticket ouvert dans le navigateur par défaut. */
+  printMethod: "system" | "browser";
 }
 
 const DEFAULTS: AppSettings = {
@@ -17,6 +19,7 @@ const DEFAULTS: AppSettings = {
   defaultFloatCents: 20000,
   autoLockMinutes: 0,
   autoConnect: true,
+  printMethod: "browser",
 };
 
 function file(dir: string): string {
@@ -31,6 +34,7 @@ export function loadAppSettings(dir: string): AppSettings {
       defaultFloatCents: Number.isFinite(s.defaultFloatCents) && (s.defaultFloatCents as number) >= 0 ? Math.round(s.defaultFloatCents as number) : DEFAULTS.defaultFloatCents,
       autoLockMinutes: Number.isFinite(s.autoLockMinutes) && (s.autoLockMinutes as number) >= 0 ? Math.round(s.autoLockMinutes as number) : DEFAULTS.autoLockMinutes,
       autoConnect: typeof s.autoConnect === "boolean" ? s.autoConnect : DEFAULTS.autoConnect,
+      printMethod: cleanMethod(s.printMethod),
     };
   } catch {
     return { ...DEFAULTS };
@@ -50,5 +54,10 @@ function loadAppSettingsFrom(s: Partial<AppSettings>): AppSettings {
     defaultFloatCents: Math.max(0, Math.round(Number(s.defaultFloatCents) || 0)),
     autoLockMinutes: Math.max(0, Math.round(Number(s.autoLockMinutes) || 0)),
     autoConnect: s.autoConnect !== false,
+    printMethod: cleanMethod(s.printMethod),
   };
+}
+
+function cleanMethod(m: unknown): AppSettings["printMethod"] {
+  return m === "system" ? "system" : "browser";
 }

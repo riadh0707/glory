@@ -1,0 +1,11 @@
+name = "glory-fcc-licenses"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+
+[[kv_namespaces]]
+binding = "LICENSES"
+id = "79c7466a900c4a4ab3e20d35547d3592"
+
+# Secrets (définis par scripts/setup.js via « wrangler secret put », jamais ici) :
+#   ADMIN_TOKEN  — jeton des routes /admin
+#   SIGNING_KEY  — clé privée Ed25519 (PKCS#8, base64) qui signe les licences

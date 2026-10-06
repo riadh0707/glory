@@ -90,6 +90,7 @@ interface AppSettings {
   defaultFloatCents: number;
   autoLockMinutes: number;
   autoConnect: boolean;
+  printMethod: "system" | "browser";
 }
 
 type TransactionKind = "sale" | "deposit" | "payout" | "refill" | "collect" | "exchange" | "cancel";
@@ -135,6 +136,17 @@ interface GloryApi {
   onLog(cb: (line: string) => void): void;
   onFccEvent(cb: (e: FccEvent) => void): void;
   onState(cb: (s: CashierState) => void): void;
+  onLicense(cb: (s: LicenseStatus) => void): void;
+}
+
+interface LicenseStatus {
+  state: "valid" | "none" | "invalid";
+  message: string;
+  machineCode: string;
+  client?: string;
+  expiresAt?: string | null;
+  refreshBy?: string;
+  keyHint?: string;
 }
 
 interface Window {
