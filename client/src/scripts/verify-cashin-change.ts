@@ -51,7 +51,7 @@ async function main(): Promise<void> {
   stateMachine.onOccupied();
 
   stateMachine.assertCanTransact();
-  console.log("\n--- StartCashin (aucun billet/pièce inséré — pas d'émulateur RBW/RCW actif) ---");
+  console.log("\n--- StartCashin (aucun billet/pièce inséré, pas d'émulateur RBW/RCW actif) ---");
   const startResult = await client.startCashin(sessionId);
   console.log("StartCashin →", startResult);
 

@@ -88,7 +88,7 @@ function formatMarkdown(env: DiagnosticReportEnvironment, events: HistoryEventRo
   const { countsByKind, countsByOperation, errors } = buildSummary(events);
   const lines: string[] = [];
 
-  lines.push("# Rapport de diagnostic — Glory FCC Client");
+  lines.push("# Rapport de diagnostic : Glory FCC Client");
   lines.push("");
   lines.push("## Environnement");
   lines.push("");
@@ -128,7 +128,7 @@ function formatMarkdown(env: DiagnosticReportEnvironment, events: HistoryEventRo
     lines.push("## Erreurs (chronologique)");
     lines.push("");
     for (const err of errors) {
-      lines.push(`- **${err.ts}** — ${JSON.stringify(err.payload)}`);
+      lines.push(`- **${err.ts}** : ${JSON.stringify(err.payload)}`);
     }
     lines.push("");
   } else {

@@ -48,7 +48,7 @@ export const RESULT_CODES: Record<number, string> = {
 export function describeResultCode(code: number): string {
   const meaning = RESULT_CODES[code];
   if (meaning === undefined) {
-    return `code ${code} NON DOCUMENTÉ dans docs/error-codes.md — à vérifier sur IF Spec p.238-239 et à ajouter à la table si confirmé`;
+    return `code ${code} NON DOCUMENTÉ dans docs/error-codes.md, à vérifier sur IF Spec p.238-239 et à ajouter à la table si confirmé`;
   }
   return `${code} (${meaning})`;
 }

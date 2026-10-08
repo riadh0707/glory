@@ -18,7 +18,7 @@ import { UnconfirmedModelConfig } from "../types";
  */
 export const ci05Config: UnconfirmedModelConfig = {
   modelId: "CI-05",
-  label: "CI-05 / CI-5 (ISP-K05F/G) — protocole non confirmé",
+  label: "CI-05 / CI-5 (ISP-K05F/G), protocole non confirmé",
   status: "unconfirmed",
   sourceNote:
     "docs/models.md § CI-05 ; docs/open-questions.md § questions constructeur (ambiguïté SOAP/WebSocket)",

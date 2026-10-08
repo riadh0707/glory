@@ -15,6 +15,9 @@ import { aggregate, DenomLine, totalCents } from "../core/cash";
 import { Cashier } from "./cashier";
 import { printDocument, PaperFormat } from "./printing";
 import { LicenseManager, LicenseStatus } from "../core/license";
+import { describeDeviceError, isHelpPath } from "../core/device-errors";
+import axios from "axios";
+import * as https from "https";
 
 const ACTIVE_MODEL_ID = "CI-10";
 
@@ -55,7 +58,13 @@ function log(line: string): void {
 const cashier = new Cashier(
   {
     log,
-    event: (e) => send(IpcChannels.FccEvent, e),
+    event: (e) => {
+      if (e.kind === "error") {
+        e.info = describeDeviceError(e.devid, e.code);
+        history.record("error", "device", { devid: e.devid, code: e.info.code, title: e.info.title, detail: e.info.detail });
+      }
+      send(IpcChannels.FccEvent, e);
+    },
     state: (s) => send(IpcChannels.State, s),
   },
   history,
@@ -337,7 +346,7 @@ action("diag.report", "user", () => {
       soapEndpoint: cfg.soapEndpoint,
       appStartedAt: APP_STARTED_AT,
       reportGeneratedAt: new Date().toISOString(),
-      platform: `${process.platform} ${process.arch} — v${app.getVersion()}`,
+      platform: `${process.platform} ${process.arch}, v${app.getVersion()}`,
       nodeVersion: process.version,
     },
     events.slice(-2000)
@@ -348,6 +357,33 @@ action("diag.report", "user", () => {
 action("diag.rendererError", "public", (context: string, message: string, stack?: string) => {
   log(`[ERREUR] (interface) ${context} : ${message}`);
   history.record("error", `renderer:${context}`, { message, stack });
+});
+// Animation d'aide (GIF) servie par le terminal, renvoyée en data: URL (la
+// page n'a pas le droit de charger d'images externes). Limité aux fichiers
+// /help/… de l'adresse du terminal configurée.
+const helpImages = new Map<string, string>();
+action("device.errorImage", "user", async (pathOrUrl: string) => {
+  let p = String(pathOrUrl ?? "");
+  try {
+    if (/^https?:\/\//i.test(p)) p = new URL(p).pathname;
+  } catch {
+    return { ok: false, message: "Lien d'aide invalide." };
+  }
+  if (!isHelpPath(p)) return { ok: false, message: "Lien d'aide invalide." };
+  const cached = helpImages.get(p);
+  if (cached) return { ok: true, message: "OK", dataUrl: cached };
+  const cfg = fccConfig();
+  const origin = new URL(cfg.soapEndpoint).origin;
+  const r = await axios.get<ArrayBuffer>(origin + p, {
+    responseType: "arraybuffer",
+    timeout: 20_000,
+    maxContentLength: 8 * 1024 * 1024,
+    httpsAgent: new https.Agent({ rejectUnauthorized: cfg.rejectUnauthorized }),
+  });
+  const dataUrl = `data:image/gif;base64,${Buffer.from(r.data).toString("base64")}`;
+  if (helpImages.size > 30) helpImages.clear();
+  helpImages.set(p, dataUrl);
+  return { ok: true, message: "OK", dataUrl };
 });
 action("tech.firmware", "admin", () => cashier.firmware());
 action("tech.settingFile", "admin", (name: string) => cashier.settingFile(String(name)));
@@ -364,7 +400,7 @@ ipcMain.handle(IpcChannels.Call, async (_e, name: string, ...args: unknown[]) =>
   if (!name.startsWith("license.") && name !== "diag.rendererError" && !license.isLicensed()) {
     return { ok: false, licenseRequired: true, message: "Licence requise." };
   }
-  if (a.access !== "public" && !currentUser) return { ok: false, message: "Session expirée — reconnectez-vous." };
+  if (a.access !== "public" && !currentUser) return { ok: false, message: "Session expirée. Reconnectez-vous." };
   if (a.access === "admin" && currentUser?.role !== "admin") return { ok: false, message: "Action réservée à un administrateur." };
   try {
     return await (a.fn as (...x: unknown[]) => unknown)(...args);

@@ -28,7 +28,7 @@ async function printMoneyTicket(title: string, r: MoneyResult, extra: TicketLine
 /** Bloc « détail des espèces » (billets/pièces dessinés). */
 function cashDetail(lines: DenomLine[]): string {
   const agg = aggregateLines(lines).filter((l) => l.piece > 0);
-  if (agg.length === 0) return `<p class="muted">—</p>`;
+  if (agg.length === 0) return `<p class="muted">Aucune</p>`;
   return `<div class="cash-chips">${agg.map((l) => `<span class="cash-chip">${cashHtml(l, "sm")}<b>× ${l.piece}</b></span>`).join("")}</div>`;
 }
 
@@ -102,7 +102,7 @@ function renderSale(root: HTMLElement): void {
     void window.api.call<OpResult & { inventory?: InventorySnapshot }>("fcc.inventory").then((r) => {
       if (!document.body.contains(live)) return;
       const box = document.getElementById("k-change-box");
-      if (!r.ok || !r.inventory || !box) return void (($("#k-change", live).textContent = "—"));
+      if (!r.ok || !r.inventory || !box) return void (($("#k-change", live).textContent = "-"));
       const disp = r.inventory.dispensable;
       const coins = sumCents(disp.filter((l) => Number(l.fv) < 500));
       $("#k-change", live).textContent = money(sumCents(disp));
@@ -385,7 +385,7 @@ function actionTile(id: string, label: string, desc: string, iconName: string, c
 
 /** Dépôt « en direct » : start → comptage → fin/annulation. */
 function liveDeposit(el: HTMLElement, cfg: { title: string; intro: string; start: string; end: string; cancel: string; cancelLabel?: string; done: (r: MoneyResult) => void }): void {
-  const cancelLabel = cfg.cancelLabel ?? "Annuler — rendre les espèces";
+  const cancelLabel = cfg.cancelLabel ?? "Annuler et rendre les espèces";
   el.innerHTML = `<div class="card narrow">
     <p>${esc(cfg.intro)}</p>
     <div class="display display-sm"><span class="display-label">Compté</span><span class="display-amount" id="dep-total">${money(0)}</span></div>
@@ -434,7 +434,7 @@ function liveDeposit(el: HTMLElement, cfg: { title: string; intro: string; start
     cancelBtn.disabled = true;
     $("span", cancelBtn).textContent = "Annulation…";
     const r = await window.api.call(cfg.cancel);
-    if (report(r, "Annulé — espèces restituées.")) return liveDeposit(el, cfg);
+    if (report(r, "Annulé, espèces restituées.")) return liveDeposit(el, cfg);
     cancelBtn.disabled = false;
     $("span", cancelBtn).textContent = cancelLabel;
   });
@@ -455,7 +455,7 @@ function renderOps(root: HTMLElement): void {
           start: "deposit.start",
           end: "deposit.end",
           cancel: "deposit.cancel",
-          cancelLabel: "Annuler le dépôt — rendre les espèces",
+          cancelLabel: "Annuler le dépôt et rendre les espèces",
           done: (r) => {
             el.innerHTML = `<div class="card narrow"><div class="done-badge">✓ Dépôt enregistré : ${money(r.inCents)}</div>${cashDetail(r.inLines)}
               <div class="row-actions"><button class="btn btn-lg" id="d-print">Imprimer</button><button class="btn btn-primary btn-lg" id="d-again">Nouveau dépôt</button></div></div>`;
@@ -975,15 +975,15 @@ async function closing(btn: HTMLButtonElement): Promise<void> {
     if (!r.ok) return void toast(r.message ?? "Clôture impossible.", "error");
     const gap = r.expectedCents === null ? null : r.closingCents - r.expectedCents;
     const lines: TicketLine[] = [
-      { label: "Encaisse d'ouverture", value: r.openingCents === null ? "—" : money(r.openingCents) },
+      { label: "Encaisse d'ouverture", value: r.openingCents === null ? "-" : money(r.openingCents) },
       { label: "Ventes", value: `${r.stats.salesCount} • ${money(r.stats.salesCents)}` },
       { label: "Dépôts", value: money(r.stats.depositsCents) },
       { label: "Réapprovisionné", value: money(r.stats.refillsCents) },
       { label: "Sorties", value: money(r.stats.payoutsCents) },
       { label: "Collecté", value: money(r.stats.collectsCents) },
-      { label: "Encaisse théorique", value: r.expectedCents === null ? "—" : money(r.expectedCents) },
+      { label: "Encaisse théorique", value: r.expectedCents === null ? "-" : money(r.expectedCents) },
       { label: "Encaisse réelle", value: money(r.closingCents), strong: true },
-      { label: "Écart", value: gap === null ? "—" : money(gap), strong: true },
+      { label: "Écart", value: gap === null ? "-" : money(gap), strong: true },
     ];
     await modal(
       (body, close) => {
@@ -1013,7 +1013,7 @@ function renderMaint(root: HTMLElement): void {
       action: async () => {
         if (S.cashier.connection !== "connected") return void toast("Terminal non connecté.", "error");
         const r = await window.api.call<OpResult & { code?: number }>("fcc.status");
-        toast(r.ok ? `Le terminal répond — ${S.machine?.label ?? "prêt"}.` : r.message, r.ok ? "ok" : "error");
+        toast(r.ok ? `Le terminal répond : ${S.machine?.label ?? "prêt"}.` : r.message, r.ok ? "ok" : "error");
       },
     },
     actionTile("coins", "Rendre les pièces", "Rend les pièces restées dans l'entrée.", "coins", "coins.return"),
@@ -1182,7 +1182,7 @@ async function renderSettings(root: HTMLElement): Promise<void> {
       userId: v.userId.trim(),
       userPwd: v.userPwd,
     });
-    toast(S.cashier.connection === "connected" ? "Enregistré — reconnectez le terminal pour l'appliquer." : "Enregistré.", "ok");
+    toast(S.cashier.connection === "connected" ? "Enregistré. Reconnectez le terminal pour l'appliquer." : "Enregistré.", "ok");
   });
 
   $<HTMLFormElement>("#f-receipt", root).addEventListener("submit", async (e) => {

@@ -14,5 +14,5 @@ export const ci10xConfig: FccModelConfig = {
   soapEndpoint: null,
   tls: { rejectUnauthorized: false },
   eventListener: { mode: "tcp", tcpPort: 55561 },
-  sourceNote: "docs/models.md § CI-10X — endpoint non vérifié, à configurer par environnement",
+  sourceNote: "docs/models.md § CI-10X : endpoint non vérifié, à configurer par environnement",
 };

@@ -221,14 +221,14 @@ export class Cashier {
       } else if (open.result === 20) {
         this.sessionId = "";
         this.sessionMode = false;
-        this.log("Mode session désactivé sur le terminal — fonctionnement sans session.");
+        this.log("Mode session désactivé sur le terminal : fonctionnement sans session.");
       } else {
         await this.teardown();
         return this.fail(
           open.result === 15
             ? "Identifiant ou mot de passe refusé par le terminal (Réglages → Connexion)."
             : open.result === 16
-              ? "Trop de sessions ouvertes sur le terminal — réessayez dans quelques minutes."
+              ? "Trop de sessions ouvertes sur le terminal. Réessayez dans quelques minutes."
               : `Ouverture refusée par le terminal : ${open.resultDescription}`,
           open.result
         );
@@ -330,6 +330,17 @@ export class Cashier {
         if (r.result === 0 && code >= 0) {
           this.hooks.event({ kind: "status", status: code, label: MACHINE_STATUS_LABELS[code] ?? `État ${code}`, amountCents: 0, error: 0 });
         }
+        // <DevStatus devid="2" val="258" st="9200"/> : val = code d'erreur du module
+        // (même numérotation que eventError). Permet d'afficher une panne
+        // survenue avant l'ouverture du logiciel.
+        const devs = status?.DevStatus;
+        for (const d of (Array.isArray(devs) ? devs : devs ? [devs] : []) as Array<{ attributes?: Record<string, string> }>) {
+          const a = d.attributes ?? {};
+          const pick = (k: string) => a[k] ?? a[`n:${k}`];
+          const val = Number(pick("val") ?? 0);
+          const st = Number(pick("st") ?? 0);
+          if (val > 0 && [9200, 9400, 9500].includes(st)) this.hooks.event({ kind: "error", devid: String(pick("devid") ?? "?"), code: val, recoveryUrl: "" });
+        }
         return { ...this.simple("Statut", r), raw: r.raw, code };
       },
       false
@@ -357,8 +368,8 @@ export class Cashier {
       const r = await c.change(sid, String(amountCents));
       // 1 = annulé à la demande (ChangeCancel) : les espèces sont rendues.
       const res = this.money("Vente", r);
-      if (r.result === 1) res.message = "Vente annulée — espèces rendues au client.";
-      if (r.result === 10) res.message = "Monnaie insuffisante pour rendre — vente annulée, espèces rendues.";
+      if (r.result === 1) res.message = "Vente annulée, espèces rendues au client.";
+      if (r.result === 10) res.message = "Monnaie insuffisante pour rendre : vente annulée, espèces rendues.";
       res.dueCents = amountCents;
       res.transactionId = this.record(r.result === 0 ? "sale" : "cancel", res, { dueCents: amountCents });
       return res;
@@ -482,13 +493,13 @@ export class Cashier {
 
   /** Fin du dépôt de l'échange : renvoie ce qui a été reçu, sans encore rendre. */
   async exchangeReceived(): Promise<MoneyResult | OpResult> {
-    return this.run("Échange", async (c, sid) => this.money("Échange — dépôt", await c.endCashin(sid)));
+    return this.run("Échange", async (c, sid) => this.money("Échange (dépôt)", await c.endCashin(sid)));
   }
 
   async exchangeGive(receivedCents: number, depositLines: DenomLine[], give: DenomLine[]): Promise<MoneyResult | OpResult> {
     if (totalCents(give) !== receivedCents) return { ok: false, message: "Le montant rendu doit être égal au montant déposé." };
     return this.run("Échange", async (c, sid) => {
-      const r = this.money("Échange — rendu", await c.cashout(sid, give.map((l) => ({ ...l }))), [0], false);
+      const r = this.money("Échange (rendu)", await c.cashout(sid, give.map((l) => ({ ...l }))), [0], false);
       if (r.ok && r.outLines.length === 0) {
         r.outLines = give;
         r.outCents = totalCents(give);

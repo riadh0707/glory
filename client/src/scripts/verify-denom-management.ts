@@ -60,7 +60,7 @@ async function main(): Promise<void> {
   console.log("\n--- SetExchangeRate (USD→EUR=0.9) ---");
   console.log(await client.setExchangeRate(sessionId, [{ from: "USD", to: "EUR", rate: "0.9" }]));
 
-  console.log("\n--- SetRestriction (réservé RBW-200/RBG-200, sans objet ici — voir docstring core) ---");
+  console.log("\n--- SetRestriction (réservé RBW-200/RBG-200, sans objet ici, voir docstring core) ---");
   console.log(await client.setRestriction(sessionId, [1]));
 
   await client.release(sessionId);

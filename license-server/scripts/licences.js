@@ -58,7 +58,7 @@ try {
     case "creer": {
       if (!rest[0] || rest[0].startsWith("--")) throw new Error('Nom du client manquant : creer "Nom du client"');
       const l = await api("POST", "/admin/keys", { client: rest[0], expiresAt: opt("expire") ?? null, seats: opt("postes") ?? 1, note: opt("note") ?? "" });
-      console.log("Licence créée — clé à donner au client :\n");
+      console.log("Licence créée. Clé à donner au client :\n");
       show(l);
       break;
     }

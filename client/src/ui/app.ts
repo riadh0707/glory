@@ -99,7 +99,9 @@ window.addEventListener("DOMContentLoaded", () => {
     if (e.kind === "unit" && ["eventFull", "eventEmpty", "eventMissing", "eventHigh"].includes(e.name)) {
       toast(`${e.devid === "2" ? "Module pièces" : "Module billets"} : ${e.label}`, e.name === "eventHigh" ? "info" : "error");
     }
-    if (e.kind === "error") toast(`Erreur terminal (${e.devid === "2" ? "pièces" : "billets"})`, "error");
+    if (e.kind === "error") onDeviceError(e);
+    // Retour à l'état normal (prêt / en attente) : la panne est réglée.
+    if (e.kind === "status" && (e.status === 1 || e.status === 0) && deviceErrors.size) clearDeviceErrors();
     if (e.kind !== "heartbeat") {
       S.events.push(`${new Date().toLocaleTimeString("fr-BE")}  ${JSON.stringify(e)}`);
       if (S.events.length > 500) S.events.shift();
@@ -177,7 +179,7 @@ function showActivation(s: LicenseStatus): void {
   input.focus();
   const done = (r: LicenseStatus) => {
     if (r.state === "valid") {
-      toast(r.client ? `Licence activée — ${r.client}` : "Licence activée.", "ok");
+      toast(r.client ? `Licence activée : ${r.client}` : "Licence activée.", "ok");
       void showLogin();
       return;
     }
@@ -352,6 +354,9 @@ function renderShell(): void {
   };
   chip.addEventListener("click", (e) => {
     e.stopPropagation();
+    // Panne en cours : le voyant rouvre directement la fenêtre d'aide.
+    const err = [...deviceErrors.keys()][0];
+    if (err) return void showDeviceError(err);
     pop.hidden = !pop.hidden;
     chip.setAttribute("aria-expanded", String(!pop.hidden));
   });
@@ -375,6 +380,83 @@ function isSignalLost(): boolean {
   return S.cashier.connection === "connected" && S.lastHeartbeat > 0 && Date.now() - S.lastHeartbeat > 70_000;
 }
 
+// ------------------------------------------------------------------ pannes des modules
+
+/** Panne en cours par module (devid → infos), affichée dans le voyant et la fenêtre de panne. */
+const deviceErrors = new Map<string, { info: DeviceErrorInfo; recoveryUrl: string }>();
+let deviceErrorOpen = "";
+
+function onDeviceError(e: { devid: string; code: number; recoveryUrl: string; info?: DeviceErrorInfo }): void {
+  if (!e.info) return;
+  const prev = deviceErrors.get(e.devid);
+  deviceErrors.set(e.devid, { info: e.info, recoveryUrl: e.recoveryUrl || prev?.recoveryUrl || "" });
+  renderStatusChip();
+  // Une seule fenêtre à la fois ; pas de réouverture pour la même panne.
+  const key = `${e.devid}|${e.info.code}`;
+  if (deviceErrorOpen === key || (prev?.info.code === e.info.code && deviceErrorOpen)) return;
+  void showDeviceError(e.devid);
+}
+
+function clearDeviceErrors(): void {
+  deviceErrors.clear();
+  renderStatusChip();
+}
+
+async function showDeviceError(devid: string): Promise<void> {
+  const cur = deviceErrors.get(devid);
+  if (!cur) return;
+  const { info, recoveryUrl } = cur;
+  deviceErrorOpen = `${devid}|${info.code}`;
+  document.querySelector(".overlay.dev-err-overlay")?.remove();
+  await modal<boolean>(
+    (body, close) => {
+      body.closest(".overlay")?.classList.add("dev-err-overlay");
+      body.innerHTML = `<div class="dev-err">
+          <div class="dev-err-head">
+            <span class="dev-err-icon">!</span>
+            <div><p class="dev-err-module">Module ${esc(info.module)}, code ${esc(info.code)}</p><h2>${esc(info.title)}</h2></div>
+          </div>
+          <p class="dev-err-expl">${esc(info.explanation)}</p>
+          <div class="dev-err-grid">
+            <div class="dev-err-anim" id="dev-err-anim"><span class="muted small">${info.helpPath || recoveryUrl ? "Chargement de l'animation d'aide…" : "Pas d'animation pour cette erreur."}</span></div>
+            <div>
+              <h3>Que faire</h3>
+              <ol class="dev-err-steps">${info.steps.map((s) => `<li>${esc(s)}</li>`).join("")}</ol>
+              ${info.technician ? `<p class="dev-err-tech">Cette panne demande en général l'intervention d'un technicien.</p>` : ""}
+            </div>
+          </div>
+          <details class="dev-err-detail"><summary>Détail technique</summary>
+            <p>Module : ${info.devid === "2" ? "RCW (pièces)" : "RBW (billets)"} · code détaillé ${esc(info.code)}${info.detail ? ` · ${esc(info.detail)}` : ""}</p>
+          </details>
+          <div class="dialog-actions">
+            <button class="btn btn-lg" data-close>Fermer</button>
+            <button class="btn btn-primary btn-lg" data-reset>${icon("reset")}<span>C'est réglé, réinitialiser</span></button>
+          </div>
+        </div>`;
+      $("[data-close]", body).addEventListener("click", () => close(false));
+      $("[data-reset]", body).addEventListener("click", (ev) =>
+        void busy(ev.currentTarget as HTMLButtonElement, async () => {
+          const r = await window.api.call("device.reset");
+          if (!r.ok) return void toast(r.message, "error");
+          clearDeviceErrors();
+          toast("Modules réinitialisés.", "ok");
+          close(true);
+        })
+      );
+      const src = recoveryUrl || info.helpPath;
+      if (src) {
+        void window.api.call<OpResult & { dataUrl?: string }>("device.errorImage", src).then((r) => {
+          const box = document.getElementById("dev-err-anim");
+          if (!box) return;
+          box.innerHTML = r.ok && r.dataUrl ? `<img src="${r.dataUrl}" alt="Animation d'aide : ${esc(info.title)}">` : `<span class="muted small">Animation indisponible (${esc(r.message)}).</span>`;
+        });
+      }
+    },
+    { title: "Problème sur le terminal", wide: true }
+  );
+  deviceErrorOpen = "";
+}
+
 function renderStatusChip(): void {
   const chip = document.getElementById("status-chip");
   const btn = document.getElementById("btn-conn") as HTMLButtonElement | null;
@@ -392,6 +474,11 @@ function renderStatusChip(): void {
     if (m && (m.status === 13 || m.status === 30)) cls = "chip chip-err";
     if (isSignalLost()) {
       text = "Pas de signal du terminal";
+      cls = "chip chip-err";
+    }
+    const err = [...deviceErrors.values()][0];
+    if (err) {
+      text = `Panne ${err.info.module} : ${err.info.title}`;
       cls = "chip chip-err";
     }
   }

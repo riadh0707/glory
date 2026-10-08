@@ -1,5 +1,5 @@
 /* =========================================================================
-   Glory FCC Client — interface caisse (tactile, 1024×600 minimum)
+   Glory FCC Client : interface caisse (tactile, 1024×600 minimum)
    ========================================================================= */
 
 :root {
@@ -666,3 +666,22 @@ details.tech summary { cursor: pointer; font-weight: 650; padding: 4px 0; }
 .act-machine span { font-size: 12.5px; color: var(--muted); font-weight: 650; text-transform: uppercase; letter-spacing: 0.06em; }
 .act-machine strong { font-family: "Cascadia Mono", Consolas, monospace; font-size: 20px; letter-spacing: 0.08em; user-select: all; }
 .act-machine small { color: var(--muted); }
+
+/* ------------------------------------------------------------------ pannes des modules */
+
+.dev-err-head { display: flex; align-items: center; gap: 14px; margin-bottom: 10px; }
+.dev-err-icon { width: 48px; height: 48px; flex-shrink: 0; border-radius: 14px; display: grid; place-items: center; background: var(--bad); color: #fff; font-size: 28px; font-weight: 800; }
+.dev-err-module { margin: 0; font-size: 13px; font-weight: 700; color: var(--bad); text-transform: uppercase; letter-spacing: 0.05em; }
+.dev-err-head h2 { font-size: 22px; }
+.dev-err-expl { margin: 4px 0 16px; font-size: 16px; color: var(--ink-2); }
+.dev-err-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.dev-err-anim { min-height: 220px; border-radius: 12px; background: var(--panel-2); border: 1px solid var(--rule); display: grid; place-items: center; overflow: hidden; padding: 6px; }
+.dev-err-anim img { max-width: 100%; max-height: 380px; display: block; border-radius: 8px; background: #fff; }
+.dev-err-grid h3 { margin-top: 0; }
+.dev-err-steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 10px; font-size: 15.5px; line-height: 1.45; }
+.dev-err-steps li::marker { font-weight: 800; color: var(--accent-strong); }
+.dev-err-tech { margin: 14px 0 0; padding: 10px 12px; border-radius: 10px; background: var(--warn-soft); color: var(--warn); font-weight: 650; }
+.dev-err-detail { margin-top: 16px; color: var(--muted); font-size: 13px; }
+.dev-err-detail summary { cursor: pointer; font-weight: 650; }
+.dev-err .dialog-actions .btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; vertical-align: -4px; margin-right: 6px; }
+@media (max-width: 860px) { .dev-err-grid { grid-template-columns: 1fr; } }

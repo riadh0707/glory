@@ -1,3 +1,4 @@
+import { DeviceErrorInfo } from "../device-errors";
 import type { DenomLine } from "../cash";
 
 /**
@@ -69,7 +70,7 @@ export type FccEvent =
   | { kind: "deposit"; devid: string; lines: DenomLine[] }
   | { kind: "unit"; devid: string; name: string; label: string }
   | { kind: "device-status"; devid: string; statusId: number }
-  | { kind: "error"; devid: string; detail: string }
+  | { kind: "error"; devid: string; code: number; recoveryUrl: string; info?: DeviceErrorInfo }
   | { kind: "response"; name: string; result: number | null }
   | { kind: "other"; name: string };
 
@@ -142,7 +143,8 @@ export function parseFrame(frame: string): FccEvent {
       return { kind: "device-status", devid, statusId: Number(tagText(inner, "DeviceStatusID") ?? -1) };
     }
     if (subName === "eventError") {
-      return { kind: "error", devid, detail: inner.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim() };
+      // <eventError><ErrorCode>1281</ErrorCode><RecoveryURL>http://…/help/…gif</RecoveryURL></eventError>
+      return { kind: "error", devid, code: Number(tagText(inner, "ErrorCode") ?? 0) || 0, recoveryUrl: (tagText(inner, "RecoveryURL") ?? "").trim() };
     }
     if (UNIT_EVENT_LABELS[subName]) {
       return { kind: "unit", devid, name: subName, label: UNIT_EVENT_LABELS[subName] };

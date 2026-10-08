@@ -56,7 +56,7 @@ type FccEvent =
   | { kind: "deposit"; devid: string; lines: DenomLine[] }
   | { kind: "unit"; devid: string; name: string; label: string }
   | { kind: "device-status"; devid: string; statusId: number }
-  | { kind: "error"; devid: string; detail: string }
+  | { kind: "error"; devid: string; code: number; recoveryUrl: string; info?: DeviceErrorInfo }
   | { kind: "response"; name: string; result: number | null }
   | { kind: "other"; name: string };
 
@@ -137,6 +137,18 @@ interface GloryApi {
   onFccEvent(cb: (e: FccEvent) => void): void;
   onState(cb: (s: CashierState) => void): void;
   onLicense(cb: (s: LicenseStatus) => void): void;
+}
+
+interface DeviceErrorInfo {
+  devid: string;
+  module: string;
+  code: string;
+  title: string;
+  explanation: string;
+  steps: string[];
+  technician: boolean;
+  detail: string;
+  helpPath: string;
 }
 
 interface LicenseStatus {

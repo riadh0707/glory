@@ -13,7 +13,7 @@ import { FccModelConfig } from "../types";
  */
 export const ci10Config: FccModelConfig = {
   modelId: "CI-10",
-  label: "CI-10 (ISP-K05/A/B/C) — VM simulateur SDK",
+  label: "CI-10 (ISP-K05/A/B/C), VM simulateur SDK",
   protocol: "soap",
   soapEndpoint: "https://192.168.0.25/axis2/services/BrueBoxService",
   tls: { rejectUnauthorized: false },

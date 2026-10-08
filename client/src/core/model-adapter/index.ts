@@ -1,4 +1,4 @@
-import { ModelConfig, isConfirmedModel } from "./types";
+import { ModelConfig } from "./types";
 import { ci10Config } from "./models/ci-10";
 import { ci10xConfig } from "./models/ci-10x";
 import { ci50Config } from "./models/ci-50";

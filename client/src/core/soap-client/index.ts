@@ -155,7 +155,7 @@ export class FccSoapClient {
     ];
     if (!method) {
       throw new Error(
-        `Opération SOAP "${operation}" introuvable sur le client généré depuis le WSDL — ` +
+        `Opération SOAP "${operation}" introuvable sur le client généré depuis le WSDL. ` +
           `elle n'existe probablement pas dans BrueBoxService.wsdl (voir docs/soap-operations.md).`
       );
     }
