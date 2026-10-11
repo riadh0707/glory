@@ -317,7 +317,8 @@ input:focus, select:focus { border-color: var(--accent); background: var(--panel
 .display-amount.is-empty { color: color-mix(in srgb, var(--display-ink) 40%, transparent); }
 .display-sm .display-amount { font-size: 40px; }
 .card .display { margin-bottom: 14px; }
-.sale-actions { display: grid; grid-template-columns: 1fr 2fr; gap: 10px; }
+.sale-actions { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 10px; }
+.sale-actions #sale-add svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; vertical-align: -4px; margin-right: 4px; }
 .sale-actions .btn-xl { width: auto; }
 .sale-actions #sale-stop { grid-column: 1 / -1; }
 .dep-cancel { margin-top: 12px; }
@@ -685,3 +686,37 @@ details.tech summary { cursor: pointer; font-weight: 650; padding: 4px 0; }
 .dev-err-detail summary { cursor: pointer; font-weight: 650; }
 .dev-err .dialog-actions .btn svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; vertical-align: -4px; margin-right: 6px; }
 @media (max-width: 860px) { .dev-err-grid { grid-template-columns: 1fr; } }
+
+/* ------------------------------------------------------------------ panier, scanner, fond de caisse */
+
+.display-sub { font-size: 14px; color: var(--display-dim); font-weight: 650; }
+.basket { gap: 10px; }
+.basket-lines { display: flex; flex-direction: column; max-height: 420px; overflow-y: auto; }
+.basket-line { display: grid; grid-template-columns: minmax(0, 1fr) auto 96px 36px; align-items: center; gap: 12px; padding: 10px 4px; border-bottom: 1px solid var(--rule); }
+.basket-name { display: flex; flex-direction: column; min-width: 0; }
+.basket-name strong { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.basket-name small { color: var(--muted); font-size: 12.5px; }
+.basket-sum { text-align: right; font-variant-numeric: tabular-nums; }
+.basket-line .pick-ctl .btn { min-width: 40px; min-height: 40px; }
+.basket-total { display: flex; justify-content: space-between; align-items: baseline; padding: 12px 14px; border-radius: 12px; background: var(--accent-soft); color: var(--accent-strong); }
+.basket-total strong { font-size: 30px; font-variant-numeric: tabular-nums; }
+.mono { font-family: "Cascadia Mono", Consolas, monospace; font-size: 13px; }
+.scan-test { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border-radius: 12px; border: 2px dashed var(--rule); margin: 6px 0 14px; }
+.scan-test span { color: var(--muted); font-weight: 650; }
+.scan-test strong { font-family: "Cascadia Mono", Consolas, monospace; font-size: 18px; word-break: break-all; }
+.scan-test.is-ok { border-color: var(--ok); background: var(--ok-soft); }
+.float-grid { grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); }
+.float-grid .pick-ctl input { width: 56px; min-height: 40px; text-align: center; padding: 4px; font-weight: 700; }
+.float-grid .pick-ctl .btn { min-width: 38px; }
+.float-total { display: flex; justify-content: space-between; align-items: baseline; margin: 14px 0 6px; padding: 12px 14px; border-radius: 12px; background: var(--panel-2); }
+.float-total strong { font-size: 22px; }
+.col-float-info { margin: 14px 0 4px; padding: 12px 14px; border-radius: 12px; background: var(--accent-soft); }
+@media (max-width: 1100px) { .sale-actions { grid-template-columns: 1fr 1fr; } .sale-actions #sale-go { grid-column: 1 / -1; } }
+.detail { display: flex; flex-direction: column; gap: 2px; margin-bottom: 12px; }
+.detail .pay-row { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 7px 0; border-bottom: 1px solid var(--rule); }
+.detail .pay-row span { color: var(--muted); font-weight: 600; }
+.detail .pay-row strong { text-align: right; }
+.card-wide { grid-column: 1 / -1; }
+.float-grid { grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); }
+.float-grid .pick { padding: 10px 8px; }
+.float-grid .pick-ctl { gap: 6px; }

@@ -16,6 +16,8 @@ import { Cashier } from "./cashier";
 import { printDocument, PaperFormat } from "./printing";
 import { LicenseManager, LicenseStatus } from "../core/license";
 import { describeDeviceError, isHelpPath } from "../core/device-errors";
+import { ProductStore, Product, cleanItems, itemsTotal } from "../core/products";
+import { analyzeScan, parsePrefixes } from "../core/barcode";
 import axios from "axios";
 import * as https from "https";
 
@@ -44,6 +46,7 @@ let mainWindow: BrowserWindow | null = null;
 const history = new HistoryStore(path.join(DATA_DIR, "glory-client.db"));
 const ledger = new Ledger(path.join(DATA_DIR, "caisse.db"));
 let currentUser: PublicUser | null = null;
+const products = new ProductStore(DATA_DIR);
 const license = new LicenseManager(DATA_DIR, app.getVersion(), (url, init) => net.fetch(url, init));
 
 function send(channel: string, payload: unknown): void {
@@ -260,7 +263,54 @@ action("fcc.status", "user", () => cashier.status());
 action("fcc.inventory", "user", () => cashier.inventory());
 
 // --- caisse
-action("sale.start", "user", (amountCents: number) => cashier.sale(Math.round(Number(amountCents))));
+action("sale.start", "user", (amountCents: number, rawItems?: unknown) => {
+  const items = cleanItems(rawItems);
+  const due = items.length ? itemsTotal(items) : Math.round(Number(amountCents));
+  if (items.length && due !== Math.round(Number(amountCents))) return { ok: false, message: "Le total du panier a changé : vérifiez le panier." };
+  return cashier.sale(due, items);
+});
+
+// --- articles et scanner
+action("products.list", "user", () => products.list());
+action("products.save", "admin", (p: Product, previousCode?: string) => {
+  try {
+    return { ok: true, message: "Article enregistré.", product: products.save(p, previousCode) };
+  } catch (e) {
+    return { ok: false, message: `Article refusé : ${(e as Error).message}.` };
+  }
+});
+action("products.remove", "admin", (code: string) => {
+  products.remove(String(code ?? ""));
+  return { ok: true, message: "Article supprimé." };
+});
+action("products.import", "admin", async () => {
+  const pick = await dialog.showOpenDialog(mainWindow!, {
+    title: "Importer des articles (code;nom;prix)",
+    filters: [{ name: "CSV (Excel)", extensions: ["csv", "txt"] }],
+    properties: ["openFile"],
+  });
+  if (pick.canceled || !pick.filePaths[0]) return { ok: false, message: "Import annulé." };
+  const r = products.importCsv(fs.readFileSync(pick.filePaths[0], "utf8"));
+  return { ok: true, message: `${r.added} ajouté(s), ${r.updated} mis à jour${r.errors.length ? `, ${r.errors.length} ligne(s) ignorée(s)` : ""}.`, errors: r.errors };
+});
+action("products.export", "admin", async () => {
+  const target = await dialog.showSaveDialog(mainWindow!, {
+    title: "Exporter les articles",
+    defaultPath: "articles.csv",
+    filters: [{ name: "CSV (Excel)", extensions: ["csv"] }],
+  });
+  if (target.canceled || !target.filePath) return { ok: false, message: "Export annulé." };
+  fs.writeFileSync(target.filePath, products.exportCsv(), "utf8");
+  return { ok: true, message: `${products.list().length} article(s) exporté(s).` };
+});
+/** Code scanné → article du catalogue, prix intégré, ticket de caisse ou code mal lu. */
+action("scan.lookup", "user", (raw: string) => {
+  const st = loadAppSettings(DATA_DIR);
+  const r = analyzeScan(String(raw ?? ""), { embeddedPrice: st.scanEmbeddedPrice, prefixes: parsePrefixes(st.scanPricePrefixes) });
+  if (r.kind === "product") return { ...r, product: products.find(r.code) };
+  if (r.kind === "embedded-price") return { ...r, product: products.find(r.ref) ?? products.find(r.code) };
+  return r;
+});
 action("sale.cancel", "user", () => cashier.cancelSale());
 action("deposit.start", "user", () => cashier.depositStart());
 action("deposit.end", "user", () => cashier.depositEnd());
@@ -284,7 +334,8 @@ action("collect.plan", "admin", (mode: string, cents: number, kind: string) =>
   cashier.collectPlan(
     mode === "float" || mode === "exact" ? mode : "all",
     Math.round(Number(cents)) || 0,
-    kind === "notes" || kind === "coins" ? kind : "all"
+    kind === "notes" || kind === "coins" ? kind : "all",
+    loadAppSettings(DATA_DIR).floatComposition
   )
 );
 action("collect.run", "admin", (lines: DenomLine[]) => cashier.collect(lines));

@@ -119,6 +119,13 @@ window.addEventListener("DOMContentLoaded", () => {
     if (c) c.textContent = new Date().toLocaleTimeString("fr-BE", { hour: "2-digit", minute: "2-digit" });
   }, 10_000);
 
+  // Un article scanné depuis un autre écran : on ouvre la vente et on l'ajoute au panier.
+  scanner.fallback = (code) => {
+    if (!S.user || !document.getElementById("screen")) return;
+    goTo("sale");
+    scanner.handler?.(code);
+  };
+
   window.api.onLicense((l) => {
     if (l.state !== "valid") showActivation(l);
   });
@@ -504,6 +511,7 @@ function goTo(id: string): void {
   const def = visibleScreens().find((s) => s.id === id) ?? visibleScreens()[0];
   S.screen = def.id;
   screenListeners = [];
+  scanner.handler = null;
   for (const b of $$(".rail-item")) b.classList.toggle("active", b.dataset.screen === def.id);
   $("#screen-title").textContent = def.label;
   const root = $("#screen");

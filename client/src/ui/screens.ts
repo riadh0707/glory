@@ -34,16 +34,68 @@ function cashDetail(lines: DenomLine[]): string {
 
 // ====================================================================== VENTE
 
+/** Panier de la vente en cours (garde son contenu si on change d'écran). */
+const basket: SaleItem[] = [];
+
+function basketTotal(): number {
+  return basket.reduce((s, i) => s + i.priceCents * i.qty, 0);
+}
+
+function addToBasket(item: Product, qty = 1): void {
+  const same = basket.find((i) => i.code && i.code === item.code && i.priceCents === item.priceCents);
+  if (same) same.qty += qty;
+  else basket.push({ ...item, qty });
+}
+
+/** Lignes de ticket pour les articles d'une vente. */
+function itemTicketLines(items: SaleItem[]): TicketLine[] {
+  return items.map((i) => ({ label: `${i.qty > 1 ? `${i.qty} × ` : ""}${i.name}`, value: money(i.priceCents * i.qty) }));
+}
+
+/** Code-barres inconnu : saisie du prix (et ajout au catalogue pour un administrateur). */
+async function unknownProduct(code: string, presetCents?: number): Promise<Product | null> {
+  const admin = S.user?.role === "admin";
+  return modal<Product>(
+    (body, close) => {
+      body.innerHTML = `<form class="form" id="unk-form">
+          <p class="dialog-text">Le code <b>${esc(code)}</b> n'est pas dans le catalogue.</p>
+          <label>Nom de l'article<input name="name" maxlength="120" placeholder="ex. Coca-Cola 33 cl" ${admin ? "required" : ""}></label>
+          <label>Prix (€)<input name="price" inputmode="decimal" required placeholder="ex. 1,20" value="${presetCents ? String(presetCents / 100).replace(".", ",") : ""}"></label>
+          ${admin ? `<label class="check"><input type="checkbox" name="save" checked> Ajouter au catalogue (reconnu au prochain scan)</label>` : `<p class="muted small">Seul un administrateur peut ajouter l'article au catalogue.</p>`}
+          <div class="dialog-actions"><button type="button" class="btn" data-no>Annuler</button><button class="btn btn-primary">Ajouter au panier</button></div>
+        </form>`;
+      const f = $<HTMLFormElement>("#unk-form", body);
+      $("[data-no]", body).addEventListener("click", () => close(null));
+      $<HTMLInputElement>(admin ? "[name=name]" : "[name=price]", body).focus();
+      f.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const v = Object.fromEntries(new FormData(f).entries()) as Record<string, string>;
+        const cents = readEuros(v.price ?? "");
+        if (Number.isNaN(cents) || cents <= 0) return toast("Prix invalide (ex. 1,20).", "error");
+        const p: Product = { code, name: (v.name ?? "").trim() || "Article", priceCents: cents };
+        if (admin && v.save) {
+          const r = await window.api.call<OpResult>("products.save", p);
+          if (!r.ok) return toast(r.message, "error");
+        }
+        close(p);
+      });
+    },
+    { title: "Article inconnu" }
+  );
+}
+
 function renderSale(root: HTMLElement): void {
   root.innerHTML = `<div class="sale">
     <section class="sale-entry">
       <div class="display">
-        <span class="display-label">Montant de la vente</span>
+        <span class="display-label" id="sale-label">Montant de la vente</span>
         <span class="display-amount" id="sale-amount">0,00 €</span>
+        <span class="display-sub" id="sale-sub" hidden></span>
       </div>
       <div id="sale-pad"></div>
       <div class="sale-actions">
         <button class="btn btn-lg" id="sale-clear">Effacer</button>
+        <button class="btn btn-lg" id="sale-add" title="Ajouter le montant tapé au panier">${icon("refill")}<span>Ajouter</span></button>
         <button class="btn btn-primary btn-xl" id="sale-go">Encaisser</button>
         <button class="btn btn-cancel btn-xl" id="sale-stop" hidden>${icon("cancel")}<span>Annuler l'encaissement</span></button>
       </div>
@@ -53,22 +105,107 @@ function renderSale(root: HTMLElement): void {
 
   const amountEl = $("#sale-amount", root);
   const goBtn = $<HTMLButtonElement>("#sale-go", root);
+  const addBtn = $<HTMLButtonElement>("#sale-add", root);
+  let paying = false;
+  let typedText = "";
+  let typedCents = 0;
   const pad = keypad($("#sale-pad", root), {
     mode: "money",
     onChange: (text, cents) => {
-      amountEl.innerHTML = amountDisplay(text);
-      amountEl.classList.toggle("is-empty", cents === 0);
-      goBtn.disabled = cents === 0;
+      typedText = text;
+      typedCents = cents;
+      refreshDisplay();
     },
     onEnter: () => void start(),
   });
+
+  /** Total à encaisser = panier + montant tapé au pavé (ajouté comme « Divers »). */
+  function refreshDisplay(): void {
+    const typed = typedCents;
+    const total = basketTotal() + typed;
+    const n = basket.reduce((s, i) => s + i.qty, 0);
+    $("#sale-label", root).textContent = basket.length ? "Total du panier" : "Montant de la vente";
+    if (basket.length) amountEl.textContent = money(total);
+    else amountEl.innerHTML = amountDisplay(typedText);
+    amountEl.classList.toggle("is-empty", total === 0);
+    const sub = $("#sale-sub", root);
+    sub.hidden = !basket.length;
+    sub.textContent = `${n} article${n > 1 ? "s" : ""}${typed ? ` + ${money(typed)} tapé` : ""}`;
+    goBtn.disabled = total === 0;
+    addBtn.disabled = typed === 0;
+  }
+
   pad.set("");
   $("#sale-clear", root).addEventListener("click", () => pad.set(""));
+  addBtn.addEventListener("click", () => {
+    const typed = pad.cents();
+    if (!typed) return;
+    basket.push({ code: "", name: "Divers", priceCents: typed, qty: 1 });
+    pad.set("");
+    idlePanel();
+  });
   goBtn.addEventListener("click", () => void start());
+
+  onScan((code) => void handleScan(code));
   idlePanel();
 
+  async function handleScan(code: string): Promise<void> {
+    if (paying) return void toast("Paiement en cours : terminez ou annulez d'abord.", "error");
+    const r = await window.api.call<ScanLookup>("scan.lookup", code);
+    if (r.kind === "invalid") return void toast(r.reason, "error");
+    if (r.kind === "ticket") return void toast(`Ticket de caisse n° ${r.ticketNo} (${money(r.amountCents)}) : retrouvez-le dans l'Historique.`, "info");
+    if (r.kind === "embedded-price") {
+      addToBasket({ code: r.code, name: r.product?.name ?? "Article (prix sur l'étiquette)", priceCents: r.priceCents });
+    } else if (r.product) {
+      addToBasket(r.product);
+    } else {
+      const p = await unknownProduct(r.code);
+      if (!p || !document.body.contains(root)) return;
+      addToBasket(p);
+    }
+    idlePanel();
+  }
+
+  function basketPanel(live: HTMLElement): void {
+    live.innerHTML = `<div class="panel basket">
+      <div class="panel-head"><h2>Panier</h2><button class="btn btn-sm btn-danger" id="bk-clear">Vider</button></div>
+      <div class="basket-lines">${basket
+        .map(
+          (i, idx) => `<div class="basket-line" data-i="${idx}">
+            <div class="basket-name"><strong>${esc(i.name)}</strong><small>${i.code ? esc(i.code) : "montant libre"} · ${money(i.priceCents)}</small></div>
+            <div class="pick-ctl"><button class="btn" data-d="-1" aria-label="Retirer un">−</button><b>${i.qty}</b><button class="btn" data-d="1" aria-label="Ajouter un">+</button></div>
+            <strong class="basket-sum">${money(i.priceCents * i.qty)}</strong>
+            <button class="icon-btn" data-del aria-label="Supprimer la ligne">✕</button>
+          </div>`
+        )
+        .join("")}</div>
+      <div class="basket-total"><span>Total</span><strong>${money(basketTotal())}</strong></div>
+      <p class="muted small">Scannez d'autres articles, ou tapez un montant puis « Ajouter ».</p>
+    </div>`;
+    for (const line of $$<HTMLElement>(".basket-line", live)) {
+      line.addEventListener("click", (e) => {
+        const b = (e.target as HTMLElement).closest("button");
+        if (!b) return;
+        const i = Number(line.dataset.i);
+        if (b.hasAttribute("data-del")) basket.splice(i, 1);
+        else {
+          basket[i].qty += Number(b.dataset.d);
+          if (basket[i].qty <= 0) basket.splice(i, 1);
+        }
+        idlePanel();
+      });
+    }
+    $("#bk-clear", live).addEventListener("click", () => {
+      basket.length = 0;
+      idlePanel();
+    });
+  }
+
   function idlePanel(): void {
+    refreshDisplay();
     const live = $("#sale-live", root);
+    // Le panier reste visible même sans terminal (seul l'encaissement exige la connexion).
+    if (basket.length) return basketPanel(live);
     if (S.cashier.connection !== "connected") {
       live.innerHTML = `<div class="panel panel-center">
         <div class="big-icon">${icon("plug")}</div>
@@ -89,12 +226,12 @@ function renderSale(root: HTMLElement): void {
         <div class="day-kpi"><span>Panier moyen</span><strong id="k-avg">…</strong></div>
         <div class="day-kpi" id="k-change-box"><span>Monnaie pour rendre</span><strong id="k-change">…</strong></div>
       </div>
-      <div class="panel-head"><h2>Dernières ventes</h2></div>
+      <div class="panel-head"><h2>Dernières ventes</h2><span class="muted small">Scannez un article pour commencer un panier</span></div>
       <div id="recent" class="recent"></div>
     </div>`;
     const today = ymd(new Date());
     void window.api.call<PeriodStats>("stats.period", today, today).then((s) => {
-      if (!document.body.contains(live) || !s) return;
+      if (!document.body.contains(live) || !s || !document.getElementById("k-ca")) return;
       $("#k-ca", live).textContent = money(s.salesCents);
       $("#k-n", live).textContent = String(s.salesCount);
       $("#k-avg", live).textContent = money(s.averageSaleCents);
@@ -102,10 +239,12 @@ function renderSale(root: HTMLElement): void {
     void window.api.call<OpResult & { inventory?: InventorySnapshot }>("fcc.inventory").then((r) => {
       if (!document.body.contains(live)) return;
       const box = document.getElementById("k-change-box");
-      if (!r.ok || !r.inventory || !box) return void (($("#k-change", live).textContent = "-"));
+      const val = document.getElementById("k-change");
+      if (!box || !val) return;
+      if (!r.ok || !r.inventory) return void (val.textContent = "-");
       const disp = r.inventory.dispensable;
       const coins = sumCents(disp.filter((l) => Number(l.fv) < 500));
-      $("#k-change", live).textContent = money(sumCents(disp));
+      val.textContent = money(sumCents(disp));
       // Peu de pièces = risque de ne pas pouvoir rendre la monnaie.
       if (coins < 2000) {
         box.classList.add("day-kpi-warn");
@@ -130,11 +269,19 @@ function renderSale(root: HTMLElement): void {
   }
 
   async function start(): Promise<void> {
-    const due = pad.cents();
-    if (due <= 0) return toast("Tapez le montant de la vente.", "error");
+    const typed = pad.cents();
+    if (basket.length && typed) {
+      basket.push({ code: "", name: "Divers", priceCents: typed, qty: 1 });
+      pad.set("");
+    }
+    const items = basket.map((i) => ({ ...i }));
+    const due = items.length ? basketTotal() : typed;
+    if (due <= 0) return toast("Tapez un montant ou scannez un article.", "error");
     if (S.cashier.connection !== "connected") return toast("Terminal non connecté.", "error");
+    paying = true;
     goBtn.disabled = true;
     goBtn.hidden = true;
+    addBtn.hidden = true;
     $<HTMLButtonElement>("#sale-clear", root).hidden = true;
     const stopBtn = $<HTMLButtonElement>("#sale-stop", root);
     stopBtn.hidden = false;
@@ -194,16 +341,20 @@ function renderSale(root: HTMLElement): void {
     };
     for (const b of cancelBtns) b.addEventListener("click", () => void cancelPayment());
 
-    const r = await window.api.call<MoneyResult>("sale.start", due);
+    const r = await window.api.call<MoneyResult>("sale.start", due, items);
+    paying = false;
     screenListeners = [];
     stopBtn.hidden = true;
     goBtn.hidden = false;
+    addBtn.hidden = false;
     $("span", stopBtn).textContent = "Annuler l'encaissement";
     $<HTMLButtonElement>("#sale-clear", root).hidden = false;
     $("#sale-pad", root).classList.remove("is-locked");
     if (!document.body.contains(live)) return;
     if (r.ok) {
       pad.set("");
+      basket.length = 0;
+      refreshDisplay();
       live.innerHTML = `<div class="panel pay pay-done">
         <div class="done-head"><span class="done-check">✓</span><div><h2>Paiement accepté</h2><p class="muted">${money(due)} encaissés</p></div></div>
         <div class="change-hero ${r.outCents ? "" : "no-change"}"><span>${r.outCents ? "Monnaie rendue" : "Pas de monnaie à rendre"}</span><strong>${money(r.outCents)}</strong></div>
@@ -214,15 +365,16 @@ function renderSale(root: HTMLElement): void {
         <div class="cash-cols"><div><h3>Reçu</h3>${cashDetail(r.inLines)}</div>${r.outLines.length ? `<div><h3>Rendu</h3>${cashDetail(r.outLines)}</div>` : ""}</div>
         <div class="row-actions"><button class="btn btn-lg" id="pay-print">${icon("print")} Imprimer le ticket</button><button class="btn btn-primary btn-lg" id="pay-new">Nouvelle vente</button></div>
       </div>`;
-      const ticketLines: TicketLine[] = [{ label: "TOTAL", value: money(due), strong: true }];
+      const ticketLines: TicketLine[] = [...itemTicketLines(items), { label: "TOTAL", value: money(due), strong: true }];
       $("#pay-print", live).addEventListener("click", () => void printMoneyTicket("Vente", r, ticketLines));
       $("#pay-new", live).addEventListener("click", () => idlePanel());
       if (S.settings?.autoPrintReceipt) void printMoneyTicket("Vente", r, ticketLines);
     } else {
-      goBtn.disabled = pad.cents() === 0;
+      refreshDisplay();
       live.innerHTML = `<div class="panel pay pay-fail">
         <div class="done-head"><span class="done-check fail">!</span><div><h2>Vente non aboutie</h2><p>${esc(r.message)}</p></div></div>
         ${r.inLines?.length ? `<h3>Espèces rendues au client</h3>${cashDetail(r.inLines)}` : ""}
+        ${basket.length ? `<p class="muted">Le panier est conservé : vous pouvez réessayer.</p>` : ""}
         <div class="row-actions"><button class="btn btn-primary btn-lg" id="pay-back">Retour</button></div></div>`;
       $("#pay-back", live).addEventListener("click", () => idlePanel());
     }
@@ -344,6 +496,7 @@ interface HubTile {
 function hub(root: HTMLElement, items: HubTile[]): void {
   const grid = () => {
     screenListeners = [];
+    scanner.handler = null;
     root.innerHTML = `<div class="tiles">${items
       .map(
         (t) =>
@@ -360,6 +513,7 @@ function hub(root: HTMLElement, items: HubTile[]): void {
   };
   const open = (t: HubTile) => {
     screenListeners = [];
+    scanner.handler = null;
     root.innerHTML = `<div class="subhead"><button class="btn btn-back" id="hub-back">${icon("back")}<span>Retour</span></button><h2>${esc(t.label)}</h2></div><div class="subbody"></div>`;
     $("#hub-back", root).addEventListener("click", grid);
     t.render!($(".subbody", root));
@@ -594,6 +748,7 @@ function renderManage(root: HTMLElement): void {
           },
         }),
     },
+    { id: "products", label: "Articles", desc: "Catalogue : codes-barres, noms et prix des articles scannés.", icon: "doc", render: renderProducts },
     { id: "collect", label: "Collecter", desc: "Sortir un montant exact, le surplus ou tout, en billets et/ou pièces.", icon: "collect", render: renderCollect },
     {
       id: "cassettes",
@@ -655,6 +810,7 @@ function renderCollect(el: HTMLElement): void {
       <button class="btn" data-m="all">Tout collecter</button>
       <button class="btn" data-m="manual">Choisir à la main</button>
     </div>
+    <p class="col-float-info" id="col-float-info" hidden></p>
     <div class="col-amount" id="col-amount">
       <label class="field" id="col-amount-field"><span id="col-amount-label">Montant à collecter (€)</span><input id="col-amount-v" inputmode="decimal" autocomplete="off" placeholder="ex. 150,00"></label>
       <button class="btn btn-primary btn-lg" id="col-plan">Préparer la collecte</button>
@@ -677,7 +833,12 @@ function renderCollect(el: HTMLElement): void {
   };
   const syncForm = () => {
     $("#col-amount-label", el).textContent = mode === "float" ? "Fond de caisse à laisser (€)" : "Montant à collecter (€)";
-    $("#col-amount-field", el).hidden = mode === "all" || mode === "manual";
+    const comp = S.settings?.floatComposition ?? {};
+    const useComp = mode === "float" && Object.keys(comp).length > 0;
+    $("#col-amount-field", el).hidden = mode === "all" || mode === "manual" || useComp;
+    const info = $("#col-float-info", el);
+    info.hidden = !useComp;
+    if (useComp) info.innerHTML = `La machine gardera le fond de caisse réglé : <b>${esc(compositionSummary(comp))}</b> = <b>${money(compositionTotal(comp))}</b>. <span class="muted">(Réglages → Fond de caisse)</span>`;
     if (mode === "float") amountInput.value = String(floatDefault / 100).replace(".", ",");
     if (mode === "exact") amountInput.value = "";
     void showInventory();
@@ -877,11 +1038,13 @@ function renderHistory(root: HTMLElement): void {
               <div class="pay-row"><span>Reçu</span><strong>${money(r.inCents)}</strong></div>
               <div class="pay-row"><span>Rendu / sorti</span><strong>${money(r.outCents)}</strong></div>
               ${r.note ? `<p class="muted">${esc(r.note)}</p>` : ""}
+              ${r.items?.length ? `<h3>Articles</h3><table class="table"><tbody>${r.items.map((i) => `<tr><td>${i.qty} × ${esc(i.name)}</td><td class="num">${money(i.qty * i.priceCents)}</td></tr>`).join("")}</tbody></table>` : ""}
               ${r.inLines.length ? `<h3>Reçu</h3>${cashDetail(r.inLines)}` : ""}${r.outLines.length ? `<h3>Rendu / sorti</h3>${cashDetail(r.outLines)}` : ""}
               ${r.ok ? `<button class="btn btn-lg" id="h-reprint">Réimprimer le ticket</button>` : ""}</div>`;
             document.getElementById("h-reprint")?.addEventListener("click", () => {
               const s = S.receipt!;
               const lines: TicketLine[] = [];
+              if (r.items?.length) lines.push(...itemTicketLines(r.items));
               if (r.dueCents !== null) lines.push({ label: "TOTAL", value: money(r.dueCents), strong: true });
               if (r.inCents) lines.push({ label: "Espèces reçues", value: money(r.inCents) });
               if (r.outCents) lines.push({ label: r.kind === "sale" ? "Rendu" : "Sorti", value: money(r.outCents) });
@@ -964,6 +1127,10 @@ function statsHtml(s: PeriodStats): string {
         ${s.byUser.length ? `<table class="table"><thead><tr><th>Vendeur</th><th class="num">Ventes</th><th class="num">Montant</th></tr></thead><tbody>${s.byUser
           .map((u) => `<tr><td>${esc(u.user)}</td><td class="num">${u.salesCount}</td><td class="num">${money(u.salesCents)}</td></tr>`)
           .join("")}</tbody></table>` : `<p class="muted">Aucune vente.</p>`}</section>
+      <section class="card"><div class="card-head"><h2>Articles les plus vendus</h2></div>
+        ${s.topItems?.length ? `<table class="table"><thead><tr><th>Article</th><th class="num">Quantité</th><th class="num">Montant</th></tr></thead><tbody>${s.topItems
+          .map((i) => `<tr><td>${esc(i.name)}${i.code ? ` <small class="muted mono">${esc(i.code)}</small>` : ""}</td><td class="num">${i.qty}</td><td class="num">${money(i.cents)}</td></tr>`)
+          .join("")}</tbody></table>` : `<p class="muted">Aucun article scanné sur la période.</p>`}</section>
     </div>`;
 }
 
@@ -1124,10 +1291,22 @@ async function renderSettings(root: HTMLElement): Promise<void> {
           .join("")}</select></label>
         <p class="muted small">Navigateur : le ticket s'ouvre dans Chrome / Edge / Firefox, qui lance l'impression. Testez avec « Ticket de test ».</p>
         <label class="check"><input type="checkbox" name="autoConnect" ${app.autoConnect ? "checked" : ""}> Connecter le terminal à l'ouverture de session</label>
-        <label>Fond de caisse à laisser lors d'une collecte (€)<input name="defaultFloat" type="number" min="0" step="1" value="${app.defaultFloatCents / 100}"></label>
+        <label>Fond de caisse en montant simple, si aucune composition n'est réglée (€)<input name="defaultFloat" type="number" min="0" step="1" value="${app.defaultFloatCents / 100}"></label>
         <label>Verrouillage automatique après (minutes, 0 = jamais)<input name="autoLockMinutes" type="number" min="0" value="${app.autoLockMinutes}"></label>
         <button class="btn btn-primary">Enregistrer</button>
       </form></section>
+
+    <section class="card"><div class="card-head"><h2>Scanner de codes-barres</h2></div>
+      <p class="muted small">Datalogic / QuickScan et tout scanner USB : branchez-le, il fonctionne tout de suite (mode « clavier USB » d'usine). Si rien ne se passe, scannez dans son guide rapide les codes « USB Keyboard » puis « Enter » (suffixe).</p>
+      <div class="scan-test" id="scan-test"><span>Scannez un code pour tester</span><strong id="scan-last">${esc(scanner.last || "en attente…")}</strong></div>
+      <form class="form" id="f-scan">
+        <label class="check"><input type="checkbox" name="scanEmbeddedPrice" ${app.scanEmbeddedPrice ? "checked" : ""}> Lire le prix dans les codes-barres de balance (étiquettes « poids/prix »)</label>
+        <label>Préfixes de ces codes<input name="scanPricePrefixes" value="${esc(app.scanPricePrefixes)}" placeholder="21 22 23 24"></label>
+        <p class="muted small">Les étiquettes de balance commencent par 2 suivi d'un chiffre ; le prix est lu dans les chiffres 8 à 12. Demandez au fournisseur de la balance quels préfixes elle utilise.</p>
+        <button class="btn btn-primary">Enregistrer</button>
+      </form></section>
+
+    <section class="card card-wide"><div class="card-head"><h2>Fond de caisse</h2></div><div id="float-editor"></div></section>
 
     <section class="card" id="lic-card"><div class="card-head"><h2>Licence</h2></div><div id="lic-body" class="muted">…</div></section>
 
@@ -1163,6 +1342,26 @@ async function renderSettings(root: HTMLElement): Promise<void> {
     });
   };
   void window.api.call<LicenseStatus>("license.status").then(renderLicense);
+
+  // Scanner : chaque scan s'affiche ici (test), sans ouvrir la vente.
+  onScan((code) => {
+    const el = document.getElementById("scan-last");
+    if (el) el.textContent = code;
+    document.getElementById("scan-test")?.classList.add("is-ok");
+  });
+  $<HTMLFormElement>("#f-scan", root).addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const f = e.currentTarget as HTMLFormElement;
+    const v = Object.fromEntries(new FormData(f).entries()) as Record<string, string>;
+    S.settings = await window.api.call<AppSettings>("settings.appSave", { ...(S.settings ?? app), scanEmbeddedPrice: !!v.scanEmbeddedPrice, scanPricePrefixes: v.scanPricePrefixes ?? "" });
+    ($<HTMLInputElement>("[name=scanPricePrefixes]", f)).value = S.settings.scanPricePrefixes;
+    toast("Enregistré.", "ok");
+  });
+  floatEditor($("#float-editor", root), app.floatComposition ?? {}, async (c) => {
+    S.settings = await window.api.call<AppSettings>("settings.appSave", { ...(S.settings ?? app), floatComposition: c });
+    const t = compositionTotal(S.settings.floatComposition);
+    toast(t ? `Fond de caisse enregistré : ${money(t)}.` : "Composition retirée : le montant simple sera utilisé.", "ok");
+  });
 
   const formObj = (f: HTMLFormElement) => Object.fromEntries(new FormData(f).entries()) as Record<string, string>;
 
@@ -1202,6 +1401,7 @@ async function renderSettings(root: HTMLElement): Promise<void> {
     e.preventDefault();
     const v = formObj(e.currentTarget as HTMLFormElement);
     S.settings = await window.api.call<AppSettings>("settings.appSave", {
+      ...(S.settings ?? app),
       autoPrintReceipt: !!v.autoPrintReceipt,
       autoConnect: !!v.autoConnect,
       defaultFloatCents: Math.round(Number(v.defaultFloat || 0) * 100),

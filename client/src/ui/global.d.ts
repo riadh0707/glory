@@ -91,7 +91,26 @@ interface AppSettings {
   autoLockMinutes: number;
   autoConnect: boolean;
   printMethod: "system" | "browser";
+  floatComposition: Record<string, number>;
+  scanEmbeddedPrice: boolean;
+  scanPricePrefixes: string;
 }
+
+interface Product {
+  code: string;
+  name: string;
+  priceCents: number;
+}
+
+interface SaleItem extends Product {
+  qty: number;
+}
+
+type ScanLookup =
+  | { kind: "product"; code: string; product: Product | null }
+  | { kind: "embedded-price"; code: string; ref: string; priceCents: number; product: Product | null }
+  | { kind: "ticket"; code: string; ticketNo: number; amountCents: number }
+  | { kind: "invalid"; code: string; reason: string };
 
 type TransactionKind = "sale" | "deposit" | "payout" | "refill" | "collect" | "exchange" | "cancel";
 
@@ -109,6 +128,7 @@ interface TransactionRow {
   inLines: DenomLine[];
   outLines: DenomLine[];
   note: string;
+  items?: SaleItem[];
 }
 
 interface PeriodStats {
@@ -129,6 +149,7 @@ interface PeriodStats {
   averageSaleCents: number;
   byUser: Array<{ user: string; salesCount: number; salesCents: number }>;
   byHour: Array<{ hour: number; salesCount: number; salesCents: number }>;
+  topItems: Array<{ code: string; name: string; qty: number; cents: number }>;
 }
 
 interface GloryApi {

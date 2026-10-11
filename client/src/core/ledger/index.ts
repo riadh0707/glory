@@ -2,6 +2,7 @@ import { DatabaseSync } from "node:sqlite";
 import * as fs from "fs";
 import * as path from "path";
 import type { DenomLine } from "../cash";
+import type { SaleItem } from "../products";
 
 /**
  * Journal métier des opérations de caisse — distinct de `HistoryStore`
@@ -29,6 +30,8 @@ export interface TransactionInput {
   inLines?: DenomLine[];
   outLines?: DenomLine[];
   note?: string;
+  /** Articles de la vente (scannés ou montant libre). */
+  items?: SaleItem[];
 }
 
 export interface TransactionRow extends TransactionInput {
@@ -95,7 +98,7 @@ export class Ledger {
         t.ok ? 1 : 0,
         t.result ?? null,
         t.ticketNo ?? null,
-        JSON.stringify({ inLines: t.inLines ?? [], outLines: t.outLines ?? [], note: t.note ?? "" })
+        JSON.stringify({ inLines: t.inLines ?? [], outLines: t.outLines ?? [], note: t.note ?? "", items: t.items ?? [] })
       );
     return Number(info.lastInsertRowid);
   }
@@ -114,6 +117,7 @@ export class Ledger {
         inLines?: DenomLine[];
         outLines?: DenomLine[];
         note?: string;
+        items?: SaleItem[];
       };
       return {
         id: Number(r.id),
@@ -129,6 +133,7 @@ export class Ledger {
         inLines: details.inLines ?? [],
         outLines: details.outLines ?? [],
         note: details.note ?? "",
+        items: details.items ?? [],
       };
     });
   }

@@ -2,6 +2,7 @@ import { FccSoapClient, SimpleResult, CollectDenomination } from "../core/soap-c
 import { EventListener } from "../core/event-listener";
 import { HistoryStore } from "../core/history-store";
 import { Ledger, TransactionKind } from "../core/ledger";
+import type { SaleItem } from "../core/products";
 import { FccConnectionConfig } from "../core/fcc-config";
 import { FrameSplitter, parseFrame, FccEvent, MACHINE_STATUS_LABELS } from "../core/fcc-events";
 import {
@@ -141,7 +142,7 @@ export class Cashier {
    * aucun mouvement d'espèces n'est pas une vente annulée — constaté sur la
    * VM, ça gonflait le compteur « ventes annulées » des statistiques.
    */
-  private record(kind: TransactionKind, r: MoneyResult, extra: { dueCents?: number; note?: string } = {}): number | undefined {
+  private record(kind: TransactionKind, r: MoneyResult, extra: { dueCents?: number; note?: string; items?: SaleItem[] } = {}): number | undefined {
     const moved = r.inCents > 0 || r.outCents > 0;
     const userCancel = kind === "cancel" && (r.result === 1 || r.result === 10);
     if (!r.ok && !moved && !userCancel) return undefined;
@@ -156,6 +157,7 @@ export class Cashier {
       inLines: r.inLines,
       outLines: r.outLines,
       note: extra.note ?? r.message,
+      items: extra.items,
     });
   }
 
@@ -179,27 +181,48 @@ export class Cashier {
 
   // ---------------------------------------------------------------- connexion
 
+  private makeListener(mode: "tcp" | "soap-callback", tcpPort: number): EventListener {
+    return new EventListener({
+      mode,
+      tcpPort,
+      logger: (source, raw, text) => {
+        this.history.record("raw-tcp-event", source, raw);
+        if (text === undefined) return;
+        for (const frame of this.splitter.push(text)) {
+          const e = parseFrame(frame);
+          if (e.kind !== "heartbeat") this.log(`[ÉVÉNEMENT] ${JSON.stringify(e)}`);
+          this.hooks.event(e);
+        }
+      },
+    });
+  }
+
   async connect(cfg: FccConnectionConfig, eventMode: "tcp" | "soap-callback"): Promise<OpResult> {
     if (this.connection !== "disconnected") return { ok: false, message: "Déjà connecté ou connexion en cours." };
     this.connection = "connecting";
     this.emitState();
     try {
       this.splitter = new FrameSplitter();
-      this.listener = new EventListener({
-        mode: eventMode,
-        tcpPort: cfg.eventTcpPort,
-        logger: (source, raw, text) => {
-          this.history.record("raw-tcp-event", source, raw);
-          if (text === undefined) return;
-          for (const frame of this.splitter.push(text)) {
-            const e = parseFrame(frame);
-            if (e.kind !== "heartbeat") this.log(`[ÉVÉNEMENT] ${JSON.stringify(e)}`);
-            this.hooks.event(e);
-          }
-        },
-      });
-      await this.listener.start();
-      this.log(`Écouteur d'événements démarré sur le port ${cfg.eventTcpPort}.`);
+      // Windows (Hyper-V, WSL) se réserve parfois des plages de ports entières
+      // (constaté : 55631-55730, qui contient le port 55700 par défaut) : on
+      // essaie alors des ports de secours, le terminal est abonné au port
+      // réellement ouvert (la règle de pare-feu porte sur le programme).
+      const ports = [cfg.eventTcpPort, ...Array.from({ length: 20 }, (_, i) => 47100 + i)];
+      let port = cfg.eventTcpPort;
+      for (let i = 0; ; i++) {
+        port = ports[i];
+        this.listener = this.makeListener(eventMode, port);
+        try {
+          await this.listener.start();
+          break;
+        } catch (err) {
+          this.listener = null;
+          if (!/EACCES/.test(String((err as Error)?.message ?? err)) || i === ports.length - 1) throw err;
+          if (i === 0) this.log(`Windows refuse le port ${cfg.eventTcpPort} (plage réservée) : essai de ports de secours.`);
+        }
+      }
+      if (port !== cfg.eventTcpPort) this.log(`Port de secours utilisé pour les événements : ${port}.`);
+      this.log(`Écouteur d'événements démarré sur le port ${port}.`);
 
       this.client = await FccSoapClient.create({
         endpoint: cfg.soapEndpoint,
@@ -234,8 +257,8 @@ export class Cashier {
         );
       }
 
-      this.callback = { ip: cfg.callbackIp, port: cfg.eventTcpPort };
-      const reg = await this.client.registerEvent({ sessionId: this.sessionId, url: cfg.callbackIp, port: cfg.eventTcpPort });
+      this.callback = { ip: cfg.callbackIp, port };
+      const reg = await this.client.registerEvent({ sessionId: this.sessionId, url: cfg.callbackIp, port });
       this.eventRegistered = reg.result === 0;
       this.log(`RegisterEvent → ${reg.resultDescription}`);
       if (!this.eventRegistered) this.log("[ERREUR] Le terminal a refusé l'abonnement aux événements : pas d'affichage en direct.");
@@ -362,7 +385,7 @@ export class Cashier {
   // ------------------------------------------------------------------ ventes
 
   /** Vente avec rendu de monnaie : bloque jusqu'au paiement complet ou à l'annulation. */
-  async sale(amountCents: number): Promise<MoneyResult | OpResult> {
+  async sale(amountCents: number, items: SaleItem[] = []): Promise<MoneyResult | OpResult> {
     if (!Number.isInteger(amountCents) || amountCents <= 0) return { ok: false, message: "Montant invalide." };
     return this.run("Vente", async (c, sid) => {
       const r = await c.change(sid, String(amountCents));
@@ -371,7 +394,7 @@ export class Cashier {
       if (r.result === 1) res.message = "Vente annulée, espèces rendues au client.";
       if (r.result === 10) res.message = "Monnaie insuffisante pour rendre : vente annulée, espèces rendues.";
       res.dueCents = amountCents;
-      res.transactionId = this.record(r.result === 0 ? "sale" : "cancel", res, { dueCents: amountCents });
+      res.transactionId = this.record(r.result === 0 ? "sale" : "cancel", res, { dueCents: amountCents, items });
       return res;
     });
   }
@@ -447,7 +470,7 @@ export class Cashier {
    * `mode` : tout, garder un fond de caisse (`cents` = fond à laisser) ou
    * montant exact (`cents` = montant à sortir, plus grosses coupures d'abord).
    */
-  async collectPlan(mode: "all" | "float" | "exact", cents = 0, kind: "all" | "notes" | "coins" = "all"): Promise<OpResult & { plan?: DenomLine[] }> {
+  async collectPlan(mode: "all" | "float" | "exact", cents = 0, kind: "all" | "notes" | "coins" = "all", composition: Record<string, number> = {}): Promise<OpResult & { plan?: DenomLine[] }> {
     return this.run(
       "Préparation collecte",
       async (c, sid) => {
@@ -459,6 +482,18 @@ export class Cashier {
           if (cents > totalCents(avail)) return { ok: false, message: `Il n'y a que ${(totalCents(avail) / 100).toFixed(2).replace(".", ",")} € disponibles.` };
           const plan = planPayout(cents, avail);
           if (!plan) return { ok: false, message: "Impossible de faire ce montant exact avec les billets et pièces disponibles." };
+          return { ok: true, message: "OK", plan };
+        }
+        if (mode === "float" && Object.keys(composition).length) {
+          // On laisse exactement la composition réglée (ou ce qu'il y a si moins).
+          const left = new Map(Object.entries(composition).map(([fv, n]) => [fv, n]));
+          const plan = avail
+            .map((l) => {
+              const keep = Math.min(l.piece, left.get(String(Number(l.fv))) ?? 0);
+              left.set(String(Number(l.fv)), (left.get(String(Number(l.fv))) ?? 0) - keep);
+              return { ...l, piece: l.piece - keep };
+            })
+            .filter((l) => l.piece > 0);
           return { ok: true, message: "OK", plan };
         }
         const plan = mode === "all" ? avail : planCollectKeepFloat(avail, cents);

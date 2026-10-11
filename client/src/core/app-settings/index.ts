@@ -12,6 +12,16 @@ export interface AppSettings {
   autoConnect: boolean;
   /** Fenêtre d'impression du système, ou ticket ouvert dans le navigateur par défaut. */
   printMethod: "system" | "browser";
+  /**
+   * Composition du fond de caisse à laisser lors d'une collecte : valeur
+   * faciale en centimes → nombre (ex. { "2000": 1, "200": 10 }). Vide = on
+   * utilise seulement le montant defaultFloatCents.
+   */
+  floatComposition: Record<string, number>;
+  /** Codes-barres à prix intégré (étiquettes de balance). */
+  scanEmbeddedPrice: boolean;
+  /** Préfixes des codes à prix intégré, ex. « 21 22 23 24 ». */
+  scanPricePrefixes: string;
 }
 
 const DEFAULTS: AppSettings = {
@@ -20,6 +30,9 @@ const DEFAULTS: AppSettings = {
   autoLockMinutes: 0,
   autoConnect: true,
   printMethod: "browser",
+  floatComposition: {},
+  scanEmbeddedPrice: false,
+  scanPricePrefixes: "21 22 23 24 26 27 28 29",
 };
 
 function file(dir: string): string {
@@ -35,6 +48,9 @@ export function loadAppSettings(dir: string): AppSettings {
       autoLockMinutes: Number.isFinite(s.autoLockMinutes) && (s.autoLockMinutes as number) >= 0 ? Math.round(s.autoLockMinutes as number) : DEFAULTS.autoLockMinutes,
       autoConnect: typeof s.autoConnect === "boolean" ? s.autoConnect : DEFAULTS.autoConnect,
       printMethod: cleanMethod(s.printMethod),
+      floatComposition: cleanComposition(s.floatComposition),
+      scanEmbeddedPrice: typeof s.scanEmbeddedPrice === "boolean" ? s.scanEmbeddedPrice : DEFAULTS.scanEmbeddedPrice,
+      scanPricePrefixes: typeof s.scanPricePrefixes === "string" ? cleanPrefixes(s.scanPricePrefixes) : DEFAULTS.scanPricePrefixes,
     };
   } catch {
     return { ...DEFAULTS };
@@ -55,7 +71,35 @@ function loadAppSettingsFrom(s: Partial<AppSettings>): AppSettings {
     autoLockMinutes: Math.max(0, Math.round(Number(s.autoLockMinutes) || 0)),
     autoConnect: s.autoConnect !== false,
     printMethod: cleanMethod(s.printMethod),
+    floatComposition: cleanComposition(s.floatComposition),
+    scanEmbeddedPrice: !!s.scanEmbeddedPrice,
+    scanPricePrefixes: cleanPrefixes(s.scanPricePrefixes),
   };
+}
+
+const EURO_FACES = new Set([1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000]);
+
+function cleanComposition(c: unknown): Record<string, number> {
+  const out: Record<string, number> = {};
+  if (c && typeof c === "object") {
+    for (const [fv, n] of Object.entries(c as Record<string, unknown>)) {
+      const count = Math.round(Number(n));
+      if (EURO_FACES.has(Number(fv)) && Number.isInteger(count) && count > 0 && count <= 5000) out[String(Number(fv))] = count;
+    }
+  }
+  return out;
+}
+
+function cleanPrefixes(p: unknown): string {
+  return String(p ?? "")
+    .split(/[,;\s]+/)
+    .filter((x) => /^\d{1,3}$/.test(x))
+    .join(" ");
+}
+
+/** Montant total d'une composition de fond de caisse. */
+export function compositionCents(c: Record<string, number>): number {
+  return Object.entries(c).reduce((s, [fv, n]) => s + Number(fv) * n, 0);
 }
 
 function cleanMethod(m: unknown): AppSettings["printMethod"] {

@@ -22,6 +22,8 @@ export interface PeriodStats {
   averageSaleCents: number;
   byUser: Array<{ user: string; salesCount: number; salesCents: number }>;
   byHour: Array<{ hour: number; salesCount: number; salesCents: number }>;
+  /** Articles les plus vendus (ventes réussies), par chiffre d'affaires. */
+  topItems: Array<{ code: string; name: string; qty: number; cents: number }>;
 }
 
 export function computeStats(rows: TransactionRow[], fromIso: string, toIso: string): PeriodStats {
@@ -43,9 +45,11 @@ export function computeStats(rows: TransactionRow[], fromIso: string, toIso: str
     averageSaleCents: 0,
     byUser: [],
     byHour: [],
+    topItems: [],
   };
   const users = new Map<string, { salesCount: number; salesCents: number }>();
   const hours = new Map<number, { salesCount: number; salesCents: number }>();
+  const items = new Map<string, { code: string; name: string; qty: number; cents: number }>();
 
   for (const t of rows) {
     if (!t.ok) {
@@ -70,6 +74,13 @@ export function computeStats(rows: TransactionRow[], fromIso: string, toIso: str
         hh.salesCount += 1;
         hh.salesCents += due;
         hours.set(h, hh);
+        for (const it of t.items ?? []) {
+          const k = it.code || `libre:${it.name}`;
+          const e = items.get(k) ?? { code: it.code, name: it.name, qty: 0, cents: 0 };
+          e.qty += it.qty;
+          e.cents += it.qty * it.priceCents;
+          items.set(k, e);
+        }
         break;
       }
       case "cancel":
@@ -95,6 +106,7 @@ export function computeStats(rows: TransactionRow[], fromIso: string, toIso: str
   }
   s.averageSaleCents = s.salesCount ? Math.round(s.salesCents / s.salesCount) : 0;
   s.byUser = [...users.entries()].map(([user, v]) => ({ user, ...v })).sort((a, b) => b.salesCents - a.salesCents);
+  s.topItems = [...items.values()].sort((a, b) => b.cents - a.cents).slice(0, 15);
   s.byHour = [...hours.entries()].map(([hour, v]) => ({ hour, ...v })).sort((a, b) => a.hour - b.hour);
   return s;
 }
