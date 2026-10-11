@@ -34,6 +34,9 @@ function cashDetail(lines: DenomLine[]): string {
 
 // ====================================================================== VENTE
 
+/** Un encaissement attend le client : on reste sur l'écran Vente. */
+let salePaymentInProgress = false;
+
 /** Panier de la vente en cours (garde son contenu si on change d'écran). */
 const basket: SaleItem[] = [];
 
@@ -60,7 +63,7 @@ async function unknownProduct(code: string, presetCents?: number): Promise<Produ
       body.innerHTML = `<form class="form" id="unk-form">
           <p class="dialog-text">Le code <b>${esc(code)}</b> n'est pas dans le catalogue.</p>
           <label>Nom de l'article<input name="name" maxlength="120" placeholder="ex. Coca-Cola 33 cl" ${admin ? "required" : ""}></label>
-          <label>Prix (€)<input name="price" inputmode="decimal" required placeholder="ex. 1,20" value="${presetCents ? String(presetCents / 100).replace(".", ",") : ""}"></label>
+          <label>Prix (€)<input name="price" inputmode="decimal" required placeholder="ex. 1,20" value="${presetCents ? (presetCents / 100).toFixed(2).replace(".", ",") : ""}"></label>
           ${admin ? `<label class="check"><input type="checkbox" name="save" checked> Ajouter au catalogue (reconnu au prochain scan)</label>` : `<p class="muted small">Seul un administrateur peut ajouter l'article au catalogue.</p>`}
           <div class="dialog-actions"><button type="button" class="btn" data-no>Annuler</button><button class="btn btn-primary">Ajouter au panier</button></div>
         </form>`;
@@ -92,6 +95,7 @@ function renderSale(root: HTMLElement): void {
         <span class="display-amount" id="sale-amount">0,00 €</span>
         <span class="display-sub" id="sale-sub" hidden></span>
       </div>
+      <button class="btn btn-lg btn-block sale-products" id="sale-products">${icon("grid")}<span>Articles</span></button>
       <div id="sale-pad"></div>
       <div class="sale-actions">
         <button class="btn btn-lg" id="sale-clear">Effacer</button>
@@ -145,6 +149,16 @@ function renderSale(root: HTMLElement): void {
     idlePanel();
   });
   goBtn.addEventListener("click", () => void start());
+  $("#sale-products", root).addEventListener("click", () => {
+    if (paying) return;
+    void productPicker(
+      (p) => {
+        addToBasket({ code: p.code, name: p.name, priceCents: p.priceCents });
+        idlePanel();
+      },
+      (code) => basket.filter((i) => i.code === code).reduce((s, i) => s + i.qty, 0)
+    );
+  });
 
   onScan((code) => void handleScan(code));
   idlePanel();
@@ -153,9 +167,9 @@ function renderSale(root: HTMLElement): void {
     if (paying) return void toast("Paiement en cours : terminez ou annulez d'abord.", "error");
     const r = await window.api.call<ScanLookup>("scan.lookup", code);
     if (r.kind === "invalid") return void toast(r.reason, "error");
-    if (r.kind === "ticket") return void toast(`Ticket de caisse n° ${r.ticketNo} (${money(r.amountCents)}) : retrouvez-le dans l'Historique.`, "info");
     if (r.kind === "embedded-price") {
-      addToBasket({ code: r.code, name: r.product?.name ?? "Article (prix sur l'étiquette)", priceCents: r.priceCents });
+      addToBasket({ code: r.code, name: r.product?.name ?? "Article", priceCents: r.priceCents });
+      toast(`${r.product?.name ?? "Article"} : ${money(r.priceCents)}`, "ok");
     } else if (r.product) {
       addToBasket(r.product);
     } else {
@@ -279,6 +293,7 @@ function renderSale(root: HTMLElement): void {
     if (due <= 0) return toast("Tapez un montant ou scannez un article.", "error");
     if (S.cashier.connection !== "connected") return toast("Terminal non connecté.", "error");
     paying = true;
+    salePaymentInProgress = true;
     goBtn.disabled = true;
     goBtn.hidden = true;
     addBtn.hidden = true;
@@ -343,7 +358,9 @@ function renderSale(root: HTMLElement): void {
 
     const r = await window.api.call<MoneyResult>("sale.start", due, items);
     paying = false;
+    salePaymentInProgress = false;
     screenListeners = [];
+    if (!document.body.contains(live)) return;
     stopBtn.hidden = true;
     goBtn.hidden = false;
     addBtn.hidden = false;
@@ -399,43 +416,88 @@ let lastInventory: InventorySnapshot | null = null;
 async function renderStock(root: HTMLElement): Promise<void> {
   if (!requireConnected(root)) return;
   root.innerHTML = `<div class="toolbar"><button class="btn btn-primary" id="inv-refresh">Actualiser</button><button class="btn" id="inv-print">Imprimer l'encaisse</button><span class="muted" id="inv-time"></span></div><div id="inv-body"><p class="muted">Chargement…</p></div>`;
+  let loading = false;
   const load = async () => {
-    const r = await window.api.call<OpResult & { inventory?: InventorySnapshot }>("fcc.inventory");
-    if (!r.ok || !r.inventory) {
-      $("#inv-body", root).innerHTML = `<p class="error-text">${esc(r.message)}</p>`;
-      return;
+    if (loading) return;
+    loading = true;
+    try {
+      const r = await window.api.call<OpResult & { inventory?: InventorySnapshot }>("fcc.inventory");
+      if (!document.body.contains(root) || !document.getElementById("inv-body")) return;
+      if (!r.ok || !r.inventory) {
+        $("#inv-body", root).innerHTML = `<p class="error-text">${esc(r.message)}</p>`;
+        return;
+      }
+      lastInventory = r.inventory;
+      $("#inv-time", root).textContent = `Mis à jour à ${new Date().toLocaleTimeString("fr-BE")} (automatique)`;
+      $("#inv-body", root).innerHTML = stockHtml(r.inventory);
+    } finally {
+      loading = false;
     }
-    lastInventory = r.inventory;
-    $("#inv-time", root).textContent = `Mis à jour à ${new Date().toLocaleTimeString("fr-BE")}`;
-    $("#inv-body", root).innerHTML = stockHtml(r.inventory);
   };
+  // Mise à jour automatique : après chaque mouvement d'espèces signalé par le
+  // terminal, et toutes les 20 s tant que l'écran est affiché.
+  let pending = 0;
+  onFcc((e) => {
+    if (e.kind === "deposit" || e.kind === "unit" || (e.kind === "status" && (e.status === 1 || e.status === 0))) {
+      window.clearTimeout(pending);
+      pending = window.setTimeout(() => void load(), 1200);
+    }
+  });
+  const timer = window.setInterval(() => {
+    if (!document.body.contains(root) || S.screen !== "stock") return window.clearInterval(timer);
+    void load();
+  }, 20_000);
   $("#inv-refresh", root).addEventListener("click", (e) => void busy(e.currentTarget as HTMLButtonElement, load));
   $("#inv-print", root).addEventListener("click", async () => {
     if (!lastInventory) return;
     const s = S.receipt!;
-    const device = aggregateLines(lastInventory.device);
+    const v = inventoryViews(lastInventory);
     printTicket(
-      ticketHtml(s, "Encaisse", null, [...denomTicketLines(device), { label: "Total machine", value: money(sumCents(device)), strong: true }, { label: "Dont distribuable", value: money(sumCents(lastInventory.dispensable)) }], { user: S.user?.name }),
+      ticketHtml(
+        s,
+        "Encaisse",
+        null,
+        [
+          ...denomTicketLines(v.recycler),
+          { label: "Dans les recycleurs", value: money(sumCents(v.recycler)), strong: true },
+          ...(sumCents(v.collection) ? [{ label: "Dans le bac/cassette à vider", value: money(sumCents(v.collection)) }] : []),
+          { label: "Total machine", value: money(sumCents(v.recycler) + sumCents(v.collection)) },
+        ],
+        { user: S.user?.name }
+      ),
       s.paperFormat
     );
   });
   await load();
 }
 
+/**
+ * Les deux contenus d'une machine Glory :
+ * - recycleurs (stockeurs) : l'argent qui sert à rendre la monnaie ;
+ * - bac / cassette de collecte : l'argent sorti par une collecte, qui attend
+ *   d'être retiré. Le terminal le compte dans son « inventaire total » jusqu'à
+ *   ce que la cassette soit vidée : c'est pourquoi l'ancien écran semblait
+ *   « ne pas se vider » après une collecte.
+ */
+function inventoryViews(inv: InventorySnapshot): { recycler: DenomLine[]; collection: DenomLine[] } {
+  const pick = (kinds: string[]) => aggregateLines(inv.units.filter((u) => kinds.includes(u.kind)).flatMap((u) => u.lines.map((l) => ({ ...l, devid: u.devid }))));
+  const hasUnits = inv.units.some((u) => u.kind === "stacker" || u.kind === "mixed");
+  return {
+    recycler: hasUnits ? pick(["stacker", "mixed"]) : aggregateLines(inv.dispensable),
+    collection: pick(["cassette"]),
+  };
+}
+
 function stockHtml(inv: InventorySnapshot): string {
-  const device = aggregateLines(inv.device);
+  const { recycler, collection } = inventoryViews(inv);
   const dispensable = aggregateLines(inv.dispensable);
-  const cassettes = inv.units.filter((u) => u.kind === "cassette");
-  const cassetteCents = cassettes.reduce((s, u) => s + sumCents(u.lines), 0);
-  // Toutes les valeurs que la machine gère (une par stacker), même à 0 :
+  const recyclerCents = sumCents(recycler);
+  const collectionCents = sumCents(collection);
+  // Toutes les valeurs que la machine gère (une par stockeur), même à 0 :
   // un commerçant doit voir « 20 € : vide » pour savoir quoi recharger.
   const known = new Map<string, DenomLine>();
   for (const u of inv.units) if (u.kind === "stacker") for (const l of u.lines) if (Number(l.fv) > 0) known.set(`${u.devid}|${l.cc}|${l.fv}`, { ...l, devid: u.devid, piece: 0 });
-  for (const l of inv.device) {
-    const key = `${l.devid}|${l.cc}|${l.fv}`;
-    const cur = known.get(key);
-    known.set(key, { ...l, piece: (cur?.piece ?? 0) + l.piece });
-  }
+  for (const l of recycler) known.set(`${l.devid}|${l.cc}|${l.fv}`, { ...l });
   const all = [...known.values()].sort((a, b) => Number(b.fv) - Number(a.fv));
   const isCoin = (l: DenomLine) => l.devid === "2" || Number(l.fv) < 500;
   const notes = all.filter((l) => !isCoin(l));
@@ -444,34 +506,51 @@ function stockHtml(inv: InventorySnapshot): string {
     inv.units.find((u) => u.kind === "stacker" && u.devid === l.devid && u.lines.some((x) => x.fv === l.fv && x.cc === l.cc));
   const card = (l: DenomLine) => {
     const u = unitFor(l);
+    const inUnit = u ? sumPieces(u.lines) : l.piece;
     const st = u ? (UNIT_STATUS[u.status] ?? { label: `État ${u.status}`, cls: "lvl-off" }) : { label: "", cls: "lvl-off" };
-    const pct = u && u.max > 0 ? Math.min(100, Math.round((l.piece / u.max) * 100)) : 0;
-    const disp = dispensable.find((d) => d.fv === l.fv && d.cc === l.cc)?.piece ?? 0;
-    return `<div class="denom-card">
+    const pct = u && u.max > 0 ? Math.min(100, Math.round((inUnit / u.max) * 100)) : 0;
+    const disp = dispensable.find((d) => d.fv === l.fv && d.cc === l.cc && d.devid === l.devid)?.piece ?? l.piece;
+    const inBox = collection.find((d) => d.fv === l.fv && d.cc === l.cc)?.piece ?? 0;
+    return `<div class="denom-card ${l.piece === 0 ? "is-empty" : ""}">
       <div class="denom-visual">${cashHtml(l)}</div>
       <div class="denom-info">
         <div class="denom-count"><strong>${l.piece}</strong><span>${Number(l.fv) >= 500 ? "billets" : "pièces"}</span></div>
         <div class="denom-amount">${money(l.piece * Number(l.fv), l.cc)}</div>
-        ${u ? `<div class="level"><span class="level-bar ${st.cls}" style="width:${pct}%"></span></div><div class="level-text"><span class="${st.cls}-text">${esc(st.label)}</span><span>${l.piece}/${u.max}</span></div>` : ""}
-        ${disp !== l.piece ? `<div class="muted small">${disp} distribuable(s)</div>` : ""}
+        ${u ? `<div class="level"><span class="level-bar ${st.cls}" style="width:${pct}%"></span></div><div class="level-text"><span class="${st.cls}-text">${esc(l.piece === 0 ? "Vide" : st.label)}</span><span>${inUnit}/${u.max}</span></div>` : ""}
+        ${disp !== l.piece ? `<div class="muted small">${disp} utilisable(s) pour rendre</div>` : ""}
+        ${inBox ? `<div class="denom-box">+ ${inBox} dans le bac à vider</div>` : ""}
       </div></div>`;
   };
   return `<div class="kpis">
-      <div class="kpi"><span>Total en machine</span><strong>${money(sumCents(device))}</strong></div>
-      <div class="kpi"><span>Distribuable (rendu monnaie)</span><strong>${money(sumCents(dispensable))}</strong></div>
-      <div class="kpi"><span>En cassette de collecte</span><strong>${money(cassetteCents)}</strong></div>
-      <div class="kpi"><span>Billets / pièces</span><strong>${notes.reduce((s, l) => s + l.piece, 0)} / ${coins.reduce((s, l) => s + l.piece, 0)}</strong></div>
+      <div class="kpi kpi-main"><span>Dans les recycleurs (pour rendre)</span><strong>${money(recyclerCents)}</strong></div>
+      <div class="kpi ${collectionCents ? "kpi-warn" : ""}"><span>Dans le bac / cassette à vider</span><strong>${money(collectionCents)}</strong></div>
+      <div class="kpi"><span>Total dans la machine</span><strong>${money(recyclerCents + collectionCents)}</strong></div>
+      <div class="kpi"><span>Billets / pièces (recycleurs)</span><strong>${sumPieces(notes)} / ${sumPieces(coins)}</strong></div>
     </div>
-    <h2 class="section-title">Billets</h2>
+    ${
+      collectionCents
+        ? `<div class="stock-note">${icon("collect")}<div><strong>${money(collectionCents)} ont été collectés et attendent d'être retirés.</strong><br>Ils ne servent plus à rendre la monnaie. Videz le bac ou la cassette (Gestion → Cassettes) : ce montant disparaîtra de l'écran une fois remis en place vide.</div></div>`
+        : ""
+    }
+    <h2 class="section-title">Billets dans les recycleurs</h2>
     <div class="denom-grid">${notes.map(card).join("") || `<p class="muted">Aucun billet.</p>`}</div>
-    <h2 class="section-title">Pièces</h2>
+    <h2 class="section-title">Pièces dans les recycleurs</h2>
     <div class="denom-grid">${coins.map(card).join("") || `<p class="muted">Aucune pièce.</p>`}</div>
-    ${cassettes.length ? `<h2 class="section-title">Cassettes de collecte</h2><div class="cassette-list">${cassettes
-      .map((u) => {
-        const st = UNIT_STATUS[u.status] ?? { label: `État ${u.status}`, cls: "lvl-off" };
-        return `<div class="cassette"><div><strong>${u.devid === "2" ? "Pièces" : "Billets"}</strong> <span class="${st.cls}-text">${esc(st.label)}</span></div><div>${cashDetail(u.lines)}</div><div class="cassette-total">${money(sumCents(u.lines))}</div></div>`;
-      })
-      .join("")}</div>` : ""}`;
+    ${
+      inv.units.some((u) => u.kind === "cassette")
+        ? `<h2 class="section-title">Bac et cassette de collecte</h2><div class="cassette-list">${inv.units
+            .filter((u) => u.kind === "cassette")
+            .map((u) => {
+              const st = UNIT_STATUS[u.status] ?? { label: `État ${u.status}`, cls: "lvl-off" };
+              return `<div class="cassette"><div><strong>${u.devid === "2" ? "Bac de collecte des pièces" : "Cassette de collecte des billets"}</strong> <span class="${st.cls}-text">${esc(sumPieces(u.lines) ? st.label : "Vide")}</span></div><div>${cashDetail(u.lines)}</div><div class="cassette-total">${money(sumCents(u.lines))}</div></div>`;
+            })
+            .join("")}</div>`
+        : ""
+    }`;
+}
+
+function sumPieces(lines: DenomLine[]): number {
+  return lines.reduce((s, l) => s + l.piece, 0);
 }
 
 // ================================================================= OPÉRATIONS

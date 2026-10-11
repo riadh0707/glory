@@ -6,12 +6,10 @@
  * - Codes à prix intégré (étiquettes de balance, GS1 « 2x ») : EAN-13 dont
  *   le préfixe est configuré ; chiffres 1-7 = référence, 8-12 = prix en
  *   centimes, 13 = clé. Ex. 2212345 01234 C → réf. 2212345, 12,34 €.
- * - Tickets de ce logiciel : EAN-13 « 25 » + n° de ticket (5) + montant (5).
  */
 export type ScanResult =
   | { kind: "product"; code: string }
   | { kind: "embedded-price"; code: string; ref: string; priceCents: number }
-  | { kind: "ticket"; code: string; ticketNo: number; amountCents: number }
   | { kind: "invalid"; code: string; reason: string };
 
 function gtinCheckOk(digits: string): boolean {
@@ -37,9 +35,6 @@ export function analyzeScan(raw: string, opts: { embeddedPrice: boolean; prefixe
     return { kind: "invalid", code, reason: "Code-barres mal lu (clé de contrôle incorrecte). Scannez à nouveau." };
   }
   if (/^\d{13}$/.test(code)) {
-    if (code.startsWith("25")) {
-      return { kind: "ticket", code, ticketNo: Number(code.slice(2, 7)), amountCents: Number(code.slice(7, 12)) };
-    }
     if (opts.embeddedPrice && opts.prefixes.some((p) => code.startsWith(p))) {
       return { kind: "embedded-price", code, ref: code.slice(0, 7), priceCents: Number(code.slice(7, 12)) };
     }

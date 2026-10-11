@@ -57,6 +57,7 @@ const ICONS: Record<string, string> = {
   clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
   power: '<path d="M12 3v8"/><path d="M6.3 6.8a8 8 0 1 0 11.4 0"/>',
   cancel: '<circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/>',
+  grid: '<rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/>',
   code: '<path d="M8 8l-4 4 4 4M16 8l4 4-4 4M13.5 5l-3 14"/>',
 };
 
@@ -83,8 +84,12 @@ window.addEventListener("DOMContentLoaded", () => {
   });
   window.api.onState((s) => {
     if (s.connection !== "connected") S.lastHeartbeat = 0;
+    const wasConnected = S.cashier.connection === "connected";
     S.cashier = s;
     renderStatusChip();
+    // Connexion établie (ex. connexion automatique au démarrage) : l'écran qui
+    // affichait « Terminal non connecté » se met à jour tout seul.
+    if (!wasConnected && s.connection === "connected" && S.user && !salePaymentInProgress && document.querySelector("#sale-connect, #empty-connect")) goTo(S.screen);
   });
   window.api.onFccEvent((e) => {
     if (e.kind === "heartbeat") {
@@ -165,7 +170,7 @@ function showActivation(s: LicenseStatus): void {
   root.className = "login-shell";
   const canRetry = s.state === "invalid" && !!s.keyHint;
   root.innerHTML = `<div class="login-card activation">
-      <div class="login-brand"><div class="brand-mark">G</div><div><h1>Activation du logiciel</h1><p>Glory FCC Client</p></div></div>
+      <div class="login-brand login-brand-logo"><img class="brand-logo" src="img/logo.png" alt="MedaCash" draggable="false"><div><h1>Activation du logiciel</h1></div></div>
       <p class="act-intro">Saisissez la clé de produit fournie avec votre licence. Ce PC doit être connecté à internet pour l'activation.</p>
       <form id="act-form" class="form">
         <label>Clé de produit<input id="act-key" class="act-key" autocomplete="off" spellcheck="false" placeholder="GFCC-XXXXX-XXXXX-XXXXX-XXXXX" maxlength="29"></label>
@@ -211,7 +216,7 @@ async function showLogin(): Promise<void> {
   if (users.length === 0) return showSetup(root);
 
   root.innerHTML = `<div class="login-card">
-      <div class="login-brand"><div class="brand-mark">G</div><div><h1>Glory FCC</h1><p>Choisissez votre profil</p></div></div>
+      <div class="login-brand login-brand-logo"><img class="brand-logo" src="img/logo.png" alt="MedaCash" draggable="false"><p>Choisissez votre profil</p></div>
       <div class="user-grid">${users
         .map((u) => `<button class="user-tile" data-u="${esc(u.name)}"><span class="avatar">${esc(u.name.slice(0, 1).toUpperCase())}</span><span>${esc(u.name)}</span><small>${u.role === "admin" ? "Administrateur" : "Vendeur"}</small></button>`)
         .join("")}</div>
@@ -269,7 +274,7 @@ async function showLogin(): Promise<void> {
 
 function showSetup(root: HTMLElement): void {
   root.innerHTML = `<div class="login-card">
-    <div class="login-brand"><div class="brand-mark">G</div><div><h1>Bienvenue</h1><p>Créez le compte administrateur</p></div></div>
+    <div class="login-brand login-brand-logo"><img class="brand-logo" src="img/logo.png" alt="MedaCash" draggable="false"><div><h1>Bienvenue</h1><p>Créez le compte administrateur</p></div></div>
     <form class="form setup-form">
       <label>Nom<input name="name" required maxlength="40" autocomplete="off" value="Administrateur"></label>
       <label>Code PIN (4 à 8 chiffres)<input name="pin" type="password" inputmode="numeric" required pattern="\\d{4,8}"></label>
@@ -291,6 +296,7 @@ function showSetup(root: HTMLElement): void {
 }
 
 async function logout(): Promise<void> {
+  if (salePaymentInProgress) return void toast("Paiement en cours : encaissez ou annulez d'abord.", "error");
   await window.api.call("users.logout");
   S.user = null;
   screenListeners = [];
@@ -325,7 +331,7 @@ function renderShell(): void {
   root.className = "shell";
   root.innerHTML = `
     <aside class="rail">
-      <div class="rail-brand"><div class="brand-mark">G</div><span>${esc(S.receipt?.companyName || "Glory FCC")}</span></div>
+      <div class="rail-brand"><img class="brand-mark-img" src="img/app-icon.png" alt="MedaCash" draggable="false"><span>${esc(S.receipt?.companyName || "MedaCash")}</span></div>
       <nav class="rail-nav">${visibleScreens()
         .map((s) => `<button class="rail-item" data-screen="${s.id}">${icon(s.icon)}<span>${esc(s.label)}</span></button>`)
         .join("")}</nav>
@@ -508,6 +514,10 @@ function renderStatusChip(): void {
 }
 
 function goTo(id: string): void {
+  if (salePaymentInProgress && id !== "sale") {
+    toast("Paiement en cours : encaissez ou annulez avant de changer d'écran.", "error");
+    return;
+  }
   const def = visibleScreens().find((s) => s.id === id) ?? visibleScreens()[0];
   S.screen = def.id;
   screenListeners = [];

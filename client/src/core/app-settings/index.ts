@@ -31,9 +31,12 @@ const DEFAULTS: AppSettings = {
   autoConnect: true,
   printMethod: "browser",
   floatComposition: {},
-  scanEmbeddedPrice: false,
-  scanPricePrefixes: "21 22 23 24 26 27 28 29",
+  scanEmbeddedPrice: true,
+  scanPricePrefixes: "20 21 22 23 24 25 26 27 28 29",
 };
+
+/** Version des réglages : permet de corriger d'anciens réglages par défaut. */
+const SETTINGS_VERSION = 2;
 
 function file(dir: string): string {
   return path.join(dir, "app-settings.json");
@@ -41,7 +44,8 @@ function file(dir: string): string {
 
 export function loadAppSettings(dir: string): AppSettings {
   try {
-    const s = JSON.parse(fs.readFileSync(file(dir), "utf8")) as Partial<AppSettings>;
+    const s = JSON.parse(fs.readFileSync(file(dir), "utf8")) as Partial<AppSettings> & { settingsVersion?: number };
+    const old = (s.settingsVersion ?? 1) < SETTINGS_VERSION;
     return {
       autoPrintReceipt: typeof s.autoPrintReceipt === "boolean" ? s.autoPrintReceipt : DEFAULTS.autoPrintReceipt,
       defaultFloatCents: Number.isFinite(s.defaultFloatCents) && (s.defaultFloatCents as number) >= 0 ? Math.round(s.defaultFloatCents as number) : DEFAULTS.defaultFloatCents,
@@ -49,8 +53,10 @@ export function loadAppSettings(dir: string): AppSettings {
       autoConnect: typeof s.autoConnect === "boolean" ? s.autoConnect : DEFAULTS.autoConnect,
       printMethod: cleanMethod(s.printMethod),
       floatComposition: cleanComposition(s.floatComposition),
-      scanEmbeddedPrice: typeof s.scanEmbeddedPrice === "boolean" ? s.scanEmbeddedPrice : DEFAULTS.scanEmbeddedPrice,
-      scanPricePrefixes: typeof s.scanPricePrefixes === "string" ? cleanPrefixes(s.scanPricePrefixes) : DEFAULTS.scanPricePrefixes,
+      // v1.9.0 enregistrait « prix intégré : désactivé » par défaut, ce qui
+      // empêchait les étiquettes du client de fonctionner : on le réactive une fois.
+      scanEmbeddedPrice: old ? DEFAULTS.scanEmbeddedPrice : typeof s.scanEmbeddedPrice === "boolean" ? s.scanEmbeddedPrice : DEFAULTS.scanEmbeddedPrice,
+      scanPricePrefixes: old ? DEFAULTS.scanPricePrefixes : typeof s.scanPricePrefixes === "string" ? cleanPrefixes(s.scanPricePrefixes) : DEFAULTS.scanPricePrefixes,
     };
   } catch {
     return { ...DEFAULTS };
@@ -60,7 +66,7 @@ export function loadAppSettings(dir: string): AppSettings {
 export function saveAppSettings(dir: string, s: AppSettings): AppSettings {
   fs.mkdirSync(dir, { recursive: true });
   const clean = loadAppSettingsFrom(s);
-  fs.writeFileSync(file(dir), JSON.stringify(clean, null, 2), "utf8");
+  fs.writeFileSync(file(dir), JSON.stringify({ ...clean, settingsVersion: SETTINGS_VERSION }, null, 2), "utf8");
   return clean;
 }
 

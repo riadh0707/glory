@@ -6,10 +6,19 @@ import * as fs from "fs";
 import * as path from "path";
 
 export interface Product {
-  /** Code-barres tel que lu par le scanner (EAN-13, EAN-8, UPC, Code 128…). */
+  /**
+   * Code-barres tel que lu par le scanner (EAN-13, EAN-8, UPC, Code 128…).
+   * Article sans code-barres : code interne « ART-xxxxxx » généré.
+   */
   code: string;
   name: string;
   priceCents: number;
+  /** Rayon / catégorie (pour la liste des articles à la caisse). */
+  category?: string;
+  /** Photo réduite (data:image/jpeg). */
+  image?: string;
+  /** Stock suivi (null/absent = pas de suivi). Diminue à chaque vente. */
+  stock?: number | null;
 }
 
 /** Article d'une vente (panier). `code` vide = montant libre saisi au pavé. */
@@ -66,11 +75,35 @@ export class ProductStore {
   }
 
   save(p: Product, previousCode?: string): Product {
-    const clean = this.validate(p);
+    const clean = this.validate({ ...p, code: cleanCode(p?.code) || this.newInternalCode() });
     if (previousCode && previousCode !== clean.code) this.items.delete(cleanCode(previousCode));
     this.items.set(clean.code, clean);
     this.persist();
     return clean;
+  }
+
+  /** Retire du stock les articles vendus (articles suivis seulement). */
+  consume(items: SaleItem[]): void {
+    let changed = false;
+    for (const it of items) {
+      const p = it.code ? this.items.get(it.code) : undefined;
+      if (p && typeof p.stock === "number") {
+        p.stock -= it.qty;
+        changed = true;
+      }
+    }
+    if (changed) this.persist();
+  }
+
+  categories(): string[] {
+    return [...new Set(this.list().map((p) => p.category ?? "").filter(Boolean))].sort((a, b) => a.localeCompare(b, "fr"));
+  }
+
+  private newInternalCode(): string {
+    let c = "";
+    do c = `ART-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+    while (this.items.has(c));
+    return c;
   }
 
   remove(code: string): void {
@@ -91,10 +124,11 @@ export class ProductStore {
       const cols = line.split(sep).map((c) => c.trim().replace(/^"|"$/g, ""));
       if (i === 0 && !/\d/.test(cols[0] ?? "")) return; // en-tête
       try {
-        const [code, name, price] = cols;
+        const [code, name, price, category, stock] = cols;
         const priceCents = Math.round(Number(String(price ?? "").replace(/[€\s]/g, "").replace(",", ".")) * 100);
         const exists = this.items.has(cleanCode(code));
-        const p = this.validate({ code, name, priceCents });
+        const prev = this.items.get(cleanCode(code));
+        const p = this.validate({ code: cleanCode(code) || this.newInternalCode(), name, priceCents, category: category ?? prev?.category, image: prev?.image, stock: stock !== undefined && stock !== "" ? Number(stock) : prev?.stock });
         this.items.set(p.code, p);
         if (exists) out.updated++;
         else out.added++;
@@ -107,8 +141,10 @@ export class ProductStore {
   }
 
   exportCsv(): string {
-    const rows = this.list().map((p) => `${p.code};${p.name.replace(/;/g, ",")};${(p.priceCents / 100).toFixed(2).replace(".", ",")}`);
-    return "﻿code;nom;prix\r\n" + rows.join("\r\n") + "\r\n";
+    const rows = this.list().map(
+      (p) => `${p.code};${p.name.replace(/;/g, ",")};${(p.priceCents / 100).toFixed(2).replace(".", ",")};${(p.category ?? "").replace(/;/g, ",")};${typeof p.stock === "number" ? p.stock : ""}`
+    );
+    return "﻿code;nom;prix;categorie;stock\r\n" + rows.join("\r\n") + "\r\n";
   }
 
   private validate(p: Product): Product {
@@ -118,7 +154,19 @@ export class ProductStore {
     if (!name) throw new Error("nom manquant");
     const priceCents = Math.round(Number(p?.priceCents));
     if (!Number.isInteger(priceCents) || priceCents < 0 || priceCents > 10_000_000) throw new Error("prix invalide");
-    return { code, name, priceCents };
+    const out: Product = { code, name, priceCents };
+    const category = String(p?.category ?? "").trim().slice(0, 60);
+    if (category) out.category = category;
+    if (typeof p?.image === "string" && p.image) {
+      if (!/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(p.image) || p.image.length > 400_000) throw new Error("image invalide ou trop grande");
+      out.image = p.image;
+    }
+    if (p?.stock !== null && p?.stock !== undefined && String(p.stock) !== "") {
+      const stock = Math.round(Number(p.stock));
+      if (!Number.isInteger(stock) || Math.abs(stock) > 1_000_000) throw new Error("stock invalide");
+      out.stock = stock;
+    }
+    return out;
   }
 
   private persist(): void {

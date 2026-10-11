@@ -100,16 +100,21 @@ interface Product {
   code: string;
   name: string;
   priceCents: number;
+  category?: string;
+  image?: string;
+  stock?: number | null;
 }
 
-interface SaleItem extends Product {
+interface SaleItem {
+  code: string;
+  name: string;
+  priceCents: number;
   qty: number;
 }
 
 type ScanLookup =
   | { kind: "product"; code: string; product: Product | null }
   | { kind: "embedded-price"; code: string; ref: string; priceCents: number; product: Product | null }
-  | { kind: "ticket"; code: string; ticketNo: number; amountCents: number }
   | { kind: "invalid"; code: string; reason: string };
 
 type TransactionKind = "sale" | "deposit" | "payout" | "refill" | "collect" | "exchange" | "cancel";

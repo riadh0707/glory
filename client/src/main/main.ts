@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, net, shell } from "electron";
+import { app, BrowserWindow, dialog, ipcMain, nativeImage, net, shell } from "electron";
 import * as fs from "fs";
 import * as path from "path";
 import { IpcChannels } from "../shared/ipc-channels";
@@ -263,15 +263,33 @@ action("fcc.status", "user", () => cashier.status());
 action("fcc.inventory", "user", () => cashier.inventory());
 
 // --- caisse
-action("sale.start", "user", (amountCents: number, rawItems?: unknown) => {
+action("sale.start", "user", async (amountCents: number, rawItems?: unknown) => {
   const items = cleanItems(rawItems);
   const due = items.length ? itemsTotal(items) : Math.round(Number(amountCents));
   if (items.length && due !== Math.round(Number(amountCents))) return { ok: false, message: "Le total du panier a changé : vérifiez le panier." };
-  return cashier.sale(due, items);
+  const r = await cashier.sale(due, items);
+  if (r.ok) products.consume(items);
+  return r;
 });
 
 // --- articles et scanner
 action("products.list", "user", () => products.list());
+action("products.categories", "user", () => products.categories());
+/** Choix d'une photo d'article : réduite à 320 px et convertie en JPEG. */
+action("products.pickImage", "admin", async () => {
+  const pick = await dialog.showOpenDialog(mainWindow!, {
+    title: "Photo de l'article",
+    filters: [{ name: "Images", extensions: ["jpg", "jpeg", "png", "webp", "bmp", "gif"] }],
+    properties: ["openFile"],
+  });
+  if (pick.canceled || !pick.filePaths[0]) return { ok: false, message: "Aucune image choisie." };
+  let img = nativeImage.createFromPath(pick.filePaths[0]);
+  if (img.isEmpty()) return { ok: false, message: "Image illisible (formats acceptés : JPG, PNG, WebP, BMP)." };
+  const { width, height } = img.getSize();
+  const scale = Math.min(1, 320 / Math.max(width, height));
+  if (scale < 1) img = img.resize({ width: Math.round(width * scale), height: Math.round(height * scale), quality: "best" });
+  return { ok: true, message: "OK", image: `data:image/jpeg;base64,${img.toJPEG(82).toString("base64")}` };
+});
 action("products.save", "admin", (p: Product, previousCode?: string) => {
   try {
     return { ok: true, message: "Article enregistré.", product: products.save(p, previousCode) };
@@ -305,9 +323,11 @@ action("products.export", "admin", async () => {
 });
 /** Code scanné → article du catalogue, prix intégré, ticket de caisse ou code mal lu. */
 action("scan.lookup", "user", (raw: string) => {
+  const exact = products.find(String(raw ?? ""));
+  if (exact) return { kind: "product", code: exact.code, product: exact };
   const st = loadAppSettings(DATA_DIR);
   const r = analyzeScan(String(raw ?? ""), { embeddedPrice: st.scanEmbeddedPrice, prefixes: parsePrefixes(st.scanPricePrefixes) });
-  if (r.kind === "product") return { ...r, product: products.find(r.code) };
+  if (r.kind === "product") return { ...r, product: null };
   if (r.kind === "embedded-price") return { ...r, product: products.find(r.ref) ?? products.find(r.code) };
   return r;
 });
@@ -468,8 +488,9 @@ function createWindow(): void {
     height: 800,
     minWidth: 900,
     minHeight: 600,
-    title: "Glory FCC Client",
-    icon: path.join(__dirname, "..", "..", "build", "icon.png"),
+    title: "MedaCash",
+    // Icône MedaCash (dans app.asar : le dossier build/ n'est pas livré).
+    icon: path.join(__dirname, "..", "ui", "img", "app-icon.png"),
     webPreferences: {
       preload: path.join(__dirname, "..", "main", "preload.js"),
       contextIsolation: true,
