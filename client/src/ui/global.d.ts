@@ -163,6 +163,7 @@ interface GloryApi {
   onFccEvent(cb: (e: FccEvent) => void): void;
   onState(cb: (s: CashierState) => void): void;
   onLicense(cb: (s: LicenseStatus) => void): void;
+  setZoom(factor: number): void;
 }
 
 interface DeviceErrorInfo {

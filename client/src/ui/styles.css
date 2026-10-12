@@ -164,7 +164,7 @@ input:focus, select:focus { border-color: var(--accent); background: var(--panel
     radial-gradient(1200px 600px at 10% -10%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 60%),
     linear-gradient(135deg, #0f2a22 0%, var(--rail) 55%, #050c0a 100%);
 }
-@media (min-width: 1180px) {
+@media (min-width: 1000px) {
   .login-shell { place-items: center start; padding-left: 8vw; }
 }
 .login-card {
@@ -768,3 +768,15 @@ details.tech summary { cursor: pointer; font-weight: 650; padding: 4px 0; }
 .login-brand-logo h1 { font-size: 20px; }
 .brand-mark-img { width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0; background: #fff; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25); }
 .kpi-main span { color: var(--accent-strong); font-weight: 700; }
+/* Liste d'articles à la caisse : fenêtre plus large, grille qui remplit la hauteur disponible. */
+.dialog:has(.picker) { width: min(1040px, 100%); }
+.picker { min-height: 0; }
+.picker-grid { max-height: calc(100vh - 290px); min-height: 200px; }
+/* Liste d'articles : la grille occupe toute la hauteur de la fenêtre, une seule barre de défilement. */
+.dialog:has(.picker) { height: calc(100vh - 32px); display: flex; flex-direction: column; overflow: hidden; }
+.dialog:has(.picker) .dialog-body { flex: 1; min-height: 0; display: flex; padding-bottom: 16px; }
+.picker { flex: 1; min-height: 0; }
+.picker-grid { flex: 1; max-height: none; min-height: 0; align-content: start; }
+.picker-cats { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: thin; padding-bottom: 4px; }
+.picker-cats .btn { flex-shrink: 0; }
+.picker .dialog-actions { margin-top: 0; align-items: center; justify-content: space-between; }

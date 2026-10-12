@@ -75,7 +75,44 @@ window.addEventListener("unhandledrejection", (e) => {
   void window.api.call("diag.rendererError", "unhandledrejection", r instanceof Error ? r.message : String(r), r instanceof Error ? r.stack : undefined);
 });
 
+// ------------------------------------------------------------------ taille de l'affichage
+
+/**
+ * L'interface est dessinée pour 1280 × 800. Sur un écran ou une fenêtre plus
+ * petits, tout est réduit proportionnellement (même disposition, rien ne
+ * déborde) ; réglage manuel possible dans Réglages → Préférences.
+ */
+const UI_BASE = { w: 1180, h: 800 };
+let uiZoom = 1;
+
+function uiScalePref(): string {
+  try {
+    return localStorage.getItem("uiScale") || "auto";
+  } catch {
+    return "auto";
+  }
+}
+
+function applyZoom(): void {
+  const pref = uiScalePref();
+  // innerWidth est en pixels « zoomés » : on revient à la taille réelle de la fenêtre.
+  const w = window.innerWidth * uiZoom;
+  const h = window.innerHeight * uiZoom;
+  let z = pref === "auto" ? Math.min(w / UI_BASE.w, h / UI_BASE.h, 1) : Number(pref) || 1;
+  z = Math.round(Math.max(0.55, Math.min(1.5, z)) * 100) / 100;
+  if (Math.abs(z - uiZoom) < 0.01) return;
+  uiZoom = z;
+  window.api.setZoom(z);
+}
+
+let zoomTimer = 0;
+window.addEventListener("resize", () => {
+  window.clearTimeout(zoomTimer);
+  zoomTimer = window.setTimeout(applyZoom, 120);
+});
+
 window.addEventListener("DOMContentLoaded", () => {
+  applyZoom();
   window.api.onLog((line) => {
     S.logs.push(`${new Date().toLocaleTimeString("fr-BE")}  ${line}`);
     if (S.logs.length > 1500) S.logs.splice(0, S.logs.length - 1500);

@@ -303,12 +303,19 @@ action("products.remove", "admin", (code: string) => {
 });
 action("products.import", "admin", async () => {
   const pick = await dialog.showOpenDialog(mainWindow!, {
-    title: "Importer des articles (code;nom;prix)",
-    filters: [{ name: "CSV (Excel)", extensions: ["csv", "txt"] }],
+    title: "Importer des articles",
+    filters: [
+      { name: "Catalogue ou liste d'articles", extensions: ["json", "csv", "txt"] },
+      { name: "Catalogue avec photos (.json)", extensions: ["json"] },
+      { name: "CSV (Excel)", extensions: ["csv", "txt"] },
+    ],
     properties: ["openFile"],
   });
   if (pick.canceled || !pick.filePaths[0]) return { ok: false, message: "Import annulé." };
-  const r = products.importCsv(fs.readFileSync(pick.filePaths[0], "utf8"));
+  const file = pick.filePaths[0];
+  if (fs.statSync(file).size > 60 * 1024 * 1024) return { ok: false, message: "Fichier trop volumineux." };
+  const text = fs.readFileSync(file, "utf8");
+  const r = /\.json$/i.test(file) ? products.importJson(text) : products.importCsv(text);
   return { ok: true, message: `${r.added} ajouté(s), ${r.updated} mis à jour${r.errors.length ? `, ${r.errors.length} ligne(s) ignorée(s)` : ""}.`, errors: r.errors };
 });
 action("products.export", "admin", async () => {
@@ -486,8 +493,9 @@ function createWindow(): void {
   mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,
-    minWidth: 900,
-    minHeight: 600,
+    // L'interface se met à l'échelle de la fenêtre (app.ts : applyZoom).
+    minWidth: 640,
+    minHeight: 480,
     title: "MedaCash",
     // Icône MedaCash (dans app.asar : le dossier build/ n'est pas livré).
     icon: path.join(__dirname, "..", "ui", "img", "app-icon.png"),

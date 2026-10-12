@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from "electron";
+import { contextBridge, ipcRenderer, webFrame } from "electron";
 import { IpcChannels } from "../shared/ipc-channels";
 
 /**
@@ -19,5 +19,10 @@ contextBridge.exposeInMainWorld("api", {
   },
   onLicense: (cb: (s: unknown) => void) => {
     ipcRenderer.on(IpcChannels.License, (_e, s: unknown) => cb(s));
+  },
+  /** Mise à l'échelle de toute l'interface (comme le zoom d'un navigateur). */
+  setZoom: (factor: number) => {
+    const f = Number(factor);
+    if (Number.isFinite(f) && f >= 0.5 && f <= 2) webFrame.setZoomFactor(f);
   },
 });

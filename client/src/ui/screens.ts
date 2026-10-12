@@ -186,7 +186,7 @@ function renderSale(root: HTMLElement): void {
       <div class="basket-lines">${basket
         .map(
           (i, idx) => `<div class="basket-line" data-i="${idx}">
-            <div class="basket-name"><strong>${esc(i.name)}</strong><small>${i.code ? esc(i.code) : "montant libre"} · ${money(i.priceCents)}</small></div>
+            <div class="basket-name"><strong>${esc(i.name)}</strong><small>${!i.code ? "montant libre" : i.code.startsWith("ART-") ? "article" : esc(i.code)} · ${money(i.priceCents)}</small></div>
             <div class="pick-ctl"><button class="btn" data-d="-1" aria-label="Retirer un">−</button><b>${i.qty}</b><button class="btn" data-d="1" aria-label="Ajouter un">+</button></div>
             <strong class="basket-sum">${money(i.priceCents * i.qty)}</strong>
             <button class="icon-btn" data-del aria-label="Supprimer la ligne">✕</button>
@@ -1359,6 +1359,17 @@ async function renderSettings(root: HTMLElement): Promise<void> {
 
     <section class="card"><div class="card-head"><h2>Préférences</h2></div>
       <form class="form" id="f-app">
+        <label>Taille de l'affichage<select id="ui-scale">${[
+          ["auto", "Automatique (s'adapte à la fenêtre)"],
+          ["0.7", "70 %"],
+          ["0.8", "80 %"],
+          ["0.9", "90 %"],
+          ["1", "100 %"],
+          ["1.1", "110 %"],
+          ["1.25", "125 %"],
+        ]
+          .map(([v, l]) => `<option value="${v}" ${uiScalePref() === v ? "selected" : ""}>${l}</option>`)
+          .join("")}</select></label>
         <label class="check"><input type="checkbox" name="autoPrintReceipt" ${app.autoPrintReceipt ? "checked" : ""}> Imprimer le ticket automatiquement après chaque vente</label>
         <label>Méthode d'impression<select name="printMethod">${(
           [
@@ -1421,6 +1432,16 @@ async function renderSettings(root: HTMLElement): Promise<void> {
     });
   };
   void window.api.call<LicenseStatus>("license.status").then(renderLicense);
+
+  // Taille de l'affichage : appliquée tout de suite, mémorisée sur ce PC.
+  $<HTMLSelectElement>("#ui-scale", root).addEventListener("change", (e) => {
+    try {
+      localStorage.setItem("uiScale", (e.currentTarget as HTMLSelectElement).value);
+    } catch {
+      /* stockage indisponible : réglage valable jusqu'au prochain démarrage */
+    }
+    applyZoom();
+  });
 
   // Scanner : chaque scan s'affiche ici (test), sans ouvrir la vente.
   onScan((code) => {

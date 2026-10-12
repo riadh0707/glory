@@ -115,6 +115,39 @@ export class ProductStore {
    * Import d'un fichier CSV « code;nom;prix » (séparateur ; ou , ou tabulation,
    * prix en euros « 2,50 » ou « 2.50 », ligne d'en-tête facultative).
    */
+  /**
+   * Import d'un catalogue complet (.json, avec photos) :
+   * { "products": [ { "name", "priceCents", "category"?, "code"?, "stock"?, "image"? } ] }.
+   * Un article sans code est ajouté (ou remplacé s'il existe déjà un article
+   * sans code-barres du même nom).
+   */
+  importJson(text: string): { added: number; updated: number; errors: string[] } {
+    const out = { added: 0, updated: 0, errors: [] as string[] };
+    let list: unknown[];
+    try {
+      const j = JSON.parse(String(text ?? "").replace(/^\uFEFF/, ""));
+      list = Array.isArray(j) ? j : Array.isArray(j?.products) ? j.products : [];
+    } catch {
+      return { ...out, errors: ["fichier illisible (JSON attendu)"] };
+    }
+    list.slice(0, 20000).forEach((raw, i) => {
+      try {
+        const p = raw as Product;
+        let code = cleanCode(p?.code);
+        if (!code) code = [...this.items.values()].find((x) => x.code.startsWith("ART-") && x.name === String(p?.name ?? "").trim())?.code ?? this.newInternalCode();
+        const exists = this.items.has(code);
+        const clean = this.validate({ ...p, code });
+        this.items.set(clean.code, clean);
+        if (exists) out.updated++;
+        else out.added++;
+      } catch (e) {
+        if (out.errors.length < 20) out.errors.push(`Article ${i + 1} : ${(e as Error).message}`);
+      }
+    });
+    this.persist();
+    return out;
+  }
+
   importCsv(text: string): { added: number; updated: number; errors: string[] } {
     const out = { added: 0, updated: 0, errors: [] as string[] };
     const lines = String(text ?? "").replace(/^﻿/, "").split(/\r?\n/);

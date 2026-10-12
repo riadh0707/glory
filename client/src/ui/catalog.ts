@@ -85,10 +85,10 @@ function renderProducts(el: HTMLElement): void {
         <input id="pr-search" type="search" placeholder="Rechercher un article, un rayon ou un code…" autocomplete="off">
         <select id="pr-cat"><option value="">Tous les rayons</option></select>
         <button class="btn btn-primary" id="pr-add">Nouvel article</button>
-        <button class="btn" id="pr-import">Importer (Excel/CSV)</button>
+        <button class="btn" id="pr-import">Importer</button>
         <button class="btn" id="pr-export">Exporter</button>
       </div>
-      <p class="muted small">Articles avec ou sans code-barres (pain, fruits, produits maison…). Ils apparaissent dans le bouton « Articles » de la vente. Import : « code;nom;prix;rayon;stock » (seuls nom et prix sont obligatoires). Scanner un article ici ouvre sa fiche.</p>
+      <p class="muted small">Articles avec ou sans code-barres (pain, fruits, produits maison…). Ils apparaissent dans le bouton « Articles » de la vente. Import : catalogue avec photos (.json) ou liste Excel/CSV « code;nom;prix;rayon;stock » (seuls nom et prix sont obligatoires). Scanner un article ici ouvre sa fiche.</p>
       <div id="pr-alerts"></div>
       <div id="pr-body"></div>
     </div>`;
