@@ -2,11 +2,13 @@
  * Gestion des licences en ligne de commande.
  *
  *   node scripts/licences.js liste
- *   node scripts/licences.js creer "Nom du client" [--expire 2027-12-31] [--postes 1] [--note "..."]
+ *   node scripts/licences.js creer "Nom du client" [--expire 2027-12-31] [--postes 1] [--note "..."] [--en-ligne]
  *   node scripts/licences.js voir     GFCC-XXXXX-...
  *   node scripts/licences.js desactiver GFCC-...      (bloque le logiciel au prochain contrôle)
  *   node scripts/licences.js reactiver  GFCC-...
  *   node scripts/licences.js prolonger  GFCC-... 2028-12-31   (ou « jamais » = définitive)
+ *   node scripts/licences.js horsligne  GFCC-...      (fonctionne sans internet après activation, par défaut)
+ *   node scripts/licences.js enligne    GFCC-...      (contrôle en ligne au moins tous les 14 jours)
  *   node scripts/licences.js postes     GFCC-... 2
  *   node scripts/licences.js transferer GFCC-...      (délie les PC : le client peut activer un nouveau PC)
  *   node scripts/licences.js supprimer  GFCC-...
@@ -43,6 +45,7 @@ function show(l) {
   console.log(`  Client   : ${l.client || "-"}${l.note ? `  (${l.note})` : ""}`);
   console.log(`  Fin      : ${day(l.expiresAt)}`);
   console.log(`  PC       : ${(l.machines || []).length}/${l.seats || 1}`);
+  console.log(`  Internet : ${l.offline === false ? "contrôle en ligne au moins tous les 14 jours" : "fonctionne sans internet après activation"}`);
   for (const m of l.machines || []) console.log(`    - ${m.name || "?"} [${m.id}] activé le ${day(m.firstAt)}, vu le ${new Date(m.lastAt).toLocaleString("fr-BE")}${m.version ? `, v${m.version}` : ""}`);
 }
 
@@ -57,7 +60,7 @@ try {
     }
     case "creer": {
       if (!rest[0] || rest[0].startsWith("--")) throw new Error('Nom du client manquant : creer "Nom du client"');
-      const l = await api("POST", "/admin/keys", { client: rest[0], expiresAt: opt("expire") ?? null, seats: opt("postes") ?? 1, note: opt("note") ?? "" });
+      const l = await api("POST", "/admin/keys", { client: rest[0], expiresAt: opt("expire") ?? null, seats: opt("postes") ?? 1, note: opt("note") ?? "", offline: !rest.includes("--en-ligne") });
       console.log("Licence créée. Clé à donner au client :\n");
       show(l);
       break;
@@ -73,6 +76,12 @@ try {
       break;
     case "prolonger":
       show(await api("PATCH", `/admin/keys/${key}`, { expiresAt: rest[1] === "jamais" ? null : rest[1] }));
+      break;
+    case "horsligne":
+      show(await api("PATCH", `/admin/keys/${key}`, { offline: true }));
+      break;
+    case "enligne":
+      show(await api("PATCH", `/admin/keys/${key}`, { offline: false }));
       break;
     case "postes":
       show(await api("PATCH", `/admin/keys/${key}`, { seats: Number(rest[1]) }));

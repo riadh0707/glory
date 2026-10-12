@@ -1415,7 +1415,7 @@ async function renderSettings(root: HTMLElement): Promise<void> {
         <div class="pay-row"><span>Validité</span><strong>${l.expiresAt ? `jusqu'au ${new Date(l.expiresAt).toLocaleDateString("fr-BE")}` : "définitive"}</strong></div>
         ${l.keyHint ? `<div class="pay-row"><span>Clé</span><strong>${esc(l.keyHint)}</strong></div>` : ""}
         <div class="pay-row"><span>Code de ce PC</span><strong>${esc(l.machineCode)}</strong></div>
-        ${l.refreshBy ? `<div class="pay-row"><span>Prochain contrôle en ligne avant le</span><strong>${new Date(l.refreshBy).toLocaleDateString("fr-BE")}</strong></div>` : ""}
+        <div class="pay-row"><span>Sans internet</span><strong>${l.refreshBy ? `contrôle en ligne avant le ${new Date(l.refreshBy).toLocaleDateString("fr-BE")}` : l.state === "valid" ? "fonctionne sans limite" : "-"}</strong></div>
       </div>
       <div class="row-actions"><button class="btn" id="lic-check">Vérifier maintenant</button><button class="btn btn-danger" id="lic-remove">Retirer la licence de ce PC</button></div>`;
     $("#lic-check", body).addEventListener("click", (e) =>

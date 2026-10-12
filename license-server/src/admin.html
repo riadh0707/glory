@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>MedaCash · Licences</title>
+<style>
+  :root {
+    --bg: #eef2f0; --panel: #fff; --panel-2: #f5f7f6; --ink: #101b18; --muted: #62716c; --rule: #dce2df;
+    --accent: #0b7a5e; --accent-strong: #075e48; --accent-soft: #dff1ea;
+    --ok: #1e8a4c; --ok-soft: #e1f4e8; --warn: #b26b12; --warn-soft: #fbf0dc; --bad: #c2372c; --bad-soft: #fbe5e2;
+    --shadow: 0 1px 2px rgba(17,26,38,.06), 0 6px 20px rgba(17,26,38,.06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0c1412; --panel: #13201c; --panel-2: #192a25; --ink: #e8eeeb; --muted: #8fa29b; --rule: #24362f;
+      --accent: #2fb394; --accent-strong: #4ccaa9; --accent-soft: #123a30;
+      --ok: #5cc88b; --ok-soft: #12301f; --warn: #e4a54a; --warn-soft: #33270f; --bad: #f07b70; --bad-soft: #3a1915;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.45 "Segoe UI", system-ui, -apple-system, Roboto, sans-serif; background: var(--bg); color: var(--ink); }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; background: #0b1a16; color: #fff; }
+  header h1 { margin: 0; font-size: 18px; font-weight: 700; }
+  header h1 span { color: #3ddba8; }
+  main { max-width: 1180px; margin: 0 auto; padding: 20px 16px 60px; }
+  .card { background: var(--panel); border: 1px solid var(--rule); border-radius: 14px; box-shadow: var(--shadow); padding: 18px 20px; }
+  .btn { font: inherit; font-weight: 600; min-height: 40px; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--rule); background: var(--panel); color: var(--ink); cursor: pointer; }
+  .btn:hover { border-color: var(--accent); }
+  .btn:disabled { opacity: .5; cursor: progress; }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn-danger { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 45%, var(--rule)); }
+  .btn-ghost { background: transparent; color: #fff; border-color: rgba(255,255,255,.25); }
+  .btn-sm { min-height: 32px; padding: 4px 10px; font-size: 13px; }
+  input, select, textarea { font: inherit; color: var(--ink); background: var(--panel-2); border: 1px solid var(--rule); border-radius: 10px; padding: 9px 12px; min-height: 42px; width: 100%; }
+  input:focus, select:focus, textarea:focus { outline: 2px solid color-mix(in srgb, var(--accent) 40%, transparent); border-color: var(--accent); }
+  label { display: flex; flex-direction: column; gap: 6px; font-weight: 600; font-size: 14px; }
+  label.check { flex-direction: row; align-items: center; gap: 10px; font-weight: 500; }
+  label.check input { width: 18px; height: 18px; min-height: 0; }
+  .muted { color: var(--muted); }
+  .small { font-size: 13px; }
+  .mono { font-family: "Cascadia Mono", Consolas, monospace; }
+  .login { max-width: 440px; margin: 10vh auto 0; display: flex; flex-direction: column; gap: 14px; }
+  .login h2 { margin: 0; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .stat { background: var(--panel); border: 1px solid var(--rule); border-radius: 12px; padding: 12px 14px; box-shadow: var(--shadow); }
+  .stat span { display: block; color: var(--muted); font-size: 13px; font-weight: 600; }
+  .stat strong { font-size: 26px; }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
+  .toolbar input { flex: 1 1 240px; width: auto; }
+  .toolbar select { width: auto; }
+  .lic { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 14px 0; border-top: 1px solid var(--rule); }
+  .lic:first-child { border-top: 0; }
+  .lic-key { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .lic-key code { font-size: 15px; font-weight: 700; letter-spacing: .02em; }
+  .lic-client { font-weight: 700; }
+  .lic-meta { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 13px; color: var(--muted); }
+  .lic-actions { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+  .pill { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+  .p-ok { background: var(--ok-soft); color: var(--ok); }
+  .p-bad { background: var(--bad-soft); color: var(--bad); }
+  .p-warn { background: var(--warn-soft); color: var(--warn); }
+  .p-info { background: var(--accent-soft); color: var(--accent-strong); }
+  .empty { text-align: center; padding: 40px 10px; color: var(--muted); }
+  .overlay { position: fixed; inset: 0; background: rgba(5,12,10,.55); display: grid; place-items: center; padding: 16px; z-index: 50; }
+  .dialog { width: min(560px, 100%); max-height: calc(100vh - 32px); overflow: auto; background: var(--panel); border-radius: 16px; box-shadow: 0 30px 80px rgba(0,0,0,.35); padding: 20px 22px; }
+  .dialog h2 { margin: 0 0 14px; font-size: 19px; }
+  .form { display: flex; flex-direction: column; gap: 12px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
+  .newkey { padding: 16px; border-radius: 12px; background: var(--accent-soft); text-align: center; }
+  .newkey code { display: block; font-size: 22px; font-weight: 800; margin: 6px 0 10px; color: var(--accent-strong); word-break: break-all; }
+  .machines { margin: 0; padding-left: 18px; font-size: 13px; }
+  #toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: #0b1a16; color: #fff; padding: 10px 16px; border-radius: 10px; font-weight: 600; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 60; }
+  #toast.on { opacity: 1; }
+  #toast.err { background: var(--bad); }
+  @media (max-width: 760px) {
+    .lic { grid-template-columns: 1fr; }
+    .lic-actions { justify-content: flex-start; }
+    .row2 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Meda<span>Cash</span> · gestion des licences</h1>
+  <button class="btn btn-ghost btn-sm" id="logout" hidden>Se déconnecter</button>
+</header>
+<main id="app"></main>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  "use strict";
+  const app = document.getElementById("app");
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+  const day = (iso) => (iso ? new Date(iso).toLocaleDateString("fr-BE") : "");
+  const dt = (iso) => (iso ? new Date(iso).toLocaleString("fr-BE", { dateStyle: "short", timeStyle: "short" }) : "");
+  let token = "";
+  let all = [];
+
+  function toast(msg, err) {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.className = "on" + (err ? " err" : "");
+    clearTimeout(toast.t);
+    toast.t = setTimeout(() => (t.className = ""), 3200);
+  }
+
+  // Le jeton reste dans ce navigateur (session, ou appareil si demandé).
+  function saved() {
+    try { return sessionStorage.getItem("mc_admin") || localStorage.getItem("mc_admin") || ""; } catch { return ""; }
+  }
+  function remember(t, persist) {
+    try {
+      sessionStorage.setItem("mc_admin", t);
+      if (persist) localStorage.setItem("mc_admin", t); else localStorage.removeItem("mc_admin");
+    } catch {}
+  }
+  function forget() {
+    try { sessionStorage.removeItem("mc_admin"); localStorage.removeItem("mc_admin"); } catch {}
+  }
+
+  async function api(method, path, body) {
+    const r = await fetch(path, {
+      method,
+      headers: { Authorization: "Bearer " + token, "Content-Type": "application/json" },
+      body: body ? JSON.stringify(body) : undefined,
+      cache: "no-store",
+    });
+    const j = await r.json().catch(() => ({}));
+    if (r.status === 401) {
+      forget();
+      showLogin("Jeton refusé ou expiré : reconnectez-vous.");
+      throw new Error("unauthorized");
+    }
+    if (!r.ok) throw new Error(j.error || "Erreur " + r.status);
+    return j;
+  }
+
+  function state(l) {
+    if (l.revoked) return { label: "Désactivée", cls: "p-bad", key: "revoked" };
+    if (l.expiresAt && Date.parse(l.expiresAt) < Date.now()) return { label: "Expirée", cls: "p-warn", key: "expired" };
+    return { label: "Active", cls: "p-ok", key: "active" };
+  }
+
+  // ------------------------------------------------------------- connexion
+  function showLogin(message) {
+    document.getElementById("logout").hidden = true;
+    app.innerHTML = `
+      <form class="card login" id="login">
+        <h2>Connexion</h2>
+        <p class="muted small">Collez votre jeton administrateur (valeur « adminToken » du fichier license-server/.admin.json). Il n'est envoyé qu'à votre serveur de licences.</p>
+        <label>Jeton administrateur<input type="password" id="tok" autocomplete="current-password" required></label>
+        <label class="check"><input type="checkbox" id="persist"> Rester connecté sur cet appareil</label>
+        <p class="small" id="lmsg" style="color:var(--bad)">${esc(message || "")}</p>
+        <button class="btn btn-primary">Se connecter</button>
+      </form>`;
+    const f = document.getElementById("login");
+    document.getElementById("tok").focus();
+    f.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      token = document.getElementById("tok").value.trim();
+      const persist = document.getElementById("persist").checked;
+      try {
+        await load();
+        remember(token, persist);
+      } catch (err) {
+        if (err.message !== "unauthorized") document.getElementById("lmsg").textContent = "Serveur injoignable : " + err.message;
+      }
+    });
+  }
+
+  // ------------------------------------------------------------- liste
+  async function load() {
+    const j = await api("GET", "/admin/keys");
+    all = (j.licenses || []).sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
+    document.getElementById("logout").hidden = false;
+    renderList();
+  }
+
+  // Le stockage Cloudflare (KV) met jusqu'à une minute à refléter une
+  // modification dans la liste : on met donc la liste locale à jour avec la
+  // réponse du serveur au lieu de la relire tout de suite.
+  function upsert(rec) {
+    const { ok, ...l } = rec;
+    const i = all.findIndex((x) => x.key === l.key);
+    if (i >= 0) all[i] = l;
+    else all.unshift(l);
+    renderList();
+  }
+  function removeLocal(key) {
+    all = all.filter((x) => x.key !== key);
+    renderList();
+  }
+
+  function renderList() {
+    const q = (document.getElementById("q")?.value || "").trim().toLowerCase();
+    const st = document.getElementById("st")?.value || "";
+    const counts = { active: 0, revoked: 0, expired: 0, pcs: 0 };
+    for (const l of all) { counts[state(l).key]++; counts.pcs += (l.machines || []).length; }
+    if (!document.getElementById("list")) {
+      app.innerHTML = `
+        <div class="stats" id="stats"></div>
+        <div class="toolbar">
+          <input type="search" id="q" placeholder="Rechercher une clé, un client, un PC…" autocomplete="off">
+          <select id="st"><option value="">Toutes</option><option value="active">Actives</option><option value="expired">Expirées</option><option value="revoked">Désactivées</option></select>
+          <button class="btn" id="reload">Actualiser</button>
+          <button class="btn btn-primary" id="new">Nouvelle clé</button>
+        </div>
+        <div class="card" id="list"></div>`;
+      document.getElementById("q").addEventListener("input", renderList);
+      document.getElementById("st").addEventListener("change", renderList);
+      document.getElementById("reload").addEventListener("click", () => load().then(() => toast("Liste actualisée.")).catch(() => {}));
+      document.getElementById("new").addEventListener("click", () => editDialog(null));
+    }
+    document.getElementById("stats").innerHTML = `
+      <div class="stat"><span>Licences actives</span><strong>${counts.active}</strong></div>
+      <div class="stat"><span>Expirées</span><strong>${counts.expired}</strong></div>
+      <div class="stat"><span>Désactivées</span><strong>${counts.revoked}</strong></div>
+      <div class="stat"><span>PC activés</span><strong>${counts.pcs}</strong></div>`;
+    const rows = all.filter((l) => {
+      if (st && state(l).key !== st) return false;
+      if (!q) return true;
+      const hay = [l.key, l.client, l.note, ...(l.machines || []).map((m) => m.name + " " + m.id)].join(" ").toLowerCase();
+      return hay.includes(q);
+    });
+    const list = document.getElementById("list");
+    if (!rows.length) {
+      list.innerHTML = `<div class="empty">${all.length ? "Aucune licence ne correspond." : "Aucune licence. Créez la première avec « Nouvelle clé »."}</div>`;
+      return;
+    }
+    list.innerHTML = rows.map((l) => {
+      const s = state(l);
+      const used = (l.machines || []).length;
+      return `<div class="lic" data-key="${esc(l.key)}">
+        <div>
+          <div class="lic-key"><code class="mono">${esc(l.key)}</code><button class="btn btn-sm" data-a="copy">Copier</button></div>
+          <div class="lic-client">${esc(l.client || "Sans nom")}</div>
+          ${l.note ? `<div class="small muted">${esc(l.note)}</div>` : ""}
+        </div>
+        <div class="lic-meta">
+          <span class="pill ${s.cls}">${s.label}</span>
+          <span class="pill ${l.offline === false ? "p-warn" : "p-info"}">${l.offline === false ? "Contrôle en ligne (14 j)" : "Fonctionne hors ligne"}</span>
+          <span>${l.expiresAt ? "Fin : " + day(l.expiresAt) : "Définitive"}</span>
+          <span>PC : ${used} / ${l.seats || 1}</span>
+          ${used ? `<span>Vu le ${dt(l.machines.reduce((a, m) => (String(m.lastAt) > String(a) ? m.lastAt : a), ""))}</span>` : `<span>Pas encore activée</span>`}
+        </div>
+        <div class="lic-actions">
+          <button class="btn btn-sm" data-a="edit">Modifier</button>
+          ${used ? `<button class="btn btn-sm" data-a="reset">Transférer</button>` : ""}
+          <button class="btn btn-sm ${l.revoked ? "" : "btn-danger"}" data-a="toggle">${l.revoked ? "Réactiver" : "Désactiver"}</button>
+          <button class="btn btn-sm btn-danger" data-a="delete">Supprimer</button>
+        </div>
+      </div>`;
+    }).join("");
+  }
+
+  app.addEventListener("click", async (e) => {
+    const b = e.target.closest("button[data-a]");
+    if (!b) return;
+    const key = b.closest(".lic")?.dataset.key;
+    const l = all.find((x) => x.key === key);
+    if (!l) return;
+    const a = b.dataset.a;
+    try {
+      if (a === "copy") {
+        await navigator.clipboard.writeText(l.key).catch(() => {});
+        return toast("Clé copiée.");
+      }
+      if (a === "edit") return editDialog(l);
+      if (a === "reset") {
+        if (!(await confirmDialog("Transférer la licence", `Délier les PC de la clé ${l.key} ? Le client pourra l'activer sur un nouveau PC. L'ancien PC sera bloqué à sa prochaine connexion à internet.`, "Transférer"))) return;
+        upsert(await busy(b, () => api("POST", "/admin/keys/" + encodeURIComponent(l.key) + "/reset")));
+        toast("Licence libérée pour un nouveau PC.");
+      }
+      if (a === "toggle") {
+        const off = !l.revoked;
+        if (off && !(await confirmDialog("Désactiver la licence", `Désactiver ${l.key} (${l.client || "sans nom"}) ? Le logiciel sera bloqué chez ce client à sa prochaine connexion à internet.`, "Désactiver", true))) return;
+        upsert(await busy(b, () => api("PATCH", "/admin/keys/" + encodeURIComponent(l.key), { revoked: off })));
+        toast(off ? "Licence désactivée." : "Licence réactivée.");
+      }
+      if (a === "delete") {
+        if (!(await confirmDialog("Supprimer la licence", `Supprimer définitivement ${l.key} (${l.client || "sans nom"}) ? Cette action est irréversible.`, "Supprimer", true))) return;
+        await busy(b, () => api("DELETE", "/admin/keys/" + encodeURIComponent(l.key)));
+        removeLocal(l.key);
+        toast("Licence supprimée.");
+      }
+    } catch (err) {
+      if (err.message !== "unauthorized") toast(err.message, true);
+    }
+  });
+
+  async function busy(btn, fn) {
+    btn.disabled = true;
+    try { return await fn(); } finally { btn.disabled = false; }
+  }
+
+  // ------------------------------------------------------------- fenêtres
+  function dialog(html, onReady) {
+    return new Promise((resolve) => {
+      const o = document.createElement("div");
+      o.className = "overlay";
+      o.innerHTML = `<div class="dialog" role="dialog" aria-modal="true">${html}</div>`;
+      document.body.appendChild(o);
+      const close = (v) => { o.remove(); document.removeEventListener("keydown", onKey); resolve(v); };
+      const onKey = (e) => { if (e.key === "Escape") close(null); };
+      document.addEventListener("keydown", onKey);
+      o.addEventListener("click", (e) => { if (e.target === o) close(null); });
+      onReady(o, close);
+    });
+  }
+
+  function confirmDialog(title, text, ok, danger) {
+    return dialog(`<h2>${esc(title)}</h2><p>${esc(text)}</p><div class="actions"><button class="btn" data-no>Annuler</button><button class="btn ${danger ? "btn-danger" : "btn-primary"}" data-yes>${esc(ok)}</button></div>`, (o, close) => {
+      o.querySelector("[data-no]").addEventListener("click", () => close(false));
+      o.querySelector("[data-yes]").addEventListener("click", () => close(true));
+      o.querySelector("[data-yes]").focus();
+    });
+  }
+
+  function editDialog(l) {
+    const isNew = !l;
+    const exp = l?.expiresAt ? l.expiresAt.slice(0, 10) : "";
+    return dialog(`
+      <h2>${isNew ? "Nouvelle clé de produit" : "Modifier la licence"}</h2>
+      ${isNew ? "" : `<p class="mono small">${esc(l.key)}</p>`}
+      <form class="form" id="ef">
+        <label>Client<input name="client" maxlength="120" required value="${esc(l?.client || "")}" placeholder="ex. Supérette du Centre"></label>
+        <label>Note (pour vous)<input name="note" maxlength="500" value="${esc(l?.note || "")}" placeholder="ex. payé le 12/10, facture 042"></label>
+        <div class="row2">
+          <label>Validité<select name="kind"><option value="perm" ${exp ? "" : "selected"}>Définitive</option><option value="date" ${exp ? "selected" : ""}>Jusqu'à une date</option></select></label>
+          <label>Date de fin<input type="date" name="expires" value="${esc(exp)}" ${exp ? "" : "disabled"}></label>
+        </div>
+        <label>Nombre de PC autorisés<input type="number" name="seats" min="1" max="50" value="${l?.seats || 1}"></label>
+        <label class="check"><input type="checkbox" name="offline" ${l?.offline === false ? "" : "checked"}> Fonctionne sans internet après la première activation</label>
+        <p class="small muted">Sinon, le logiciel doit joindre le serveur au moins tous les 14 jours (utile pour un abonnement à surveiller). Dans les deux cas, une licence désactivée est bloquée dès que le PC se connecte à internet.</p>
+        ${!isNew && (l.machines || []).length ? `<div><strong class="small">PC activés</strong><ul class="machines">${l.machines.map((m) => `<li>${esc(m.name || "PC")} <span class="mono muted">${esc(m.id)}</span> · activé le ${day(m.firstAt)} · vu le ${dt(m.lastAt)}${m.version ? " · v" + esc(m.version) : ""}</li>`).join("")}</ul></div>` : ""}
+        <div class="actions"><button type="button" class="btn" data-no>Annuler</button><button class="btn btn-primary">${isNew ? "Créer la clé" : "Enregistrer"}</button></div>
+      </form>`, (o, close) => {
+      const f = o.querySelector("#ef");
+      const kind = f.elements.kind, expires = f.elements.expires;
+      kind.addEventListener("change", () => { expires.disabled = kind.value !== "date"; if (!expires.disabled) expires.focus(); });
+      o.querySelector("[data-no]").addEventListener("click", () => close(null));
+      f.elements.client.focus();
+      f.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        if (kind.value === "date" && !expires.value) return toast("Choisissez la date de fin.", true);
+        const body = {
+          client: f.elements.client.value.trim(),
+          note: f.elements.note.value.trim(),
+          expiresAt: kind.value === "date" ? expires.value : null,
+          seats: Number(f.elements.seats.value) || 1,
+          offline: f.elements.offline.checked,
+        };
+        const btn = f.querySelector(".btn-primary");
+        try {
+          const r = await busy(btn, () => (isNew ? api("POST", "/admin/keys", body) : api("PATCH", "/admin/keys/" + encodeURIComponent(l.key), body)));
+          close(true);
+          upsert(r);
+          if (isNew) showNewKey(r.key, body.client);
+          else toast("Licence enregistrée.");
+        } catch (err) {
+          if (err.message !== "unauthorized") toast(err.message, true);
+        }
+      });
+    });
+  }
+
+  function showNewKey(key, client) {
+    return dialog(`<h2>Clé créée</h2>
+      <div class="newkey"><span class="muted small">Clé de produit pour ${esc(client)}</span><code class="mono">${esc(key)}</code><button class="btn btn-primary" data-copy>Copier la clé</button></div>
+      <p class="small muted">Le client la saisit au premier lancement du logiciel, avec internet.</p>
+      <div class="actions"><button class="btn" data-no>Fermer</button></div>`, (o, close) => {
+      o.querySelector("[data-copy]").addEventListener("click", async () => { await navigator.clipboard.writeText(key).catch(() => {}); toast("Clé copiée."); });
+      o.querySelector("[data-no]").addEventListener("click", () => close(true));
+    });
+  }
+
+  document.getElementById("logout").addEventListener("click", () => { forget(); token = ""; all = []; showLogin(""); });
+
+  token = saved();
+  if (token) load().catch((e) => { if (e.message !== "unauthorized") showLogin("Serveur injoignable : " + e.message); });
+  else showLogin("");
+})();
+</script>
+</body>
+</html>

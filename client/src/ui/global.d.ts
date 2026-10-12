@@ -184,7 +184,7 @@ interface LicenseStatus {
   machineCode: string;
   client?: string;
   expiresAt?: string | null;
-  refreshBy?: string;
+  refreshBy?: string | null;
   keyHint?: string;
 }
 

@@ -23,8 +23,14 @@
  * Secrets Cloudflare : ADMIN_TOKEN, SIGNING_KEY (clé privée Ed25519, PKCS#8 en base64).
  */
 
-/** Durée pendant laquelle le logiciel fonctionne sans joindre le serveur. */
+/**
+ * Licences « en ligne » (offline: false) : durée pendant laquelle le logiciel
+ * fonctionne sans joindre le serveur. Les licences « hors ligne » (par défaut)
+ * fonctionnent sans limite après la première activation (refreshBy: null).
+ */
 const OFFLINE_GRACE_DAYS = 14;
+
+import ADMIN_HTML from "./admin.html";
 const KEY_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // sans 0/O/1/I
 
 function json(obj, status = 200) {
@@ -108,7 +114,7 @@ async function handleClient(request, env, mode) {
     machineId,
     expiresAt: rec.expiresAt || null,
     issuedAt: new Date(issuedAt).toISOString(),
-    refreshBy: new Date(issuedAt + OFFLINE_GRACE_DAYS * 86400_000).toISOString(),
+    refreshBy: rec.offline === false ? new Date(issuedAt + OFFLINE_GRACE_DAYS * 86400_000).toISOString() : null,
   });
   return json({ ok: true, token, client: rec.client || "", expiresAt: rec.expiresAt || null });
 }
@@ -157,7 +163,7 @@ async function handleAdmin(request, env, url) {
     const seats = Math.max(1, Math.min(50, Math.round(Number(body.seats) || 1)));
     let k = newKey();
     while (await getLicense(env, k)) k = newKey();
-    const rec = { client: String(body.client || "").slice(0, 120), note: String(body.note || "").slice(0, 500), createdAt: new Date().toISOString(), expiresAt, seats, revoked: false, machines: [] };
+    const rec = { client: String(body.client || "").slice(0, 120), note: String(body.note || "").slice(0, 500), createdAt: new Date().toISOString(), expiresAt, seats, revoked: false, offline: body.offline !== false, machines: [] };
     await putLicense(env, k, rec);
     return json({ ok: true, key: k, ...rec });
   }
@@ -181,6 +187,7 @@ async function handleAdmin(request, env, url) {
     if ("note" in body) rec.note = String(body.note || "").slice(0, 500);
     if ("seats" in body) rec.seats = Math.max(1, Math.min(50, Math.round(Number(body.seats) || 1)));
     if ("revoked" in body) rec.revoked = !!body.revoked;
+    if ("offline" in body) rec.offline = !!body.offline;
     if ("expiresAt" in body) {
       const e = cleanExpiry(body.expiresAt);
       if (e === undefined) return json({ error: "date d'expiration invalide" }, 400);
@@ -200,6 +207,19 @@ export default {
       if (request.method === "POST" && url.pathname === "/refresh") return await handleClient(request, env, "refresh");
       if (url.pathname.startsWith("/admin/keys")) return await handleAdmin(request, env, url);
       if (url.pathname === "/") return json({ ok: true, service: "glory-fcc-licenses" });
+      if (request.method === "GET" && (url.pathname === "/admin" || url.pathname === "/admin/")) {
+        // Page d'administration : le jeton est saisi dans la page, jamais dans l'URL.
+        return new Response(ADMIN_HTML, {
+          headers: {
+            "Content-Type": "text/html; charset=utf-8",
+            "Cache-Control": "no-store",
+            "X-Frame-Options": "DENY",
+            "Referrer-Policy": "no-referrer",
+            "X-Content-Type-Options": "nosniff",
+            "Content-Security-Policy": "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+          },
+        });
+      }
       return json({ error: "not_found" }, 404);
     } catch (e) {
       return json({ ok: false, reason: "server_error", message: "Erreur du serveur de licences." }, 500);

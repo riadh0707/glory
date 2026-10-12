@@ -6,7 +6,9 @@
  *   signé (Ed25519).
  * - Le jeton est vérifié ici avec la clé PUBLIQUE intégrée au logiciel : un
  *   jeton fabriqué, modifié ou copié depuis un autre PC est refusé.
- * - Hors connexion, le logiciel reste utilisable jusqu'à `refreshBy`
+ * - Licence « hors ligne » (refreshBy: null) : fonctionne sans limite après
+ *   la première activation. Licence « en ligne » : utilisable hors connexion
+ *   jusqu'à `refreshBy`
  *   (14 jours après le dernier contrôle réussi) ; il se renouvelle seul dès
  *   que le serveur est joignable.
  * - Une licence désactivée ou expirée côté serveur est retirée au contrôle
@@ -30,7 +32,7 @@ export interface LicenseStatus {
   /** null = licence définitive. */
   expiresAt?: string | null;
   /** Date limite du prochain contrôle en ligne. */
-  refreshBy?: string;
+  refreshBy?: string | null;
   /** Clé masquée (GFCC-XXXXX-•••••-•••••-XXXXX). */
   keyHint?: string;
 }
@@ -42,7 +44,7 @@ interface TokenPayload {
   machineId: string;
   expiresAt: string | null;
   issuedAt: string;
-  refreshBy: string;
+  refreshBy: string | null;
 }
 
 interface Stored {
@@ -206,8 +208,10 @@ export class LicenseManager {
     if (!p || p.key !== this.stored.key) return { ...base, state: "invalid", message: "Licence invalide pour ce PC. Saisissez votre clé de produit." };
     const info = { ...base, client: p.client, expiresAt: p.expiresAt, refreshBy: p.refreshBy, keyHint: keyHint(p.key) };
     const now = Date.now();
-    // Horloge reculée de plus d'un jour : on exige un contrôle en ligne.
-    if (now < Date.parse(this.stored.lastSeen) - 86400_000) {
+    // Horloge reculée de plus d'un jour : on exige un contrôle en ligne — seulement
+    // si la date compte (licence à durée limitée ou à contrôle en ligne).
+    const timeMatters = !!p.expiresAt || !!p.refreshBy;
+    if (timeMatters && now < Date.parse(this.stored.lastSeen) - 86400_000) {
       return { ...info, state: "invalid", message: "La date de ce PC semble incorrecte. Corrigez-la puis reconnectez-vous à internet." };
     }
     if (now > Date.parse(this.stored.lastSeen)) {
@@ -217,7 +221,7 @@ export class LicenseManager {
     if (p.expiresAt && now > Date.parse(p.expiresAt)) {
       return { ...info, state: "invalid", message: `Licence expirée le ${fmtDate(p.expiresAt)}. Contactez votre fournisseur.` };
     }
-    if (now > Date.parse(p.refreshBy)) {
+    if (p.refreshBy && now > Date.parse(p.refreshBy)) {
       return { ...info, state: "invalid", message: "La licence n'a pas pu être vérifiée depuis plus de 14 jours. Connectez ce PC à internet." };
     }
     return { ...info, state: "valid", message: p.expiresAt ? `Licence valable jusqu'au ${fmtDate(p.expiresAt)}.` : "Licence définitive." };
