@@ -114,7 +114,7 @@ window.addEventListener("resize", () => {
 window.addEventListener("DOMContentLoaded", () => {
   applyZoom();
   window.api.onLog((line) => {
-    S.logs.push(`${new Date().toLocaleTimeString("fr-BE")}  ${line}`);
+    S.logs.push(`${new Date().toLocaleTimeString(LOCALE)}  ${line}`);
     if (S.logs.length > 1500) S.logs.splice(0, S.logs.length - 1500);
     const pane = document.getElementById("tech-log");
     if (pane) appendPaneLine(pane, S.logs[S.logs.length - 1]);
@@ -145,7 +145,7 @@ window.addEventListener("DOMContentLoaded", () => {
     // Retour à l'état normal (prêt / en attente) : la panne est réglée.
     if (e.kind === "status" && (e.status === 1 || e.status === 0) && deviceErrors.size) clearDeviceErrors();
     if (e.kind !== "heartbeat") {
-      S.events.push(`${new Date().toLocaleTimeString("fr-BE")}  ${JSON.stringify(e)}`);
+      S.events.push(`${new Date().toLocaleTimeString(LOCALE)}  ${JSON.stringify(e)}`);
       if (S.events.length > 500) S.events.shift();
       const pane = document.getElementById("tech-events");
       if (pane) appendPaneLine(pane, S.events[S.events.length - 1]);
@@ -158,7 +158,7 @@ window.addEventListener("DOMContentLoaded", () => {
   setInterval(renderStatusChip, 15_000);
   setInterval(() => {
     const c = document.getElementById("clock");
-    if (c) c.textContent = new Date().toLocaleTimeString("fr-BE", { hour: "2-digit", minute: "2-digit" });
+    if (c) c.textContent = new Date().toLocaleTimeString(LOCALE, { hour: "2-digit", minute: "2-digit" });
   }, 10_000);
 
   // Un article scanné depuis un autre écran : on ouvre la vente et on l'ajoute au panier.
@@ -206,7 +206,7 @@ function showActivation(s: LicenseStatus): void {
   const root = $("#app");
   root.className = "login-shell";
   const canRetry = s.state === "invalid" && !!s.keyHint;
-  root.innerHTML = `<div class="login-card activation">
+  root.innerHTML = `<div class="login-card activation">${langSwitch()}
       <div class="login-brand login-brand-logo"><img class="brand-logo" src="img/logo.png" alt="MedaCash" draggable="false"><div><h1>Activation du logiciel</h1></div></div>
       <p class="act-intro">Saisissez la clé de produit fournie avec votre licence. Ce PC doit être connecté à internet pour l'activation.</p>
       <form id="act-form" class="form">
@@ -252,7 +252,7 @@ async function showLogin(): Promise<void> {
   root.className = "login-shell";
   if (users.length === 0) return showSetup(root);
 
-  root.innerHTML = `<div class="login-card">
+  root.innerHTML = `<div class="login-card">${langSwitch()}
       <div class="login-brand login-brand-logo"><img class="brand-logo" src="img/logo.png" alt="MedaCash" draggable="false"><p>Choisissez votre profil</p></div>
       <div class="user-grid">${users
         .map((u) => `<button class="user-tile" data-u="${esc(u.name)}"><span class="avatar">${esc(u.name.slice(0, 1).toUpperCase())}</span><span>${esc(u.name)}</span><small>${u.role === "admin" ? "Administrateur" : "Vendeur"}</small></button>`)
@@ -310,7 +310,7 @@ async function showLogin(): Promise<void> {
 }
 
 function showSetup(root: HTMLElement): void {
-  root.innerHTML = `<div class="login-card">
+  root.innerHTML = `<div class="login-card">${langSwitch()}
     <div class="login-brand login-brand-logo"><img class="brand-logo" src="img/logo.png" alt="MedaCash" draggable="false"><div><h1>Bienvenue</h1><p>Créez le compte administrateur</p></div></div>
     <form class="form setup-form">
       <label>Nom<input name="name" required maxlength="40" autocomplete="off" value="Administrateur"></label>
@@ -343,6 +343,8 @@ async function logout(): Promise<void> {
 // ------------------------------------------------------------------ application
 
 async function enterApp(): Promise<void> {
+  // Interface rechargée (ex. changement de langue) : le terminal peut être déjà connecté.
+  S.cashier = await window.api.call<CashierState>("fcc.state");
   S.receipt = await window.api.call<ReceiptSettings>("settings.receiptGet");
   S.settings = await window.api.call<AppSettings>("settings.appGet");
   S.lastActivity = Date.now();
@@ -389,7 +391,7 @@ function renderShell(): void {
               <button class="btn btn-block" id="btn-conn"></button>
             </div>
           </div>
-          <span class="clock" id="clock">${new Date().toLocaleTimeString("fr-BE", { hour: "2-digit", minute: "2-digit" })}</span>
+          <span class="clock" id="clock">${new Date().toLocaleTimeString(LOCALE, { hour: "2-digit", minute: "2-digit" })}</span>
         </div>
       </header>
       <main id="screen" class="screen"></main>
@@ -543,7 +545,7 @@ function renderStatusChip(): void {
     title.textContent = text;
     detail.textContent =
       c.connection === "connected"
-        ? [c.sessionMode ? "Mode session" : "Sans session", c.occupyMode ? "réservé à cette caisse" : "accès partagé", S.lastHeartbeat ? `dernier signal à ${new Date(S.lastHeartbeat).toLocaleTimeString("fr-BE")}` : ""]
+        ? [c.sessionMode ? "Mode session" : "Sans session", c.occupyMode ? "réservé à cette caisse" : "accès partagé", S.lastHeartbeat ? `dernier signal à ${new Date(S.lastHeartbeat).toLocaleTimeString(LOCALE)}` : ""]
             .filter(Boolean)
             .join(" · ")
         : "Le terminal n'est pas joignable par l'application.";

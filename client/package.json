@@ -1,7 +1,7 @@
 {
   "name": "glory-fcc-client",
-  "productName": "Glory FCC Client",
-  "version": "1.12.0",
+  "productName": "MedaCash",
+  "version": "1.13.0",
   "private": true,
   "description": "Logiciel de caisse pour monnayeurs Glory (CI-10, ISP-K05B) : vente avec rendu de monnaie, encaisse, collecte, historique, statistiques.",
   "author": {
@@ -31,7 +31,7 @@
   },
   "build": {
     "appId": "com.glory-fcc-client.app",
-    "productName": "Glory FCC Client",
+    "productName": "MedaCash",
     "copyright": "Copyright © 2026",
     "directories": {
       "output": "release",
@@ -62,8 +62,9 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "Glory FCC Client",
-      "include": "build/installer.nsh"
+      "shortcutName": "MedaCash",
+      "include": "build/installer.nsh",
+      "artifactName": "MedaCash-Setup-${version}.${ext}"
     },
     "linux": {
       "target": [
@@ -82,7 +83,9 @@
       ],
       "icon": "build/icons",
       "category": "Office",
-      "synopsis": "Client de pilotage FCC Glory (ISP-K05B) via BrueBoxService"
+      "synopsis": "Logiciel de caisse MedaCash pour monnayeurs Glory",
+      "artifactName": "MedaCash-${version}.${ext}",
+      "executableName": "medacash"
     },
     "electronFuses": {
       "runAsNode": false,

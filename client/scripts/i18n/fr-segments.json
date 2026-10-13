@@ -1,0 +1,5796 @@
+[
+ {
+  "fr": "- App démarrée :",
+  "files": [
+   "core/diagnostic-report/index.ts"
+  ]
+ },
+ {
+  "fr": "- App démarrée : {0}",
+  "files": [
+   "core/diagnostic-report/index.ts"
+  ]
+ },
+ {
+  "fr": "- Endpoint SOAP : `",
+  "files": [
+   "core/diagnostic-report/index.ts"
+  ]
+ },
+ {
+  "fr": "- Endpoint SOAP : `{0}`",
+  "files": [
+   "core/diagnostic-report/index.ts"
+  ]
+ },
+ {
+  "fr": "- Modèle : `",
+  "files": [
+   "core/diagnostic-report/index.ts"
+  ]
+ },
+ {
+  "fr": "- Modèle : `{0}`",
+  "files": [
+   "core/diagnostic-report/index.ts"
+  ]
+ },
+ {
+  "fr": "- Rapport généré :",
+  "files": [
+   "core/diagnostic-report/index.ts"
+  ]
+ },
+ {
+  "fr": "- Rapport généré : {0}",
+  "files": [
+   "core/diagnostic-report/index.ts"
+  ]
+ },
+ {
+  "fr": "- Total d'événements enregistrés : **",
+  "files": [
+   "core/diagnostic-report/index.ts"
+  ]
+ },
+ {
+  "fr": "- Total d'événements enregistrés : **{0}**",
+  "files": [
+   "core/diagnostic-report/index.ts"
+  ]
+ },
+ {
+  "fr": ", {0} ligne(s) ignorée(s)",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": ": choisissez un autre port dans Réglages.",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": ". Contactez votre fournisseur.",
+  "files": [
+   "core/license/index.ts"
+  ]
+ },
+ {
+  "fr": ". Patientez ou annulez-la.",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "· {0} en machine",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "· code détaillé",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "\" inconnu de core/model-adapter. Modèles disponibles :",
+  "files": [
+   "core/model-adapter/index.ts"
+  ]
+ },
+ {
+  "fr": "\" introuvable sur le client généré depuis le WSDL.",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "\" ne le permet pas.",
+  "files": [
+   "core/session-state-machine/index.ts"
+  ]
+ },
+ {
+  "fr": "\" refusée : état courant \"",
+  "files": [
+   "core/session-state-machine/index.ts"
+  ]
+ },
+ {
+  "fr": "« {0} » est en cours. Déconnecter quand même ?",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "» du catalogue ?",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "» est en cours. Déconnecter quand même ?",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "(4 à 8 chiffres)",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "(laisser vide pour ne pas suivre le stock)",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "(laisser vide si l'article n'en a pas)",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "(non configuré)",
+  "files": [
+   "core/diagnostic-report/index.ts"
+  ]
+ },
+ {
+  "fr": "(Réglages → Fond de caisse)",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "[connexion fermée]",
+  "files": [
+   "core/event-listener/index.ts"
+  ]
+ },
+ {
+  "fr": "[connexion ouverte]",
+  "files": [
+   "core/event-listener/index.ts"
+  ]
+ },
+ {
+  "fr": "[erreur socket]",
+  "files": [
+   "core/event-listener/index.ts"
+  ]
+ },
+ {
+  "fr": "[erreur socket] {0}",
+  "files": [
+   "core/event-listener/index.ts"
+  ]
+ },
+ {
+  "fr": "{0} (4 à 8 chiffres)",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "{0} ajouté",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "{0} ajouté(s), {1} mis à jour{2}.",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "{0} article(s) à réapprovisionner",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "{0} article(s) exporté(s).",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "{0} en cours…",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "{0} encaissés",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "{0} Imprimer le ticket",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "{0} ont été collectés et attendent d'être retirés.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "{0} opération(s)",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "{0} opération(s) exportée(s).",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "{0} utilisable(s) pour rendre",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "@media screen { body { background: #e9ecea; padding: 24px 0; } .receipt { background: #fff; padding: 12px; box-shadow: 0 4px 18px rgba(0,0,0,.15); } .no-print { text-align: center; margin: 0 0 18px; font-family: system-ui, sans-serif; } .no-print button { font: inherit; font-size: 16px; padding: 10px 22px; border-radius: 8px; border: 0; background: #0b7a5e; color: #fff; cursor: pointer; } } @media print { .no-print { display: none; } }",
+  "files": [
+   "main/printing.ts"
+  ]
+ },
+ {
+  "fr": "+ {0} dans le bac à vider",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "+ {0} tapé",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "| Opération | Total | Codes résultat |",
+  "files": [
+   "core/diagnostic-report/index.ts"
+  ]
+ },
+ {
+  "fr": "✓ Collecte effectuée :",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "✓ Collecte effectuée : {0}",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "✓ Dépôt enregistré :",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "✓ Dépôt enregistré : {0}",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "✓ Échange effectué",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "✓ Réapprovisionné :",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "✓ Réapprovisionné : {0}",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "1. Le client dépose ses espèces. 2. Choisissez les billets/pièces à lui rendre pour le même montant.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "À communiquer à votre fournisseur en cas de problème.",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "À payer",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "À rendre",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Absent",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "accès partagé",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Action \"",
+  "files": [
+   "core/session-state-machine/index.ts"
+  ]
+ },
+ {
+  "fr": "Action \"{0}\" refusée : état courant \"{1}\" ne le permet pas.",
+  "files": [
+   "core/session-state-machine/index.ts"
+  ]
+ },
+ {
+  "fr": "Action inconnue :",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "Action inconnue : {0}",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "Action réservée à un administrateur.",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "Activation du logiciel",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Activer",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Actualiser",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "AdjustTimeOperation",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "Administrateur",
+  "files": [
+   "ui/app.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Adresse du terminal Glory",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Adresse du terminal non configurée (Réglages).",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "Adresse IP de cet ordinateur (pour les événements)",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Adresse IP de cet ordinateur invalide (ex. 192.168.0.15).",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Adresse IP de cet ordinateur non configurée (Réglages).",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "Afficher",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Affinez la recherche pour voir les autres articles.",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "Aiguillage des billets bloqué",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Aiguillage des pièces bloqué",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "ajouté",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "ajouté(s),",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "Ajouter",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Ajouter au catalogue (reconnu au prochain scan)",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Ajouter au panier",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Ajouter des espèces sans vente (apport, fond de caisse).",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Ajouter le montant tapé au panier",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Ajouter un",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Ajoutez de la monnaie dans les recycleurs (fond de caisse, monnaie pour le rendu).",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Ajustez avec − / + si besoin. « Max » prend tout ce qu'il y a dans la machine pour cette valeur.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Amount",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "Animation d'aide : {0}",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Animation indisponible (",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Animation indisponible ({0}).",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Annulation",
+  "files": [
+   "core/stats/index.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Annulation dépôt",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Annulation du dépôt",
+  "files": [
+   "core/fcc-events/index.ts",
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Annulation du réapprovisionnement",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Annulation en cours",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "Annulation réapprovisionnement",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Annulation vente",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Annulation…",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Annule le dépôt ou l'encaissement en cours et rend au client les espèces déjà insérées.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Annulé, espèces restituées.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Annulée",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Annuler",
+  "files": [
+   "ui/catalog.ts",
+   "ui/lib.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Annuler et rendre les espèces",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Annuler l'encaissement",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Annuler le dépôt en cours ? Les espèces déjà insérées seront rendues.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Annuler le dépôt et rendre les espèces",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Annuler un dépôt",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Appuyez sur « Réinitialiser ».",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Après la réinitialisation, vérifiez l'encaisse.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Après un bourrage ou une erreur : les modules refont leur auto-test.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Après un incident, des pièces sont restées dans le circuit qui mène les pièces déposées vers les stockeurs.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Arrêt",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Arrêt du terminal",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Article",
+  "files": [
+   "core/products/index.ts",
+   "ui/catalog.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Article {0} : {1}",
+  "files": [
+   "core/products/index.ts"
+  ]
+ },
+ {
+  "fr": "Article enregistré.",
+  "files": [
+   "main/main.ts",
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "Article inconnu",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Article refusé :",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "Article refusé : {0}.",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "Article supprimé.",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "article(s) à réapprovisionner",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "article(s) exporté(s).",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "Articles",
+  "files": [
+   "ui/catalog.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Articles avec ou sans code-barres (pain, fruits, produits maison…). Ils apparaissent dans le bouton « Articles » de la vente. Import : catalogue avec photos (.json) ou liste Excel/CSV « code;nom;prix;rayon;stock » (seuls nom et prix sont obligatoires). Scanner un article ici ouvre sa fiche.",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "Articles les plus vendus",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Aucun article : créez-en dans Gestion → Articles.",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "Aucun article dans le catalogue.",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "Aucun article ne correspond.",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "Aucun article scanné sur la période.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Aucun article.",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "Aucun article. Ajoutez-en un, scannez un produit ou importez votre liste.",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "Aucun billet.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Aucun navigateur n'a pu s'ouvrir. Le ticket est enregistré ici :",
+  "files": [
+   "main/printing.ts"
+  ]
+ },
+ {
+  "fr": "Aucun navigateur n'a pu s'ouvrir. Le ticket est enregistré ici : {0}",
+  "files": [
+   "main/printing.ts"
+  ]
+ },
+ {
+  "fr": "Aucune",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Aucune erreur enregistrée sur la période couverte par ce rapport.",
+  "files": [
+   "core/diagnostic-report/index.ts"
+  ]
+ },
+ {
+  "fr": "Aucune image choisie.",
+  "files": [
+   "main/main.ts",
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "Aucune licence. Saisissez votre clé de produit.",
+  "files": [
+   "core/license/index.ts"
+  ]
+ },
+ {
+  "fr": "Aucune opération sur cette période.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Aucune pièce.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Aucune vente pour l'instant.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Aucune vente.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Aujourd'hui",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "auto recovery failure",
+  "files": [
+   "core/soap-client/result-codes.ts"
+  ]
+ },
+ {
+  "fr": "Automatique (s'adapte à la fenêtre)",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Autorisation dénomination",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Autoriser",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Autre",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Bac de collecte des pièces",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Bac de débordement des pièces mal placé",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Bac et cassette de collecte",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Backspace",
+  "files": [
+   "ui/lib.ts"
+  ]
+ },
+ {
+  "fr": "Bienvenue",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Billet coincé sur un capteur",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Billet de longueur anormale",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Billet douteux détecté",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Billet suspect (catégorie 2) compté",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "Billets",
+  "files": [
+   "ui/catalog.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Billets / pièces (recycleurs)",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Billets dans les recycleurs",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Billets et pièces",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Billets seulement",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Bourrage dans le circuit des pièces",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Bourrage de billets",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Bourrage ou défaut dans la cassette de collecte des billets.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Branchez le terminal pour encaisser.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "C'est réglé, réinitialiser",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Calcul du rendu",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "cancel change shortage",
+  "files": [
+   "core/soap-client/result-codes.ts"
+  ]
+ },
+ {
+  "fr": "Capot de tri des pièces ouvert",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "CapsLock",
+  "files": [
+   "ui/scanner.ts"
+  ]
+ },
+ {
+  "fr": "Capteur du module billets en défaut",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Capteur du module pièces en défaut",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Capteur masqué (module billets)",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Capteur masqué / mauvais aiguillage des pièces",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "CashinCancelOperation",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "CashoutOperation",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "Cassette",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Cassette {0}",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "cassette absente",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "Cassette billets mal installée",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Cassette de collecte des billets",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "cassette insérée",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "cassette vérifiée",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "Cassettes",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Catalogue : codes-barres, noms et prix des articles scannés.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Catalogue avec photos (.json)",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "Catalogue ou liste d'articles",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "Ce mois",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Ce que la machine doit garder lors d'une collecte « Laisser un fond de caisse » : par exemple 1 billet de 20 €, 10 pièces de 2 €… Tout le reste part vers la cassette.",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "Cette panne demande en général l'intervention d'un technicien.",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "change shortage",
+  "files": [
+   "core/soap-client/result-codes.ts"
+  ]
+ },
+ {
+  "fr": "ChangeCancelOperation",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "ChangeOperation",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "Changer d'utilisateur",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Chargement de l'animation d'aide…",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Chargement…",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Chiffre d'affaires",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Chiffre d'affaires espèces",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "chip chip-busy",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "chip chip-err",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "chip chip-off",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "chip chip-ok",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "chip chip-warn",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Choisir à la main",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Choisir une photo",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "Choisissez votre profil",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "CI-05 / CI-5 (ISP-K05F/G), protocole non confirmé",
+  "files": [
+   "core/model-adapter/models/ci-05.ts"
+  ]
+ },
+ {
+  "fr": "CI-10 (ISP-K05/A/B/C), VM simulateur SDK",
+  "files": [
+   "core/model-adapter/models/ci-10.ts"
+  ]
+ },
+ {
+  "fr": "CI-Server communication error",
+  "files": [
+   "core/soap-client/result-codes.ts"
+  ]
+ },
+ {
+  "fr": "Clé",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Clé de produit",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Client",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Close",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Closed",
+  "files": [
+   "core/session-state-machine/index.ts"
+  ]
+ },
+ {
+  "fr": "CloseExitCoverOperation",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "CloseOperation",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "Clôture de caisse",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Clôture impossible.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Clôturer",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "code {0} NON DOCUMENTÉ dans docs/error-codes.md, à vérifier sur IF Spec p.238-239 et à ajouter à la table si confirmé",
+  "files": [
+   "core/soap-client/result-codes.ts"
+  ]
+ },
+ {
+  "fr": "Code de ce PC",
+  "files": [
+   "ui/app.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Code incorrect.",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Code PIN",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Code PIN (4 à 8 chiffres)",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Code PIN de",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Code PIN de {0}",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Code PIN incorrect.",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "Code-barres",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "code-barres invalide",
+  "files": [
+   "core/products/index.ts"
+  ]
+ },
+ {
+  "fr": "Code-barres mal lu (clé de contrôle incorrecte). Scannez à nouveau.",
+  "files": [
+   "core/barcode/index.ts"
+  ]
+ },
+ {
+  "fr": "Collecte",
+  "files": [
+   "core/stats/index.ts",
+   "main/cashier.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Collecté",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Collecte effectuée :",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Collecte effectuée : {0}.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Collecte en cours",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "Collecter",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Collecter {0} vers la cassette ?",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "CollectOperation",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "Comment",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Commerce et ticket",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Composition retirée : le montant simple sera utilisé.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Comptage du réapprovisionnement",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "Comptage en cours",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "Compté",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Compte créé.",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Confirmer",
+  "files": [
+   "ui/lib.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Confirmer le code PIN",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Connecter le terminal",
+  "files": [
+   "ui/app.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Connecter le terminal à l'ouverture de session",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Connecteur débranché ou tension anormale dans le module billets.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Connecteur débranché ou tension anormale dans le module pièces.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Connectez le terminal pour relever l'encaisse.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Connectez le terminal pour utiliser cet écran.",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Connexion au terminal",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Connexion impossible :",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Connexion impossible : {0}",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Connexion…",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "contrôle en ligne avant le",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "contrôle en ligne avant le {0}",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Counted Category2",
+  "files": [
+   "core/soap-client/result-codes.ts"
+  ]
+ },
+ {
+  "fr": "Coupure de courant pendant une opération",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Couvercle",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "CREATE TABLE IF NOT EXISTS session_events ( id INTEGER PRIMARY KEY AUTOINCREMENT, ts TEXT NOT NULL, kind TEXT NOT NULL, operation TEXT, payload TEXT NOT NULL )",
+  "files": [
+   "core/history-store/index.ts"
+  ]
+ },
+ {
+  "fr": "CREATE TABLE IF NOT EXISTS transactions ( id INTEGER PRIMARY KEY AUTOINCREMENT, ts TEXT NOT NULL, kind TEXT NOT NULL, user TEXT NOT NULL, due_cents INTEGER, in_cents INTEGER NOT NULL, out_cents INTEGER NOT NULL, ok INTEGER NOT NULL, result INTEGER, ticket_no INTEGER, details TEXT NOT NULL ); CREATE INDEX IF NOT EXISTS idx_transactions_ts ON transactions(ts); CREATE TABLE IF NOT EXISTS snapshots ( id INTEGER PRIMARY KEY AUTOINCREMENT, ts TEXT NOT NULL, kind TEXT NOT NULL, user TEXT NOT NULL, total_cents INTEGER NOT NULL, lines TEXT NOT NULL );",
+  "files": [
+   "core/ledger/index.ts"
+  ]
+ },
+ {
+  "fr": "Crée un fichier à envoyer au support en cas de problème.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Créer et continuer",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Créez le compte administrateur",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Dans le bac / cassette à vider",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "dans le bac à vider",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Dans le bac/cassette à vider",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Dans les recycleurs",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Dans les recycleurs (pour rendre)",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Datalogic / QuickScan et tout scanner USB : branchez-le, il fonctionne tout de suite (mode « clavier USB » d'usine). Si rien ne se passe, scannez dans son guide rapide les codes « USB Keyboard » puis « Enter » (suffixe).",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Date",
+  "files": [
+   "core/stats/index.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Début de dépôt",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Début de l'opération",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "Début du réapprovisionnement",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Decimal",
+  "files": [
+   "ui/lib.ts"
+  ]
+ },
+ {
+  "fr": "Déconnecté (certaines étapes ont échoué, voir le journal).",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Déconnecter",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Déconnecter le terminal",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "définitive",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Défroissez le billet ou séparez les billets collés avant de les réinsérer.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Déjà connecté ou connexion en cours.",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Delete",
+  "files": [
+   "ui/lib.ts"
+  ]
+ },
+ {
+  "fr": "Démarrer",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Dénomination",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Déposé",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Dépôt",
+  "files": [
+   "core/stats/index.ts",
+   "main/cashier.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Dépôt annulé",
+  "files": [
+   "main/cashier.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Dépôt d'espèces sans vente (fond de caisse, apport...). Les espèces restent dans la machine.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Dépôt rendu au client.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Dépôts",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "dernier signal à",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "dernier signal à {0}",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Dernières ventes",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Des pièces ou un objet sont restés dans l'unité d'entrée des pièces.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Des pièces ou un objet sont restés sur un capteur du circuit des pièces.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Des pièces sont bloquées entre deux capteurs du circuit (pièce abîmée, étrangère ou objet).",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "designation denomination shortage",
+  "files": [
+   "core/soap-client/result-codes.ts"
+  ]
+ },
+ {
+  "fr": "Détail technique",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Déverrouillage",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "Déverrouillage billets",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Déverrouillage pièces",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Déverrouiller",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Déverrouiller pour vider la cassette, puis reverrouiller.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Déverrouillez pour retirer la cassette après une collecte.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "device error",
+  "files": [
+   "core/soap-client/result-codes.ts"
+  ]
+ },
+ {
+  "fr": "DeviceStatusID",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "Devise",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "DisableDenomOperation",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "dispensed change inconsistency",
+  "files": [
+   "core/soap-client/result-codes.ts"
+  ]
+ },
+ {
+  "fr": "Divers",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "docs/models.md § CI-05 ; docs/open-questions.md § questions constructeur (ambiguïté SOAP/WebSocket)",
+  "files": [
+   "core/model-adapter/models/ci-05.ts"
+  ]
+ },
+ {
+  "fr": "docs/models.md § CI-10 ; docs/architecture.md § Rôle de la VM (vérifié 2026-07-28)",
+  "files": [
+   "core/model-adapter/models/ci-10.ts"
+  ]
+ },
+ {
+  "fr": "docs/models.md § CI-10X : endpoint non vérifié, à configurer par environnement",
+  "files": [
+   "core/model-adapter/models/ci-10x.ts"
+  ]
+ },
+ {
+  "fr": "docs/models.md § CI-50 : endpoint non vérifié, à configurer par environnement",
+  "files": [
+   "core/model-adapter/models/ci-50.ts"
+  ]
+ },
+ {
+  "fr": "Document à imprimer invalide.",
+  "files": [
+   "main/printing.ts"
+  ]
+ },
+ {
+  "fr": "Duplicata",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Duplicate Transaction",
+  "files": [
+   "core/soap-client/result-codes.ts"
+  ]
+ },
+ {
+  "fr": "Écart",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Écart constaté entre l'encaisse théorique et le contenu réel de la machine.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Échange",
+  "files": [
+   "core/stats/index.ts",
+   "main/cashier.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Échange (dépôt)",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Échange (rendu)",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Échange de monnaie",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Échange effectué.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Échec",
+  "files": [
+   "core/stats/index.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Effacer",
+  "files": [
+   "ui/lib.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "elle n'existe probablement pas dans BrueBoxService.wsdl (voir docs/soap-operations.md).",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "En attente d'annulation",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "en attente d'insertion",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "en attente d'ouverture",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "En attente de distribution",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "En attente de fin de dépôt",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "En attente de l'inventaire",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "En attente de mise à jour",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "En attente de résolution d'erreur",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "En attente des espèces",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "En attente du réapprovisionnement",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "en attente…",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "en cours…",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "en machine",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "EnableDenomOperation",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "Encaisse",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Encaisse d'ouverture",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Encaisse réelle",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Encaisse théorique",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Encaisser",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "encaissés",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "EndCashinOperation",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "EndReplenishmentFromCassetteOperation",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "EndReplenishmentFromEntranceOperation",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "Enregistré.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Enregistré. Reconnectez le terminal pour l'appliquer.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Enregistrer",
+  "files": [
+   "ui/catalog.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Enregistrer le fond de caisse",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "Enter",
+  "files": [
+   "ui/lib.ts",
+   "ui/scanner.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Envoyé à l'imprimante.",
+  "files": [
+   "main/printing.ts"
+  ]
+ },
+ {
+  "fr": "Erreur",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "Erreur de programme ou de mémoire du module billets.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Erreur de programme ou de mémoire du module pièces.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Erreur du module",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Erreur du module {0}",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "erreur inconnue",
+  "files": [
+   "main/printing.ts"
+  ]
+ },
+ {
+  "fr": "Erreur interne du module billets",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Erreur interne du module pièces",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Error",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "ErrorCode",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "Escape",
+  "files": [
+   "ui/lib.ts"
+  ]
+ },
+ {
+  "fr": "Espèces reçues",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Espèces rendues au client",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "espèces retirées",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "est déjà utilisé sur ce PC (l'application est peut-être ouverte deux fois).",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "État",
+  "files": [
+   "core/fcc-events/index.ts",
+   "main/cashier.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "État {0}",
+  "files": [
+   "core/fcc-events/index.ts",
+   "main/cashier.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "État du terminal",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Éteignez puis rallumez le terminal.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Éteindre le terminal",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Éteindre le terminal ? Il faudra le rallumer manuellement.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Événements du terminal",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "événements,",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "EventListener déjà démarré.",
+  "files": [
+   "core/event-listener/index.ts"
+  ]
+ },
+ {
+  "fr": "Exact ✓",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "exchange rate error",
+  "files": [
+   "core/soap-client/result-codes.ts"
+  ]
+ },
+ {
+  "fr": "exclusive error",
+  "files": [
+   "core/soap-client/result-codes.ts"
+  ]
+ },
+ {
+  "fr": "Exiger un certificat HTTPS valide",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Export annulé.",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "Exporter",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "Exporter (Excel)",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Exporter l'historique",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "Exporter les articles",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "Fenêtre d'impression du système",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "fermé",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "Fermer",
+  "files": [
+   "ui/app.ts",
+   "ui/lib.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Fermer le cache",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Fermeture du couvercle",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Feuille A4",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Fichier (ex. GloryCo.xml)",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Fichier config",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "fichier illisible (JSON attendu)",
+  "files": [
+   "core/products/index.ts"
+  ]
+ },
+ {
+  "fr": "Fichier trop volumineux.",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "Fin de dépôt",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Fin du réapprovisionnement",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "fonctionne sans limite",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Fond de caisse",
+  "files": [
+   "ui/catalog.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Fond de caisse à laisser (€)",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Fond de caisse en montant simple, si aucune composition n'est réglée (€)",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Fond de caisse enregistré :",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Fond de caisse enregistré : {0}.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Format de clé invalide (GFCC-XXXXX-XXXXX-XXXXX-XXXXX).",
+  "files": [
+   "core/license/index.ts"
+  ]
+ },
+ {
+  "fr": "Gestion",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "GetSettingFileOperation",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "GetStatus",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "Glory FCC",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Glory FCC Client",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "GlyCashierEvent",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "HeartBeatEvent",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "Heure",
+  "files": [
+   "core/stats/index.ts",
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Hier",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Historique",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Historique indisponible.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Identifiant ou mot de passe refusé par le terminal (Réglages → Connexion).",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "IF cassette illegal denomination",
+  "files": [
+   "core/soap-client/result-codes.ts"
+  ]
+ },
+ {
+  "fr": "Il faudra le rallumer à la main.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Il n'y a que",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Il n'y a que {0} € disponibles.",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Ils ne servent plus à rendre la monnaie. Videz le bac ou la cassette (Gestion → Cassettes) : ce montant disparaîtra de l'écran une fois remis en place vide.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Image illisible (formats acceptés : JPG, PNG, WebP, BMP).",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "image invalide ou trop grande",
+  "files": [
+   "core/products/index.ts"
+  ]
+ },
+ {
+  "fr": "Images",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "Import annulé.",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "Importer",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "Importer des articles",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "Impossible d'écrire le ticket (",
+  "files": [
+   "main/printing.ts"
+  ]
+ },
+ {
+  "fr": "Impossible d'écrire le ticket ({0}).",
+  "files": [
+   "main/printing.ts"
+  ]
+ },
+ {
+  "fr": "Impossible d'extraire l'attribut \"result\" de la réponse SOAP :",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "Impossible d'extraire l'attribut \"result\" de la réponse SOAP : {0}",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "Impossible de faire ce montant exact avec les billets et pièces disponibles.",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Impossible de rendre ce montant exact avec les espèces disponibles.",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Impossible de supprimer le dernier administrateur.",
+  "files": [
+   "core/users/index.ts"
+  ]
+ },
+ {
+  "fr": "Impression annulée.",
+  "files": [
+   "main/printing.ts"
+  ]
+ },
+ {
+  "fr": "Impression système impossible (",
+  "files": [
+   "main/printing.ts"
+  ]
+ },
+ {
+  "fr": "Impression système impossible ({0}).",
+  "files": [
+   "main/printing.ts"
+  ]
+ },
+ {
+  "fr": "Imprimer",
+  "files": [
+   "main/printing.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Imprimer l'encaisse",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Imprimer le bordereau",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Imprimer le ticket",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Imprimer le ticket automatiquement après chaque vente",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "improper cassette",
+  "files": [
+   "core/soap-client/result-codes.ts"
+  ]
+ },
+ {
+  "fr": "Initialisation",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "Insérez billets et pièces",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Insérez les espèces.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "INSERT INTO session_events (ts, kind, operation, payload) VALUES (?, ?, ?, ?)",
+  "files": [
+   "core/history-store/index.ts"
+  ]
+ },
+ {
+  "fr": "INSERT INTO snapshots (ts, kind, user, total_cents, lines) VALUES (?, ?, ?, ?, ?)",
+  "files": [
+   "core/ledger/index.ts"
+  ]
+ },
+ {
+  "fr": "INSERT INTO transactions (ts, kind, user, due_cents, in_cents, out_cents, ok, result, ticket_no, details) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+  "files": [
+   "core/ledger/index.ts"
+  ]
+ },
+ {
+  "fr": "Interdiction dénomination",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Interdire",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "invalid cassette number",
+  "files": [
+   "core/soap-client/result-codes.ts"
+  ]
+ },
+ {
+  "fr": "invalid session",
+  "files": [
+   "core/soap-client/result-codes.ts"
+  ]
+ },
+ {
+  "fr": "InvalidSessionTransitionError",
+  "files": [
+   "core/session-state-machine/index.ts"
+  ]
+ },
+ {
+  "fr": "Inventaire",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "InventoryOperation",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "Invitez le client à insérer billets et pièces",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Journal",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Journal, événements, firmware, fichiers de configuration.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "L'adresse du terminal doit commencer par http:// ou https://",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "L'adresse du terminal est joignable mais incorrecte (vérifiez la fin : /axis2/services/BrueBoxService).",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "L'annulation rend au client toutes les espèces déjà insérées.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "L'unité qui reconnaît les pièces ne répond pas ou est sale.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "L'utilisateur spécial « glory » est déconseillé par Glory pour les connexions. Ces champs ne servent que si le terminal a le « Session mode » et le « User check » activés.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "La cassette de collecte des billets n'est pas correctement insérée.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "La date de ce PC semble incorrecte. Corrigez-la puis reconnectez-vous à internet.",
+  "files": [
+   "core/license/index.ts"
+  ]
+ },
+ {
+  "fr": "La licence n'a pas pu être vérifiée depuis plus de 14 jours. Connectez ce PC à internet.",
+  "files": [
+   "core/license/index.ts"
+  ]
+ },
+ {
+  "fr": "La machine choisit automatiquement les billets et pièces parmi le stock distribuable.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "La machine gardera le fond de caisse réglé :",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "La porte de la cassette de collecte des billets est ouverte ou mal fermée.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "La porte latérale (accès aux bourrages) du module billets est ouverte ou mal fermée.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "La porte qui rend les pièces refusées au client ne fonctionne pas correctement (pièce coincée).",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "La porte vers le bac de débordement ne s'ouvre ou ne se ferme pas (pièce coincée).",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Laisser un fond de caisse",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Lancer la collecte",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Le bac de débordement (pièces en trop) est retiré ou mal remis.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Le capot de l'unité de tri (trappe de bourrage) est ouvert ou mal fermé.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Le certificat HTTPS du terminal est refusé : décochez « Exiger un certificat HTTPS valide » dans Réglages, ou utilisez http://.",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Le client dépose, vous choisissez les billets et pièces à lui rendre.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Le code",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Le code PIN doit contenir 4 à 8 chiffres.",
+  "files": [
+   "core/users/index.ts"
+  ]
+ },
+ {
+  "fr": "Le courant a été coupé pendant un mouvement de billets : des billets peuvent être restés dans le circuit.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Le courant a été coupé pendant un mouvement de pièces : des pièces peuvent être restées dans le circuit.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Le lecteur qui authentifie les billets ne répond pas ou est sale.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Le logiciel sera bloqué sur ce PC jusqu'à la saisie d'une clé de produit. Pour l'utiliser sur un autre PC, demandez aussi le transfert de la licence à votre fournisseur.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Le module",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Le module {0} signale une erreur.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Le module billets signale un problème pendant sa vérification d'état.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Le module pièces détecte que l'unité d'entrée (en haut) est ouverte ou mal enclenchée.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Le module pièces détecte que l'unité de sortie (sur le côté) est ouverte ou mal enclenchée.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Le module pièces signale un problème pendant sa vérification d'état.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Le montant rendu doit être égal au montant déposé.",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Le nombre de billets distribués, collectés ou comptés ne correspond pas à ce qui était prévu.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Le panier est conservé : vous pouvez réessayer.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Le port",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Le port {0} est déjà utilisé sur ce PC (l'application est peut-être ouverte deux fois).",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Le terminal est occupé par une autre caisse.",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Le terminal Glory (pas ce PC) redémarre, quelques minutes.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Le terminal n'est pas joignable par l'application.",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Le terminal ne répond pas. Vérifiez qu'il est allumé, branché au réseau, et que son adresse est correcte dans Réglages.",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Le terminal répond :",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Le terminal répond : {0}.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Le total du panier a changé : vérifiez le panier.",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "Le verrou électrique de la cassette billets ne fonctionne pas comme prévu.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Le verrou électrique de la cassette ou de la porte ne fonctionne pas comme prévu.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Le volet de la fente de sortie des billets ne s'ouvre ou ne se ferme pas.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Lecteur de billets",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Lecture des journaux",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "Lecture du fichier de configuration",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Les deux codes PIN ne correspondent pas.",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Les étiquettes de balance commencent par 2 suivi d'un chiffre ; le prix est lu dans les chiffres 8 à 12. Demandez au fournisseur de la balance quels préfixes elle utilise.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Licence",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Licence activée :",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Licence activée : {0}",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Licence activée.",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Licence définitive.",
+  "files": [
+   "core/license/index.ts"
+  ]
+ },
+ {
+  "fr": "Licence expirée le",
+  "files": [
+   "core/license/index.ts"
+  ]
+ },
+ {
+  "fr": "Licence expirée le {0}. Contactez votre fournisseur.",
+  "files": [
+   "core/license/index.ts"
+  ]
+ },
+ {
+  "fr": "Licence invalide pour ce PC. Saisissez votre clé de produit.",
+  "files": [
+   "core/license/index.ts"
+  ]
+ },
+ {
+  "fr": "Licence requise.",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "Licence valable jusqu'au",
+  "files": [
+   "core/license/index.ts"
+  ]
+ },
+ {
+  "fr": "Licence valable jusqu'au {0}.",
+  "files": [
+   "core/license/index.ts"
+  ]
+ },
+ {
+  "fr": "Licence vérifiée.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Lien d'aide invalide.",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "Ligne",
+  "files": [
+   "core/products/index.ts"
+  ]
+ },
+ {
+  "fr": "Ligne {0} : {1}",
+  "files": [
+   "core/products/index.ts"
+  ]
+ },
+ {
+  "fr": "ligne(s) ignorée(s)",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "Lire le fichier",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Lire le prix dans les codes-barres de balance (étiquettes « poids/prix »)",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "LockUnitOperation",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "LoginUserOperation",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "LogoutUserOperation",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "MachineGuid",
+  "files": [
+   "core/license/index.ts"
+  ]
+ },
+ {
+  "fr": "Maintenance",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "manual deposit disagreement",
+  "files": [
+   "core/soap-client/result-codes.ts"
+  ]
+ },
+ {
+  "fr": "Max",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "MedaCash",
+  "files": [
+   "main/main.ts",
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Merci et à bientôt",
+  "files": [
+   "core/receipt-settings/index.ts"
+  ]
+ },
+ {
+  "fr": "Message de fin de ticket",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Méthode d'impression",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Mettre à l'heure",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "mis à jour",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "Mis à jour à",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Mis à jour à {0} (automatique)",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Mise à jour du firmware",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "Mise à l'heure",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Mode 'soap-callback' non implémenté (seul le canal TCP brut est couvert,",
+  "files": [
+   "core/event-listener/index.ts"
+  ]
+ },
+ {
+  "fr": "Mode session",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Mode technique",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Modèle \"",
+  "files": [
+   "core/model-adapter/index.ts"
+  ]
+ },
+ {
+  "fr": "Modèle \"{0}\" inconnu de core/model-adapter. Modèles disponibles : {1}",
+  "files": [
+   "core/model-adapter/index.ts"
+  ]
+ },
+ {
+  "fr": "Modifier",
+  "files": [
+   "ui/catalog.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Modifier {0}",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Modifier l'article",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "Module",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Module :",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Module : {0} · code détaillé {1}{2}",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Module {0}, code {1}",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Module billets",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Module pièces",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Modules réinitialisés.",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Mon commerce",
+  "files": [
+   "core/receipt-settings/index.ts"
+  ]
+ },
+ {
+  "fr": "Monnaie insuffisante pour rendre : vente annulée, espèces rendues.",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Monnaie pour rendre",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Monnaie rendue",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Montant",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Montant à collecter (€)",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Montant à sortir",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Montant de dépôt fixé",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "Montant de distribution fixé",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "Montant de la vente",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Montant demandé",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Montant dû",
+  "files": [
+   "core/stats/index.ts"
+  ]
+ },
+ {
+  "fr": "Montant exact",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Montant invalide.",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "montant libre",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Mot de passe du terminal",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Moteur du module billets bloqué",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Moteur du module pièces bloqué",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Motif",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "n'est pas dans le catalogue.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Navigateur : le ticket s'ouvre dans Chrome / Edge / Firefox, qui lance l'impression. Testez avec « Ticket de test ».",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Navigateur par défaut (recommandé)",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Ne rendez pas ce billet au client.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "niveau normal",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "Nom",
+  "files": [
+   "ui/app.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Nom d'utilisateur requis.",
+  "files": [
+   "core/users/index.ts"
+  ]
+ },
+ {
+  "fr": "Nom de fichier requis.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Nom de l'article",
+  "files": [
+   "ui/catalog.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Nom du commerce",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "nom manquant",
+  "files": [
+   "core/products/index.ts"
+  ]
+ },
+ {
+  "fr": "Nombre de {0}",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "Nombre de billets incohérent",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Non connecté.",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "non défini (montant simple utilisé)",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "Non disponible",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "NON DOCUMENTÉ dans docs/error-codes.md, à vérifier sur IF Spec p.238-239 et à ajouter à la table si confirmé",
+  "files": [
+   "core/soap-client/result-codes.ts"
+  ]
+ },
+ {
+  "fr": "Normal",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "not occupied",
+  "files": [
+   "core/soap-client/result-codes.ts"
+  ]
+ },
+ {
+  "fr": "Note",
+  "files": [
+   "core/stats/index.ts"
+  ]
+ },
+ {
+  "fr": "Nouveau code PIN",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Nouveau dépôt",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Nouvel article",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "Nouvel utilisateur",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Nouvelle vente",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "number of registration over",
+  "files": [
+   "core/soap-client/result-codes.ts"
+  ]
+ },
+ {
+  "fr": "number of session over",
+  "files": [
+   "core/soap-client/result-codes.ts"
+  ]
+ },
+ {
+  "fr": "NumpadEnter",
+  "files": [
+   "ui/scanner.ts"
+  ]
+ },
+ {
+  "fr": "occupation not available",
+  "files": [
+   "core/soap-client/result-codes.ts"
+  ]
+ },
+ {
+  "fr": "Occupied",
+  "files": [
+   "core/session-state-machine/index.ts"
+  ]
+ },
+ {
+  "fr": "occupied by itself",
+  "files": [
+   "core/soap-client/result-codes.ts"
+  ]
+ },
+ {
+  "fr": "occupied by other",
+  "files": [
+   "core/soap-client/result-codes.ts"
+  ]
+ },
+ {
+  "fr": "OccupyOperation",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "ont été collectés et attendent d'être retirés.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Open",
+  "files": [
+   "core/session-state-machine/index.ts"
+  ]
+ },
+ {
+  "fr": "OpenExitCoverOperation",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "OpenOperation",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "Opération en cours",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Opération en cours :",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Opération en cours : {0}. Patientez ou annulez-la.",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Opération SOAP \"",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "Opération SOAP \"{0}\" introuvable sur le client généré depuis le WSDL.",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "opération(s)",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "opération(s) exportée(s).",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "Opérations",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Ouverture du cache",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Ouverture du couvercle",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Ouverture refusée par le terminal :",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Ouverture refusée par le terminal : {0}",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Ouvrez la partie indiquée sur l'animation et retirez les billets ou objets coincés (billet froissé, ticket, trombone…).",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Ouvrez la partie indiquée sur l'animation et retirez les pièces ou objets coincés (trombone, pièce étrangère…).",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Ouvrez le cache, retirez les billets, puis refermez-le.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Ouvrir / fermer le cache de sortie pour récupérer des billets refusés.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Ouvrir le cache",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Paiement accepté",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Paiement en cours : encaissez ou annulez avant de changer d'écran.",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Paiement en cours : encaissez ou annulez d'abord.",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Paiement en cours : terminez ou annulez d'abord.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Paiement fournisseur",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Panier",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Panier moyen",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Panne",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Panne {0} : {1}",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Papier",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Par vendeur",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "parameter error (type error)",
+  "files": [
+   "core/soap-client/result-codes.ts"
+  ]
+ },
+ {
+  "fr": "Pas d'animation pour cette erreur.",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Pas de monnaie à rendre",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Pas de photo",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "Pas de relevé d'ouverture aujourd'hui : l'écart ne peut pas être calculé.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "pas de réponse après 60 s",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Pas de signal du terminal",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Peu de pièces (",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Peu de pièces ({0})",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Photo de l'article",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "Piece",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "pièces",
+  "files": [
+   "core/device-errors/index.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Pièces",
+  "files": [
+   "ui/catalog.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Pièces coincées sur un capteur",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Pièces dans les recycleurs",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Pièces restées dans l'entrée",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Pièces restées dans le transport de dépôt",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Pièces seulement",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Plein",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Port des événements",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Port invalide.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Porte de débordement des pièces bloquée",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Porte de la cassette billets ouverte",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Porte de retour des pièces bloquée",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Porte latérale du module billets ouverte",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "PowerControlOperation",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "Préférences",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Préfixes de ces codes",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Préparation collecte",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Préparer la collecte",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "presque plein",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "Presque plein",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "presque vide",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "Presque vide",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "prêt",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Prêt",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "Prix",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "Prix (€)",
+  "files": [
+   "ui/catalog.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "prix invalide",
+  "files": [
+   "core/products/index.ts"
+  ]
+ },
+ {
+  "fr": "Prix invalide (ex. 1,20).",
+  "files": [
+   "ui/catalog.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Problème dans la cassette de collecte billets",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Problème dans un stockeur de billets",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Problème dans un stockeur de pièces",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Problème électrique (module billets)",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Problème électrique (module pièces)",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Problème sur le terminal",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Profil",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "program inner error",
+  "files": [
+   "core/soap-client/result-codes.ts"
+  ]
+ },
+ {
+  "fr": "Quantité",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Que faire",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Quoi collecter",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Rapport créé (",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "Rapport créé ({0} événements, {1} erreurs).",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "Rapport d'assistance",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Rayon",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "Rayon / catégorie",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "RCW (pièces)",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Réappro.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Réapprovisionné",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Réapprovisionnement",
+  "files": [
+   "core/stats/index.ts",
+   "main/cashier.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Réapprovisionner",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Rechercher un article, un rayon ou un code…",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "Rechercher…",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "RecoveryURL",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "reçu",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Reçu",
+  "files": [
+   "core/stats/index.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "reçu {0}",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Redémarrage",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Redémarrage du terminal",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Redémarrer le terminal",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Redémarrer le terminal ? Il sera indisponible quelques minutes.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Refermez correctement toutes les trappes, puis appuyez sur « Réinitialiser ».",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Refermez la porte de la cassette billets.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Refermez la porte latérale du module billets.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Refermez la trappe de bourrage du haut.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Refusé par le serveur de licences.",
+  "files": [
+   "core/license/index.ts"
+  ]
+ },
+ {
+  "fr": "RegisterEventOperation",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "Réglages",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Règle l'horloge du terminal sur celle de ce PC.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Réimprimer le ticket",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Réinitialisation",
+  "files": [
+   "core/fcc-events/index.ts",
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Réinitialiser",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Réinitialiser les modules billets et pièces ?",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Réinsérez-la jusqu'au bout.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Release",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Released",
+  "files": [
+   "core/session-state-machine/index.ts"
+  ]
+ },
+ {
+  "fr": "ReleaseOperation",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "Relever l'encaisse actuelle et éditer le rapport de clôture du jour ?",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Remboursement client",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Remboursement, paiement fournisseur, retrait de caisse.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Remettez le bac de débordement en place.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Remettre de la monnaie dans la machine pour pouvoir rendre.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Rend les pièces restées dans l'entrée (client qui change d'avis).",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Rend les pièces restées dans l'entrée.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Rendre la sélection",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Rendre le dépôt tel quel",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Rendre les pièces",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Rendu",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Rendu / sorti",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Rendu de monnaie en cours",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "Rendu/Sorti",
+  "files": [
+   "core/stats/index.ts"
+  ]
+ },
+ {
+  "fr": "ReplenishmentFromEntranceCancelOperation",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "Réponse du serveur de licences invalide.",
+  "files": [
+   "core/license/index.ts"
+  ]
+ },
+ {
+  "fr": "Repoussez l'unité d'entrée des pièces jusqu'au clic.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Repoussez l'unité de transport de sortie jusqu'au clic.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Réservation du terminal refusée :",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Réservation du terminal refusée : {0}",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "réservé à cette caisse",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "ResetOperation",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "Reste",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Reste à payer",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Restitution des pièces",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Restitution pièces",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Restreint",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Retirer",
+  "files": [
+   "ui/catalog.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Retirer la licence",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Retirer la licence de ce PC",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Retirer un",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Retirez la cassette billets et enlevez les billets froissés en entrée.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Retirez la cassette COFT",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "Retirez les billets refusés (entrée)",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "Retirez les billets refusés (sortie)",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "retirez les espèces",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "Retirez les pièces ou objets restés dans l'entrée des pièces.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Retirez puis réinsérez la cassette billets jusqu'au bout.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Retirez tout billet ou objet resté dans la fente de sortie.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Retour",
+  "files": [
+   "ui/app.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Retrait de caisse",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "ReturnCashOperation",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "Réussie",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Revérifier la licence (",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Revérifier la licence ({0})",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Rien à collecter.",
+  "files": [
+   "main/cashier.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Rien de disponible à collecter pour ce choix.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "RomVersionOperation",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "Rouleau",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Rouleau {0}",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Saisissez la clé de produit fournie avec votre licence. Ce PC doit être connecté à internet pour l'activation.",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Saisissez un montant.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "sans code",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "Sans internet",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Sans session",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Scanner de codes-barres",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Scannez d'autres articles, ou tapez un montant puis « Ajouter ».",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Scannez ou tapez le code",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "Scannez un article pour commencer un panier",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Scannez un code pour tester",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Scellage",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "SELECT * FROM snapshots WHERE kind = ? AND ts < ? ORDER BY id DESC LIMIT 1",
+  "files": [
+   "core/ledger/index.ts"
+  ]
+ },
+ {
+  "fr": "SELECT * FROM transactions WHERE ts >= ? AND ts < ? ORDER BY id DESC",
+  "files": [
+   "core/ledger/index.ts"
+  ]
+ },
+ {
+  "fr": "SELECT id, ts, kind, operation, payload FROM session_events WHERE id > ? ORDER BY id ASC",
+  "files": [
+   "core/history-store/index.ts"
+  ]
+ },
+ {
+  "fr": "Sélectionné",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Serveur de licences injoignable. Vérifiez la connexion internet de ce PC.",
+  "files": [
+   "core/license/index.ts"
+  ]
+ },
+ {
+  "fr": "Session expirée. Reconnectez-vous.",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "session not available",
+  "files": [
+   "core/soap-client/result-codes.ts"
+  ]
+ },
+ {
+  "fr": "session timeout",
+  "files": [
+   "core/soap-client/result-codes.ts"
+  ]
+ },
+ {
+  "fr": "SetExchangeRateOperation",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "SetRestrictionOperation",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "Seul un administrateur peut ajouter l'article au catalogue.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "shortage of capacity of stacker",
+  "files": [
+   "core/soap-client/result-codes.ts"
+  ]
+ },
+ {
+  "fr": "Si l'erreur persiste, éteignez puis rallumez le terminal.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Si l'erreur revient, notez le code et contactez votre technicien Glory.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "signale une erreur.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Signalez-le selon la procédure de votre banque.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Sorti",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Sortie",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Sortie d'espèces",
+  "files": [
+   "core/stats/index.ts",
+   "main/cashier.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Sorties",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Sorties (",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Sorties ({0})",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Sortir",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Sortir {0} ({1}) ?",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Sortir les espèces",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Sortir un montant exact, le surplus ou tout, en billets et/ou pièces.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "StartCashinOperation",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "StartReplenishmentFromCassetteOperation",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "StartReplenishmentFromEntranceOperation",
+  "files": [
+   "core/soap-client/index.ts"
+  ]
+ },
+ {
+  "fr": "Statistiques",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Status",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "StatusChangeEvent",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "Statut",
+  "files": [
+   "core/stats/index.ts",
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Stock",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "stock invalide",
+  "files": [
+   "core/products/index.ts"
+  ]
+ },
+ {
+  "fr": "Supprimer",
+  "files": [
+   "ui/catalog.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Supprimer «",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "Supprimer « {0} » du catalogue ?",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "Supprimer l'article",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "Supprimer l'utilisateur",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Supprimer l'utilisateur {0} ?",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Supprimer la ligne",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Tab",
+  "files": [
+   "ui/scanner.ts"
+  ]
+ },
+ {
+  "fr": "Taille de l'affichage",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "tapé",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Tapez un montant ou scannez un article.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Tapez un montant, par exemple 150 ou 152,50.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Téléphone / TVA / adresse",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Terminal connecté.",
+  "files": [
+   "main/cashier.ts",
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Terminal déconnecté",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Terminal déconnecté.",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Terminal non connecté",
+  "files": [
+   "ui/app.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Terminal non connecté.",
+  "files": [
+   "main/cashier.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Terminal occupé",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "Terminal prêt",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Terminé",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "Terminer et valider",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Ticket",
+  "files": [
+   "core/stats/index.ts",
+   "main/printing.ts"
+  ]
+ },
+ {
+  "fr": "Ticket de test",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "ticket n°",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "ticket n° {0}",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Ticket ouvert dans le navigateur pour l'impression.",
+  "files": [
+   "main/printing.ts"
+  ]
+ },
+ {
+  "fr": "toast toast-",
+  "files": [
+   "ui/lib.ts"
+  ]
+ },
+ {
+  "fr": "toast toast-{0}",
+  "files": [
+   "ui/lib.ts"
+  ]
+ },
+ {
+  "fr": "Total",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Total dans la machine",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Total du panier",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Total machine",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Tous les rayons",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "Tout",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "Tout collecter",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Tout remettre à zéro",
+  "files": [
+   "ui/catalog.ts"
+  ]
+ },
+ {
+  "fr": "Toutes les opérations",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Transfère des espèces des recycleurs vers la cassette de collecte (à vider ensuite).",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Trop d'essais. Réessayez dans",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "Trop d'essais. Réessayez dans {0} s.",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "Trop d'essais. Réessayez dans 30 s.",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "Trop de sessions ouvertes sur le terminal. Réessayez dans quelques minutes.",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Type",
+  "files": [
+   "core/stats/index.ts"
+  ]
+ },
+ {
+  "fr": "Un administrateur existe déjà.",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "Un aiguillage interne du circuit des billets ne bouge pas correctement.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Un billet est bloqué entre deux capteurs du circuit (billet froissé, déchiré, scotché ou objet).",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Un billet ou un objet est resté sur un capteur du circuit des billets.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Un billet suspect (catégorie 2/3 selon la BCE) a été détecté et conservé par la machine.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Un billet trop court, trop long, plié ou deux billets collés ont été détectés.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Un capteur est masqué alors qu'il ne devrait pas l'être, ou une pièce n'a pas pris le bon chemin.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Un capteur est masqué alors qu'il ne devrait pas l'être, souvent par un morceau de billet ou un objet.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Un capteur ne répond pas correctement : il peut être sale, masqué par un billet, ou défectueux.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Un capteur ne répond pas correctement : il peut être sale, masqué par une pièce, ou défectueux.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Un moteur ne tourne pas normalement : le plus souvent des pièces ou un objet coincés dans l'entrée ou le circuit des pièces.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Un moteur ne tourne pas normalement, souvent à cause d'un billet froissé ou d'un objet coincé dans le circuit.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Un stockeur (compartiment d'une valeur de billet) a un bourrage ou un défaut de transport.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Un stockeur (compartiment d'une valeur de pièce) n'arrive pas à distribuer correctement : pièces coincées ou comptage incohérent.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Une partie du module pièces est ouverte",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Une porte d'aiguillage interne ne s'ouvre ou ne se ferme pas correctement (pièce coincée).",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Une porte du module billets est ouverte",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Une porte ou une trappe du module billets n'est pas correctement fermée.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Une unité ou une trappe du module pièces n'est pas correctement fermée.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Unité d'entrée des pièces mal fermée",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Unité de reconnaissance des pièces",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Unité de sortie des pièces mal fermée",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "UPDATE transactions SET ticket_no = ? WHERE id = ?",
+  "files": [
+   "core/ledger/index.ts"
+  ]
+ },
+ {
+  "fr": "user authentication failure",
+  "files": [
+   "core/soap-client/result-codes.ts"
+  ]
+ },
+ {
+  "fr": "utilisable(s) pour rendre",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Utilisateur",
+  "files": [
+   "core/stats/index.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Utilisateur du terminal",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Utilisateur enregistré.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Utilisateur supprimé.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Utilisateurs",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Valeur en € (ex. 20 ou 0,50)",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Valeur en euros (ex. 20 ou 0,50).",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Valider",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Validité",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Vendeur",
+  "files": [
+   "ui/app.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Vente",
+  "files": [
+   "core/stats/index.ts",
+   "main/cashier.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Vente annulée",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Vente annulée, espèces rendues au client.",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Vente non aboutie",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Ventes",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Ventes annulées",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Ventes par heure",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Vérification du module billets",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Vérification du module pièces",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Vérifier maintenant",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Vérifier que le terminal répond et voir son état.",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Vérifiez l'encaisse après la réinitialisation.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Vérifiez l'encaisse et comptez l'argent rendu au client.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Vérifiez que la cassette billets est bien en place et sa porte fermée.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Vérifiez que la porte et la cassette de collecte sont bien en place.",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "verify collect/replenish failed",
+  "files": [
+   "core/soap-client/result-codes.ts"
+  ]
+ },
+ {
+  "fr": "Verrou du module billets",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Verrou du module pièces",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Verrouillage automatique après (minutes, 0 = jamais)",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Verrouillage billets",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Verrouillage pièces",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "verrouillé",
+  "files": [
+   "core/fcc-events/index.ts"
+  ]
+ },
+ {
+  "fr": "Verrouiller",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "vers la cassette ?",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Version",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Version {0}",
+  "files": [
+   "ui/app.ts"
+  ]
+ },
+ {
+  "fr": "Versions",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Versions firmware",
+  "files": [
+   "main/cashier.ts",
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Vide",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Vider",
+  "files": [
+   "ui/screens.ts"
+  ]
+ },
+ {
+  "fr": "Virgule",
+  "files": [
+   "ui/lib.ts"
+  ]
+ },
+ {
+  "fr": "voir docs/event-system.md). Sélectionner 'tcp'.",
+  "files": [
+   "core/event-listener/index.ts"
+  ]
+ },
+ {
+  "fr": "Volet de sortie des billets bloqué",
+  "files": [
+   "core/device-errors/index.ts"
+  ]
+ },
+ {
+  "fr": "Vous ne pouvez pas supprimer votre propre compte.",
+  "files": [
+   "main/main.ts"
+  ]
+ },
+ {
+  "fr": "Windows refuse l'ouverture du port",
+  "files": [
+   "main/cashier.ts"
+  ]
+ },
+ {
+  "fr": "Windows refuse l'ouverture du port {0} : choisissez un autre port dans Réglages.",
+  "files": [
+   "main/cashier.ts"
+  ]
+ }
+]

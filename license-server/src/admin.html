@@ -335,7 +335,7 @@
           <label>Date de fin<input type="date" name="expires" value="${esc(exp)}" ${exp ? "" : "disabled"}></label>
         </div>
         <label>Nombre de PC autorisés<input type="number" name="seats" min="1" max="50" value="${l?.seats || 1}"></label>
-        <label class="check"><input type="checkbox" name="offline" ${l?.offline === false ? "" : "checked"}> Fonctionne sans internet après la première activation</label>
+        <label class="check"><input type="checkbox" name="offline" ${l && l.offline !== false ? "checked" : ""}> Fonctionne sans internet après la première activation</label>
         <p class="small muted">Sinon, le logiciel doit joindre le serveur au moins tous les 14 jours (utile pour un abonnement à surveiller). Dans les deux cas, une licence désactivée est bloquée dès que le PC se connecte à internet.</p>
         ${!isNew && (l.machines || []).length ? `<div><strong class="small">PC activés</strong><ul class="machines">${l.machines.map((m) => `<li>${esc(m.name || "PC")} <span class="mono muted">${esc(m.id)}</span> · activé le ${day(m.firstAt)} · vu le ${dt(m.lastAt)}${m.version ? " · v" + esc(m.version) : ""}</li>`).join("")}</ul></div>` : ""}
         <div class="actions"><button type="button" class="btn" data-no>Annuler</button><button class="btn btn-primary">${isNew ? "Créer la clé" : "Enregistrer"}</button></div>

@@ -272,7 +272,7 @@ function renderSale(root: HTMLElement): void {
       el.innerHTML = sales.length
         ? sales
             .map(
-              (r) => `<div class="recent-row"><span class="recent-time">${new Date(r.ts).toLocaleTimeString("fr-BE", { hour: "2-digit", minute: "2-digit" })}</span>
+              (r) => `<div class="recent-row"><span class="recent-time">${new Date(r.ts).toLocaleTimeString(LOCALE, { hour: "2-digit", minute: "2-digit" })}</span>
               <span class="recent-user">${esc(r.user)}</span>
               <span class="recent-change">${r.outCents ? `rendu ${money(r.outCents)}` : ""}</span>
               <strong>${money(r.dueCents)}</strong></div>`
@@ -428,7 +428,7 @@ async function renderStock(root: HTMLElement): Promise<void> {
         return;
       }
       lastInventory = r.inventory;
-      $("#inv-time", root).textContent = `Mis à jour à ${new Date().toLocaleTimeString("fr-BE")} (automatique)`;
+      $("#inv-time", root).textContent = `Mis à jour à ${new Date().toLocaleTimeString(LOCALE)} (automatique)`;
       $("#inv-body", root).innerHTML = stockHtml(r.inventory);
     } finally {
       loading = false;
@@ -1057,7 +1057,7 @@ function renderHistory(root: HTMLElement): void {
     // Regroupement par jour (le plus récent d'abord, comme la liste).
     const days = new Map<string, TransactionRow[]>();
     for (const r of rows) {
-      const d = new Date(r.ts).toLocaleDateString("fr-BE", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+      const d = new Date(r.ts).toLocaleDateString(LOCALE, { weekday: "long", day: "numeric", month: "long", year: "numeric" });
       if (!days.has(d)) days.set(d, []);
       days.get(d)!.push(r);
     }
@@ -1093,7 +1093,7 @@ function renderHistory(root: HTMLElement): void {
               ${list
                 .map(
                   (r) => `<button class="hist-row ${r.ok || r.kind === "cancel" ? "" : "is-failed"}" data-id="${r.id}">
-                    <span class="hist-time">${new Date(r.ts).toLocaleTimeString("fr-BE", { hour: "2-digit", minute: "2-digit" })}</span>
+                    <span class="hist-time">${new Date(r.ts).toLocaleTimeString(LOCALE, { hour: "2-digit", minute: "2-digit" })}</span>
                     <span class="hist-icon hist-${r.kind}">${icon(r.kind === "cancel" ? "cancel" : r.kind)}</span>
                     <span class="hist-main"><strong>${title(r)}</strong><small>${sub(r)}</small></span>
                     <span class="hist-amount"><strong>${mainAmount(r)}</strong><small>${detail(r)}</small></span>
@@ -1359,6 +1359,7 @@ async function renderSettings(root: HTMLElement): Promise<void> {
 
     <section class="card"><div class="card-head"><h2>Préférences</h2></div>
       <form class="form" id="f-app">
+        <label data-no-i18n>Langue / Taal<select id="ui-lang"><option value="fr" ${LANG === "fr" ? "selected" : ""}>Français</option><option value="nl" ${LANG === "nl" ? "selected" : ""}>Nederlands</option></select></label>
         <label>Taille de l'affichage<select id="ui-scale">${[
           ["auto", "Automatique (s'adapte à la fenêtre)"],
           ["0.7", "70 %"],
@@ -1412,10 +1413,10 @@ async function renderSettings(root: HTMLElement): Promise<void> {
     body.innerHTML = `<div class="detail">
         <div class="pay-row"><span>État</span><strong class="${l.state === "valid" ? "ok-text" : "error-text"}">${esc(l.message)}</strong></div>
         ${l.client ? `<div class="pay-row"><span>Client</span><strong>${esc(l.client)}</strong></div>` : ""}
-        <div class="pay-row"><span>Validité</span><strong>${l.expiresAt ? `jusqu'au ${new Date(l.expiresAt).toLocaleDateString("fr-BE")}` : "définitive"}</strong></div>
+        <div class="pay-row"><span>Validité</span><strong>${l.expiresAt ? `jusqu'au ${new Date(l.expiresAt).toLocaleDateString(LOCALE)}` : "définitive"}</strong></div>
         ${l.keyHint ? `<div class="pay-row"><span>Clé</span><strong>${esc(l.keyHint)}</strong></div>` : ""}
         <div class="pay-row"><span>Code de ce PC</span><strong>${esc(l.machineCode)}</strong></div>
-        <div class="pay-row"><span>Sans internet</span><strong>${l.refreshBy ? `contrôle en ligne avant le ${new Date(l.refreshBy).toLocaleDateString("fr-BE")}` : l.state === "valid" ? "fonctionne sans limite" : "-"}</strong></div>
+        <div class="pay-row"><span>Sans internet</span><strong>${l.refreshBy ? `contrôle en ligne avant le ${new Date(l.refreshBy).toLocaleDateString(LOCALE)}` : l.state === "valid" ? "fonctionne sans limite" : "-"}</strong></div>
       </div>
       <div class="row-actions"><button class="btn" id="lic-check">Vérifier maintenant</button><button class="btn btn-danger" id="lic-remove">Retirer la licence de ce PC</button></div>`;
     $("#lic-check", body).addEventListener("click", (e) =>
@@ -1432,6 +1433,8 @@ async function renderSettings(root: HTMLElement): Promise<void> {
     });
   };
   void window.api.call<LicenseStatus>("license.status").then(renderLicense);
+
+  $<HTMLSelectElement>("#ui-lang", root).addEventListener("change", (e) => setLang((e.currentTarget as HTMLSelectElement).value === "nl" ? "nl" : "fr"));
 
   // Taille de l'affichage : appliquée tout de suite, mémorisée sur ce PC.
   $<HTMLSelectElement>("#ui-scale", root).addEventListener("change", (e) => {

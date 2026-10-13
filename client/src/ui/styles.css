@@ -780,3 +780,10 @@ details.tech summary { cursor: pointer; font-weight: 650; padding: 4px 0; }
 .picker-cats { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: thin; padding-bottom: 4px; }
 .picker-cats .btn { flex-shrink: 0; }
 .picker .dialog-actions { margin-top: 0; align-items: center; justify-content: space-between; }
+
+/* ------------------------------------------------------------------ langue */
+
+.login-card { position: relative; }
+.lang-switch { position: absolute; top: 14px; right: 14px; display: inline-flex; border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
+.lang-switch button { font: inherit; font-size: 13px; font-weight: 700; padding: 6px 12px; border: 0; background: var(--panel); color: var(--muted); cursor: pointer; }
+.lang-switch button.active { background: var(--accent); color: #fff; }

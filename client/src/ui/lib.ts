@@ -16,7 +16,7 @@ function esc(v: unknown): string {
     .replace(/'/g, "&#39;");
 }
 
-const moneyFmt = new Intl.NumberFormat("fr-BE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const moneyFmt = new Intl.NumberFormat(LOCALE, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
 /** 1234 → "12,34 €". */
 function money(cents: number | null | undefined, cc = "EUR"): string {
@@ -52,7 +52,7 @@ function ymd(d: Date): string {
 
 function fmtDateTime(iso: string): string {
   const d = new Date(iso);
-  return `${d.toLocaleDateString("fr-BE")} ${d.toLocaleTimeString("fr-BE", { hour: "2-digit", minute: "2-digit" })}`;
+  return `${d.toLocaleDateString(LOCALE)} ${d.toLocaleTimeString(LOCALE, { hour: "2-digit", minute: "2-digit" })}`;
 }
 
 // ------------------------------------------------------------------ notifications
@@ -141,14 +141,14 @@ function parseAmount(text: string): number {
 function amountDisplay(text: string): string {
   if (!text) return `0<span class="dim">,00</span> €`;
   const [eur, dec] = text.split(",");
-  const eurFmt = Number(eur || "0").toLocaleString("fr-BE");
+  const eurFmt = Number(eur || "0").toLocaleString(LOCALE);
   if (dec === undefined) return `${eurFmt}<span class="dim">,00</span> €`;
   return `${eurFmt},${dec}<span class="dim">${"00".slice(dec.length)}</span> €`;
 }
 
 /** « lundi 5 octobre » → « Lundi 5 octobre ». */
 function longDate(d = new Date()): string {
-  const s = d.toLocaleDateString("fr-BE", { weekday: "long", day: "numeric", month: "long" });
+  const s = d.toLocaleDateString(LOCALE, { weekday: "long", day: "numeric", month: "long" });
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
@@ -285,7 +285,7 @@ function ticketHtml(s: ReceiptSettings, title: string, ticketNo: number | null, 
   return `<div class="receipt">
     <div class="r-title">${esc(s.companyName)}</div>
     ${s.companyLine2 ? `<div class="r-sub">${esc(s.companyLine2)}</div>` : ""}
-    <div class="r-row"><span>${now.toLocaleDateString("fr-BE")}</span><span>${now.toLocaleTimeString("fr-BE", { hour: "2-digit", minute: "2-digit" })}</span>${ticketNo !== null ? `<span>N° ${String(ticketNo).padStart(6, "0")}</span>` : ""}</div>
+    <div class="r-row"><span>${now.toLocaleDateString(LOCALE)}</span><span>${now.toLocaleTimeString(LOCALE, { hour: "2-digit", minute: "2-digit" })}</span>${ticketNo !== null ? `<span>N° ${String(ticketNo).padStart(6, "0")}</span>` : ""}</div>
     ${opts.user || s.operatorName ? `<div>${esc(opts.user || s.operatorName)}</div>` : ""}
     <div class="r-head">${esc(title)}</div>
     ${lines.map((l) => `<div class="r-row ${l.strong ? "r-strong" : ""}"><span>${esc(l.label)}</span><span>${esc(l.value)}</span></div>`).join("")}
@@ -299,7 +299,7 @@ function ticketHtml(s: ReceiptSettings, title: string, ticketNo: number | null, 
  * (fenêtre d'impression du système, ou navigateur par défaut en secours).
  */
 async function printTicket(html: string, paper: ReceiptSettings["paperFormat"]): Promise<void> {
-  const r = await window.api.call<OpResult & { via?: string; cancelled?: boolean }>("print.document", html, paper);
+  const r = await window.api.call<OpResult & { via?: string; cancelled?: boolean }>("print.document", i18n.html(html), paper);
   if (r.cancelled) return;
   if (!r.ok) return void toast(r.message, "error");
   if (r.via === "browser") toast(r.message, "info");

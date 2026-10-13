@@ -3,11 +3,12 @@
 ; Windows la bloque sur une installation neuve : plus d'affichage en direct.
 ; L'installation étant par utilisateur (sans droits admin), la règle est
 ; ajoutée via une élévation explicite (une seule demande UAC).
+; L'ancienne règle « Glory FCC Client » (ancien nom du logiciel) est retirée.
 
 !macro customInstall
-  ExecShellWait "runas" "$SYSDIR\cmd.exe" '/c netsh advfirewall firewall delete rule name="Glory FCC Client" & netsh advfirewall firewall add rule name="Glory FCC Client" dir=in action=allow program="$INSTDIR\Glory FCC Client.exe" enable=yes profile=any' SW_HIDE
+  ExecShellWait "runas" "$SYSDIR\cmd.exe" '/c netsh advfirewall firewall delete rule name="Glory FCC Client" & netsh advfirewall firewall delete rule name="MedaCash" & netsh advfirewall firewall add rule name="MedaCash" dir=in action=allow program="$INSTDIR\${APP_EXECUTABLE_FILENAME}" enable=yes profile=any' SW_HIDE
 !macroend
 
 !macro customUnInstall
-  ExecShellWait "runas" "$SYSDIR\cmd.exe" '/c netsh advfirewall firewall delete rule name="Glory FCC Client"' SW_HIDE
+  ExecShellWait "runas" "$SYSDIR\cmd.exe" '/c netsh advfirewall firewall delete rule name="MedaCash" & netsh advfirewall firewall delete rule name="Glory FCC Client"' SW_HIDE
 !macroend

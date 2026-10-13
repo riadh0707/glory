@@ -24,7 +24,10 @@ import * as https from "https";
 const ACTIVE_MODEL_ID = "CI-10";
 
 // Avant app.getPath("userData") pour que le dossier de données porte ce nom.
-app.setName("Glory FCC Client");
+app.setName("MedaCash");
+// Le logiciel s'appelait « Glory FCC Client » : on garde son dossier de données
+// pour que la mise à jour conserve ventes, réglages, articles et licence.
+app.setPath("userData", path.join(app.getPath("appData"), "Glory FCC Client"));
 
 // Version installée : pas d'outils de développement ni de débogage à distance
 // (sinon on pourrait inspecter ou piloter le logiciel de l'extérieur).
@@ -260,6 +263,7 @@ action("fcc.connect", "user", async () => {
 });
 action("fcc.disconnect", "user", () => cashier.disconnect());
 action("fcc.status", "user", () => cashier.status());
+action("fcc.state", "public", () => cashier.state());
 action("fcc.inventory", "user", () => cashier.inventory());
 
 // --- caisse
@@ -469,13 +473,18 @@ action("tech.denomination", "admin", (cc: string, fv: string, devid: string, ena
   cashier.setDenomination(String(cc), String(fv), String(devid), !!enabled)
 );
 action("app.version", "public", () => app.getVersion());
+/** Recharge l'interface (changement de langue) : la page ne peut pas se recharger elle-même (navigation bloquée). */
+action("app.reload", "public", () => {
+  setTimeout(() => mainWindow?.webContents.reload(), 50);
+  return { ok: true, message: "OK" };
+});
 
 ipcMain.handle(IpcChannels.Call, async (_e, name: string, ...args: unknown[]) => {
   const a = actions[name];
   if (!a) return { ok: false, message: `Action inconnue : ${name}` };
   // Sans licence valide, seul l'écran d'activation fonctionne (vérifié ici,
   // pas seulement dans l'interface).
-  if (!name.startsWith("license.") && name !== "diag.rendererError" && !license.isLicensed()) {
+  if (!name.startsWith("license.") && name !== "diag.rendererError" && name !== "app.reload" && name !== "fcc.state" && !license.isLicensed()) {
     return { ok: false, licenseRequired: true, message: "Licence requise." };
   }
   if (a.access !== "public" && !currentUser) return { ok: false, message: "Session expirée. Reconnectez-vous." };
@@ -506,6 +515,9 @@ function createWindow(): void {
       // Le preload sandboxé ne résout pas les require relatifs (vérifié le 2026-07-28).
       sandbox: false,
       devTools: !app.isPackaged,
+      // Une caisse doit réagir tout de suite même fenêtre cachée ou réduite
+      // (frappes, scanner, événements de paiement) : pas de ralentissement.
+      backgroundThrottling: false,
     },
   });
   mainWindow.removeMenu();
