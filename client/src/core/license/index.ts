@@ -154,6 +154,11 @@ export class LicenseManager {
     return this.status();
   }
 
+  /** Identité de ce PC auprès du serveur (envoi des rapports d'assistance). */
+  identity(): { key: string; machineId: string; serverUrl: string } | null {
+    return this.stored ? { key: this.stored.key, machineId: this.machine, serverUrl: this.serverUrl } : null;
+  }
+
   /** Retire la licence de ce PC (pour saisir une autre clé). */
   clear(): void {
     this.stored = null;

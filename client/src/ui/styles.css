@@ -317,7 +317,10 @@ input:focus, select:focus { border-color: var(--accent); background: var(--panel
 .display-amount.is-empty { color: color-mix(in srgb, var(--display-ink) 40%, transparent); }
 .display-sm .display-amount { font-size: 40px; }
 .card .display { margin-bottom: 14px; }
-.sale-actions { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 10px; }
+.sale-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.sale-actions #sale-go { grid-column: 1 / -1; }
+.sale-actions .sale-card { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.sale-actions .sale-card svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; }
 .sale-actions #sale-add svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; vertical-align: -4px; margin-right: 4px; }
 .sale-actions .btn-xl { width: auto; }
 .sale-actions #sale-stop { grid-column: 1 / -1; }
@@ -711,7 +714,7 @@ details.tech summary { cursor: pointer; font-weight: 650; padding: 4px 0; }
 .float-total { display: flex; justify-content: space-between; align-items: baseline; margin: 14px 0 6px; padding: 12px 14px; border-radius: 12px; background: var(--panel-2); }
 .float-total strong { font-size: 22px; }
 .col-float-info { margin: 14px 0 4px; padding: 12px 14px; border-radius: 12px; background: var(--accent-soft); }
-@media (max-width: 1100px) { .sale-actions { grid-template-columns: 1fr 1fr; } .sale-actions #sale-go { grid-column: 1 / -1; } }
+@media (max-width: 1100px) { .sale-actions #sale-go { grid-column: 1 / -1; } }
 .detail { display: flex; flex-direction: column; gap: 2px; margin-bottom: 12px; }
 .detail .pay-row { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; padding: 7px 0; border-bottom: 1px solid var(--rule); }
 .detail .pay-row span { color: var(--muted); font-weight: 600; }
@@ -787,3 +790,16 @@ details.tech summary { cursor: pointer; font-weight: 650; padding: 4px 0; }
 .lang-switch { position: absolute; top: 14px; right: 14px; display: inline-flex; border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
 .lang-switch button { font: inherit; font-size: 13px; font-weight: 700; padding: 6px 12px; border: 0; background: var(--panel); color: var(--muted); cursor: pointer; }
 .lang-switch button.active { background: var(--accent); color: #fff; }
+
+/* ------------------------------------------------------------------ paiement par carte */
+
+.card-pay { display: flex; flex-direction: column; gap: 12px; }
+.card-pay-icon { width: 64px; height: 64px; border-radius: 18px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent-strong); margin: 0 auto; }
+.card-pay-icon svg { width: 30px; height: 30px; fill: none; stroke: currentColor; stroke-width: 1.7; }
+.card-pay .btn svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.7; vertical-align: -5px; margin-right: 6px; }
+.card-pay-amount { margin: 0; text-align: center; font-size: 40px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.card-pay-steps { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 6px; line-height: 1.45; }
+.card-pay-ref { font-size: 14px; }
+.hist-card { background: var(--accent-soft); color: var(--accent-strong); }
+.card-pay-ref { display: flex; flex-direction: column; gap: 6px; font-weight: 600; }
+.card-pay-ref input { width: 100%; }

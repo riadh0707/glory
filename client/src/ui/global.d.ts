@@ -92,6 +92,7 @@ interface AppSettings {
   autoConnect: boolean;
   printMethod: "system" | "browser";
   floatComposition: Record<string, number>;
+  cardPayments: boolean;
   scanEmbeddedPrice: boolean;
   scanPricePrefixes: string;
 }
@@ -134,6 +135,7 @@ interface TransactionRow {
   outLines: DenomLine[];
   note: string;
   items?: SaleItem[];
+  method?: "cash" | "card";
 }
 
 interface PeriodStats {
@@ -155,6 +157,8 @@ interface PeriodStats {
   byUser: Array<{ user: string; salesCount: number; salesCents: number }>;
   byHour: Array<{ hour: number; salesCount: number; salesCents: number }>;
   topItems: Array<{ code: string; name: string; qty: number; cents: number }>;
+  cardSalesCount: number;
+  cardSalesCents: number;
 }
 
 interface GloryApi {
@@ -163,6 +167,7 @@ interface GloryApi {
   onFccEvent(cb: (e: FccEvent) => void): void;
   onState(cb: (s: CashierState) => void): void;
   onLicense(cb: (s: LicenseStatus) => void): void;
+  onUpdate(cb: (s: UpdateState) => void): void;
   setZoom(factor: number): void;
 }
 
@@ -176,6 +181,15 @@ interface DeviceErrorInfo {
   technician: boolean;
   detail: string;
   helpPath: string;
+}
+
+interface UpdateState {
+  state: "disabled" | "idle" | "checking" | "none" | "error" | "downloading" | "ready";
+  version: string;
+  message: string;
+  percent?: number;
+  next?: string;
+  checkedAt?: string;
 }
 
 interface LicenseStatus {

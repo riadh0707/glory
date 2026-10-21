@@ -25,7 +25,10 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: glory-fcc-client-windows
-          path: client/release/*.exe
+          path: |
+            client/release/*.exe
+            client/release/*.exe.blockmap
+            client/release/latest.yml
           if-no-files-found: error
 
   build-linux:
@@ -51,4 +54,5 @@ jobs:
           path: |
             client/release/*.AppImage
             client/release/*.deb
+            client/release/latest-linux.yml
           if-no-files-found: error

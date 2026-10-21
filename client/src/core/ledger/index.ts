@@ -32,6 +32,11 @@ export interface TransactionInput {
   note?: string;
   /** Articles de la vente (scannés ou montant libre). */
   items?: SaleItem[];
+  /**
+   * Moyen de paiement d'une vente. « card » : payée sur le terminal de
+   * paiement, aucune espèce n'entre dans la machine (inCents = outCents = 0).
+   */
+  method?: "cash" | "card";
 }
 
 export interface TransactionRow extends TransactionInput {
@@ -98,7 +103,7 @@ export class Ledger {
         t.ok ? 1 : 0,
         t.result ?? null,
         t.ticketNo ?? null,
-        JSON.stringify({ inLines: t.inLines ?? [], outLines: t.outLines ?? [], note: t.note ?? "", items: t.items ?? [] })
+        JSON.stringify({ inLines: t.inLines ?? [], outLines: t.outLines ?? [], note: t.note ?? "", items: t.items ?? [], method: t.method ?? "cash" })
       );
     return Number(info.lastInsertRowid);
   }
@@ -118,6 +123,7 @@ export class Ledger {
         outLines?: DenomLine[];
         note?: string;
         items?: SaleItem[];
+        method?: "cash" | "card";
       };
       return {
         id: Number(r.id),
@@ -134,6 +140,7 @@ export class Ledger {
         outLines: details.outLines ?? [],
         note: details.note ?? "",
         items: details.items ?? [],
+        method: details.method === "card" ? "card" : "cash",
       };
     });
   }

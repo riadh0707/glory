@@ -57,6 +57,7 @@ const ICONS: Record<string, string> = {
   clock: '<circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/>',
   power: '<path d="M12 3v8"/><path d="M6.3 6.8a8 8 0 1 0 11.4 0"/>',
   cancel: '<circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/>',
+  card: '<rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6.5 15h4"/>',
   grid: '<rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/>',
   code: '<path d="M8 8l-4 4 4 4M16 8l4 4-4 4M13.5 5l-3 14"/>',
 };
@@ -167,6 +168,12 @@ window.addEventListener("DOMContentLoaded", () => {
     goTo("sale");
     scanner.handler?.(code);
   };
+
+  window.api.onUpdate((u) => {
+    if (u.state === "ready") toast(`Mise à jour ${u.next} prête : elle s'installera à la fermeture du logiciel.`, "info");
+    const box = document.getElementById("upd-body");
+    if (box) renderUpdate(box, u);
+  });
 
   window.api.onLicense((l) => {
     if (l.state !== "valid") showActivation(l);
@@ -581,4 +588,27 @@ function requireConnected(root: HTMLElement): boolean {
     if (S.cashier.connection === "connected") goTo(S.screen);
   });
   return false;
+}
+
+// ------------------------------------------------------------------ mises à jour
+
+function renderUpdate(box: HTMLElement, u: UpdateState): void {
+  box.innerHTML = `<div class="detail">
+      <div class="pay-row"><span>Version installée</span><strong>${esc(u.version)}</strong></div>
+      <div class="pay-row"><span>État</span><strong class="${u.state === "ready" ? "ok-text" : u.state === "error" ? "error-text" : ""}">${esc(u.message)}</strong></div>
+      ${u.state === "downloading" ? `<div class="pay-progress"><span style="width:${u.percent ?? 0}%"></span></div>` : ""}
+    </div>
+    <div class="row-actions">
+      ${u.state === "ready" ? `<button class="btn btn-primary" id="upd-install">Installer maintenant (redémarre le logiciel)</button>` : ""}
+      ${u.state !== "disabled" && u.state !== "ready" && u.state !== "downloading" ? `<button class="btn" id="upd-check">Vérifier maintenant</button>` : ""}
+    </div>
+    <p class="muted small">Les mises à jour se téléchargent seules en arrière-plan et s'installent à la fermeture du logiciel, jamais pendant une vente.</p>`;
+  document.getElementById("upd-check")?.addEventListener("click", (e) =>
+    void busy(e.currentTarget as HTMLButtonElement, async () => renderUpdate(box, await window.api.call<UpdateState>("update.check")))
+  );
+  document.getElementById("upd-install")?.addEventListener("click", async () => {
+    if (salePaymentInProgress) return toast("Paiement en cours : terminez-le d'abord.", "error");
+    if (!(await confirmDialog("Installer la mise à jour", "Le logiciel va se fermer, s'installer et redémarrer (environ une minute).", "Installer"))) return;
+    report(await window.api.call("update.install"));
+  });
 }

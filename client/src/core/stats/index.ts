@@ -22,6 +22,9 @@ export interface PeriodStats {
   averageSaleCents: number;
   byUser: Array<{ user: string; salesCount: number; salesCents: number }>;
   byHour: Array<{ hour: number; salesCount: number; salesCents: number }>;
+  /** Ventes payées par carte (comprises dans salesCount / salesCents). */
+  cardSalesCount: number;
+  cardSalesCents: number;
   /** Articles les plus vendus (ventes réussies), par chiffre d'affaires. */
   topItems: Array<{ code: string; name: string; qty: number; cents: number }>;
 }
@@ -46,6 +49,8 @@ export function computeStats(rows: TransactionRow[], fromIso: string, toIso: str
     byUser: [],
     byHour: [],
     topItems: [],
+    cardSalesCount: 0,
+    cardSalesCents: 0,
   };
   const users = new Map<string, { salesCount: number; salesCents: number }>();
   const hours = new Map<number, { salesCount: number; salesCents: number }>();
@@ -65,6 +70,10 @@ export function computeStats(rows: TransactionRow[], fromIso: string, toIso: str
         s.salesCents += due;
         s.salesInCents += t.inCents;
         s.changeGivenCents += t.outCents;
+        if (t.method === "card") {
+          s.cardSalesCount += 1;
+          s.cardSalesCents += due;
+        }
         const u = users.get(t.user) ?? { salesCount: 0, salesCents: 0 };
         u.salesCount += 1;
         u.salesCents += due;
@@ -141,7 +150,7 @@ export function kindLabel(kind: string): string {
 /** Export CSV (séparateur « ; » et décimales à virgule : s'ouvre tel quel dans Excel FR/BE). */
 export function transactionsCsv(rows: TransactionRow[]): string {
   const euro = (c: number | null | undefined) => (c === null || c === undefined ? "" : (c / 100).toFixed(2).replace(".", ","));
-  const head = ["N°", "Date", "Heure", "Type", "Utilisateur", "Montant dû", "Reçu", "Rendu/Sorti", "Statut", "Ticket", "Note"];
+  const head = ["N°", "Date", "Heure", "Type", "Paiement", "Utilisateur", "Montant dû", "Reçu", "Rendu/Sorti", "Statut", "Ticket", "Note"];
   const lines = rows.map((t) => {
     const d = new Date(t.ts);
     return [
@@ -149,6 +158,7 @@ export function transactionsCsv(rows: TransactionRow[]): string {
       d.toLocaleDateString("fr-BE"),
       d.toLocaleTimeString("fr-BE"),
       kindLabel(t.kind),
+      t.kind === "sale" ? (t.method === "card" ? "Carte" : "Espèces") : "",
       t.user,
       euro(t.dueCents),
       euro(t.inCents),

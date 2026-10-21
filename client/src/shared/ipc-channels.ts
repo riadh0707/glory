@@ -9,4 +9,5 @@ export const IpcChannels = {
   FccEvent: "app:fcc-event",
   State: "app:state",
   License: "app:license",
+  Update: "app:update",
 } as const;

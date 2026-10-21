@@ -85,6 +85,11 @@ export class Cashier {
     return this.connection === "connected";
   }
 
+  /** Une opération est en cours sur le terminal (vente, dépôt, collecte…). */
+  isBusy(): boolean {
+    return this.busy !== null;
+  }
+
   /** État actuel (pour une interface qui vient d'être rechargée). */
   state(): { connection: string; sessionMode: boolean; occupyMode: boolean; busy: string | null } {
     return { connection: this.connection, sessionMode: this.sessionMode, occupyMode: this.occupyMode, busy: this.busy };

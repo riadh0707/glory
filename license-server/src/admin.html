@@ -25,6 +25,10 @@
   header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px; background: #0b1a16; color: #fff; }
   header h1 { margin: 0; font-size: 18px; font-weight: 700; }
   header h1 span { color: #3ddba8; }
+  #tabs { display: flex; gap: 4px; margin-right: auto; margin-left: 20px; }
+  #tabs .tab { font: inherit; font-weight: 650; padding: 7px 14px; border-radius: 9px; border: 0; background: transparent; color: #a9bdb6; cursor: pointer; }
+  #tabs .tab.active { background: rgba(61,219,168,.18); color: #fff; }
+  @media (max-width: 760px) { header { flex-wrap: wrap; } #tabs { order: 3; width: 100%; margin: 6px 0 0; } }
   main { max-width: 1180px; margin: 0 auto; padding: 20px 16px 60px; }
   .card { background: var(--panel); border: 1px solid var(--rule); border-radius: 14px; box-shadow: var(--shadow); padding: 18px 20px; }
   .btn { font: inherit; font-weight: 600; min-height: 40px; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--rule); background: var(--panel); color: var(--ink); cursor: pointer; }
@@ -85,7 +89,8 @@
 </head>
 <body>
 <header>
-  <h1>Meda<span>Cash</span> · gestion des licences</h1>
+  <h1>Meda<span>Cash</span> · administration</h1>
+  <nav id="tabs" hidden><button class="tab active" data-tab="keys">Licences</button><button class="tab" data-tab="reports">Rapports d'assistance</button></nav>
   <button class="btn btn-ghost btn-sm" id="logout" hidden>Se déconnecter</button>
 </header>
 <main id="app"></main>
@@ -149,6 +154,7 @@
   // ------------------------------------------------------------- connexion
   function showLogin(message) {
     document.getElementById("logout").hidden = true;
+    document.getElementById("tabs").hidden = true;
     app.innerHTML = `
       <form class="card login" id="login">
         <h2>Connexion</h2>
@@ -173,12 +179,98 @@
     });
   }
 
+  // ------------------------------------------------------------- onglets
+  let view = "keys";
+  function showTab(v) {
+    view = v;
+    for (const b of document.querySelectorAll("#tabs button")) b.classList.toggle("active", b.dataset.tab === v);
+    app.innerHTML = "";
+    if (v === "keys") renderList();
+    else loadReports().catch((e) => { if (e.message !== "unauthorized") toast(e.message, true); });
+  }
+  document.getElementById("tabs").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-tab]");
+    if (b) showTab(b.dataset.tab);
+  });
+
+  // ------------------------------------------------------------- rapports d'assistance
+  let reports = [];
+  const size = (n) => (n > 1048576 ? (n / 1048576).toFixed(1) + " Mo" : Math.max(1, Math.round(n / 1024)) + " Ko");
+
+  async function loadReports() {
+    app.innerHTML = `<div class="card"><p class="muted">Chargement…</p></div>`;
+    const j = await api("GET", "/admin/reports");
+    reports = j.reports || [];
+    renderReports();
+  }
+
+  function renderReports() {
+    const q = (document.getElementById("rq")?.value || "").trim().toLowerCase();
+    if (!document.getElementById("rlist")) {
+      app.innerHTML = `
+        <div class="toolbar">
+          <input type="search" id="rq" placeholder="Rechercher un client, un PC…" autocomplete="off">
+          <button class="btn" id="rreload">Actualiser</button>
+        </div>
+        <p class="small muted">Rapports envoyés automatiquement par le logiciel (bouton « Rapport d'assistance »), conservés 90 jours.</p>
+        <div class="card" id="rlist"></div>`;
+      document.getElementById("rq").addEventListener("input", renderReports);
+      document.getElementById("rreload").addEventListener("click", () => loadReports().then(() => toast("Liste actualisée.")).catch(() => {}));
+    }
+    const rows = reports.filter((r) => !q || [r.client, r.machine, r.key, r.version].join(" ").toLowerCase().includes(q));
+    const list = document.getElementById("rlist");
+    if (!rows.length) {
+      list.innerHTML = `<div class="empty">${reports.length ? "Aucun rapport ne correspond." : "Aucun rapport reçu."}</div>`;
+      return;
+    }
+    list.innerHTML = rows.map((r) => `<div class="lic" data-rid="${esc(r.id)}">
+        <div><div class="lic-client">${esc(r.client || "Client inconnu")}</div><div class="small muted mono">${esc(r.key || "")}</div></div>
+        <div class="lic-meta"><span>${dt(r.ts)}</span><span>PC : ${esc(r.machine || "?")}</span>${r.version ? `<span>v${esc(r.version)}</span>` : ""}<span>${size(r.size || 0)} compressé</span></div>
+        <div class="lic-actions"><button class="btn btn-sm btn-primary" data-r="get">Télécharger</button><button class="btn btn-sm btn-danger" data-r="del">Supprimer</button></div>
+      </div>`).join("");
+  }
+
+  app.addEventListener("click", async (e) => {
+    const b = e.target.closest("button[data-r]");
+    if (!b) return;
+    const id = b.closest("[data-rid]")?.dataset.rid;
+    const r = reports.find((x) => x.id === id);
+    if (!r) return;
+    try {
+      if (b.dataset.r === "get") {
+        await busy(b, async () => {
+          const res = await fetch("/admin/reports/" + encodeURIComponent(id), { headers: { Authorization: "Bearer " + token }, cache: "no-store" });
+          if (!res.ok) throw new Error("Téléchargement impossible (" + res.status + ")");
+          const name = (/filename="([^"]+)"/.exec(res.headers.get("Content-Disposition") || "") || [])[1] || "rapport.md";
+          const url = URL.createObjectURL(await res.blob());
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = name;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 5000);
+        });
+      }
+      if (b.dataset.r === "del") {
+        if (!(await confirmDialog("Supprimer le rapport", `Supprimer le rapport de ${r.client || "ce client"} du ${dt(r.ts)} ?`, "Supprimer", true))) return;
+        await busy(b, () => api("DELETE", "/admin/reports/" + encodeURIComponent(id)));
+        reports = reports.filter((x) => x.id !== id);
+        renderReports();
+        toast("Rapport supprimé.");
+      }
+    } catch (err) {
+      if (err.message !== "unauthorized") toast(err.message, true);
+    }
+  });
+
   // ------------------------------------------------------------- liste
   async function load() {
     const j = await api("GET", "/admin/keys");
     all = (j.licenses || []).sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
     document.getElementById("logout").hidden = false;
-    renderList();
+    document.getElementById("tabs").hidden = false;
+    if (view === "keys") renderList();
   }
 
   // Le stockage Cloudflare (KV) met jusqu'à une minute à refléter une

@@ -100,6 +100,7 @@ function renderSale(root: HTMLElement): void {
       <div class="sale-actions">
         <button class="btn btn-lg" id="sale-clear">Effacer</button>
         <button class="btn btn-lg" id="sale-add" title="Ajouter le montant tapé au panier">${icon("refill")}<span>Ajouter</span></button>
+        <button class="btn btn-lg sale-card" id="sale-card" ${S.settings?.cardPayments === false ? "hidden" : ""}>${icon("card")}<span>Carte</span></button>
         <button class="btn btn-primary btn-xl" id="sale-go">Encaisser</button>
         <button class="btn btn-cancel btn-xl" id="sale-stop" hidden>${icon("cancel")}<span>Annuler l'encaissement</span></button>
       </div>
@@ -149,6 +150,7 @@ function renderSale(root: HTMLElement): void {
     idlePanel();
   });
   goBtn.addEventListener("click", () => void start());
+  $("#sale-card", root).addEventListener("click", () => void startCard());
   $("#sale-products", root).addEventListener("click", () => {
     if (paying) return;
     void productPicker(
@@ -282,6 +284,63 @@ function renderSale(root: HTMLElement): void {
     });
   }
 
+  /** Paiement par carte / sans contact (mode manuel : le caissier confirme). */
+  async function startCard(): Promise<void> {
+    if (paying) return;
+    const typed = pad.cents();
+    if (basket.length && typed) {
+      basket.push({ code: "", name: "Divers", priceCents: typed, qty: 1 });
+      pad.set("");
+    }
+    const items = basket.map((i) => ({ ...i }));
+    const due = items.length ? basketTotal() : typed;
+    if (due <= 0) return toast("Tapez un montant ou scannez un article.", "error");
+    paying = true;
+    salePaymentInProgress = true;
+    const outcome = await modal<{ ok: boolean; ref: string }>(
+      (body, close) => {
+        body.innerHTML = `<div class="card-pay">
+            <div class="card-pay-icon">${icon("card")}</div>
+            <p class="card-pay-amount">${money(due)}</p>
+            <ol class="card-pay-steps">
+              <li>Tapez <b>${money(due)}</b> sur le terminal de paiement.</li>
+              <li>Le client paie par carte ou sans contact (carte, téléphone, montre).</li>
+              <li>Attendez « Approuvé » ou « Accepté » sur le terminal, puis confirmez ci-dessous.</li>
+            </ol>
+            <label class="card-pay-ref">Référence du ticket carte (facultatif)<input id="cp-ref" maxlength="40" autocomplete="off" placeholder="ex. n° d'autorisation"></label>
+            <div class="dialog-actions">
+              <button class="btn btn-lg btn-danger" data-no>Paiement refusé / annulé</button>
+              <button class="btn btn-lg btn-primary" data-yes>${icon("card")}<span>Paiement accepté</span></button>
+            </div>
+          </div>`;
+        $("[data-no]", body).addEventListener("click", () => close({ ok: false, ref: "" }));
+        $("[data-yes]", body).addEventListener("click", () => close({ ok: true, ref: $<HTMLInputElement>("#cp-ref", body).value }));
+      },
+      { title: "Paiement par carte / sans contact" }
+    );
+    paying = false;
+    salePaymentInProgress = false;
+    if (!outcome?.ok) {
+      toast("Paiement par carte annulé : le panier est conservé.", "info");
+      return idlePanel();
+    }
+    const r = await window.api.call<MoneyResult>("sale.card", due, items, outcome.ref);
+    if (!r.ok) return void toast(r.message, "error");
+    pad.set("");
+    basket.length = 0;
+    refreshDisplay();
+    const live = $("#sale-live", root);
+    live.innerHTML = `<div class="panel pay pay-done">
+        <div class="done-head"><span class="done-check">✓</span><div><h2>Payé par carte</h2><p class="muted">${money(due)}</p></div></div>
+        <div class="change-hero no-change"><span>Pas de monnaie à rendre</span><strong>${money(0)}</strong></div>
+        <div class="row-actions"><button class="btn btn-lg" id="pay-print">${icon("print")} Imprimer le ticket</button><button class="btn btn-primary btn-lg" id="pay-new">Nouvelle vente</button></div>
+      </div>`;
+    const ticketLines: TicketLine[] = [...itemTicketLines(items), { label: "TOTAL", value: money(due), strong: true }, { label: "Payé par carte", value: money(due) }];
+    $("#pay-print", live).addEventListener("click", () => void printMoneyTicket("Vente", r, ticketLines));
+    $("#pay-new", live).addEventListener("click", () => idlePanel());
+    if (S.settings?.autoPrintReceipt) void printMoneyTicket("Vente", r, ticketLines);
+  }
+
   async function start(): Promise<void> {
     const typed = pad.cents();
     if (basket.length && typed) {
@@ -297,6 +356,7 @@ function renderSale(root: HTMLElement): void {
     goBtn.disabled = true;
     goBtn.hidden = true;
     addBtn.hidden = true;
+    $<HTMLButtonElement>("#sale-card", root).hidden = true;
     $<HTMLButtonElement>("#sale-clear", root).hidden = true;
     const stopBtn = $<HTMLButtonElement>("#sale-stop", root);
     stopBtn.hidden = false;
@@ -364,6 +424,7 @@ function renderSale(root: HTMLElement): void {
     stopBtn.hidden = true;
     goBtn.hidden = false;
     addBtn.hidden = false;
+    $<HTMLButtonElement>("#sale-card", root).hidden = S.settings?.cardPayments === false;
     $("span", stopBtn).textContent = "Annuler l'encaissement";
     $<HTMLButtonElement>("#sale-clear", root).hidden = false;
     $("#sale-pad", root).classList.remove("is-locked");
@@ -1071,6 +1132,7 @@ function renderHistory(root: HTMLElement): void {
     };
     const detail = (r: TransactionRow) => {
       const parts: string[] = [];
+      if (r.kind === "sale" && r.method === "card") parts.push("payé par carte");
       if (r.inCents) parts.push(`reçu ${money(r.inCents)}`);
       if (r.outCents) parts.push(`${r.kind === "sale" || r.kind === "cancel" ? "rendu" : "sorti"} ${money(r.outCents)}`);
       return parts.join(" · ");
@@ -1094,7 +1156,7 @@ function renderHistory(root: HTMLElement): void {
                 .map(
                   (r) => `<button class="hist-row ${r.ok || r.kind === "cancel" ? "" : "is-failed"}" data-id="${r.id}">
                     <span class="hist-time">${new Date(r.ts).toLocaleTimeString(LOCALE, { hour: "2-digit", minute: "2-digit" })}</span>
-                    <span class="hist-icon hist-${r.kind}">${icon(r.kind === "cancel" ? "cancel" : r.kind)}</span>
+                    <span class="hist-icon hist-${r.kind}${r.method === "card" ? " hist-card" : ""}">${icon(r.kind === "cancel" ? "cancel" : r.method === "card" ? "card" : r.kind)}</span>
                     <span class="hist-main"><strong>${title(r)}</strong><small>${sub(r)}</small></span>
                     <span class="hist-amount"><strong>${mainAmount(r)}</strong><small>${detail(r)}</small></span>
                     <span class="hist-status">${status(r)}</span>
@@ -1125,6 +1187,7 @@ function renderHistory(root: HTMLElement): void {
               const lines: TicketLine[] = [];
               if (r.items?.length) lines.push(...itemTicketLines(r.items));
               if (r.dueCents !== null) lines.push({ label: "TOTAL", value: money(r.dueCents), strong: true });
+              if (r.method === "card" && r.dueCents !== null) lines.push({ label: "Payé par carte", value: money(r.dueCents) });
               if (r.inCents) lines.push({ label: "Espèces reçues", value: money(r.inCents) });
               if (r.outCents) lines.push({ label: r.kind === "sale" ? "Rendu" : "Sorti", value: money(r.outCents) });
               lines.push({ label: "Duplicata", value: "" });
@@ -1187,7 +1250,9 @@ function renderStats(root: HTMLElement): void {
 function statsHtml(s: PeriodStats): string {
   const maxHour = Math.max(1, ...s.byHour.map((h) => h.salesCents));
   return `<div class="kpis">
-      <div class="kpi kpi-main"><span>Chiffre d'affaires espèces</span><strong>${money(s.salesCents)}</strong></div>
+      <div class="kpi kpi-main"><span>Chiffre d'affaires</span><strong>${money(s.salesCents)}</strong></div>
+      <div class="kpi"><span>Dont espèces</span><strong>${money(s.salesCents - (s.cardSalesCents ?? 0))}</strong></div>
+      <div class="kpi"><span>Dont carte (${s.cardSalesCount ?? 0})</span><strong>${money(s.cardSalesCents ?? 0)}</strong></div>
       <div class="kpi"><span>Ventes</span><strong>${s.salesCount}</strong></div>
       <div class="kpi"><span>Panier moyen</span><strong>${money(s.averageSaleCents)}</strong></div>
       <div class="kpi"><span>Monnaie rendue</span><strong>${money(s.changeGivenCents)}</strong></div>
@@ -1208,7 +1273,7 @@ function statsHtml(s: PeriodStats): string {
           .join("")}</tbody></table>` : `<p class="muted">Aucune vente.</p>`}</section>
       <section class="card"><div class="card-head"><h2>Articles les plus vendus</h2></div>
         ${s.topItems?.length ? `<table class="table"><thead><tr><th>Article</th><th class="num">Quantité</th><th class="num">Montant</th></tr></thead><tbody>${s.topItems
-          .map((i) => `<tr><td>${esc(i.name)}${i.code ? ` <small class="muted mono">${esc(i.code)}</small>` : ""}</td><td class="num">${i.qty}</td><td class="num">${money(i.cents)}</td></tr>`)
+          .map((i) => `<tr><td>${esc(i.name)}${i.code && !i.code.startsWith("ART-") ? ` <small class="muted mono">${esc(i.code)}</small>` : ""}</td><td class="num">${i.qty}</td><td class="num">${money(i.cents)}</td></tr>`)
           .join("")}</tbody></table>` : `<p class="muted">Aucun article scanné sur la période.</p>`}</section>
     </div>`;
 }
@@ -1223,6 +1288,8 @@ async function closing(btn: HTMLButtonElement): Promise<void> {
     const lines: TicketLine[] = [
       { label: "Encaisse d'ouverture", value: r.openingCents === null ? "-" : money(r.openingCents) },
       { label: "Ventes", value: `${r.stats.salesCount} • ${money(r.stats.salesCents)}` },
+      { label: "Dont carte", value: `${r.stats.cardSalesCount ?? 0} • ${money(r.stats.cardSalesCents ?? 0)}` },
+      { label: "Dont espèces", value: money(r.stats.salesCents - (r.stats.cardSalesCents ?? 0)) },
       { label: "Dépôts", value: money(r.stats.depositsCents) },
       { label: "Réapprovisionné", value: money(r.stats.refillsCents) },
       { label: "Sorties", value: money(r.stats.payoutsCents) },
@@ -1266,7 +1333,7 @@ function renderMaint(root: HTMLElement): void {
     {
       id: "diag",
       label: "Rapport d'assistance",
-      desc: "Crée un fichier à envoyer au support en cas de problème.",
+      desc: "Envoie au support un rapport sur le fonctionnement du logiciel (ou crée le fichier si pas d'internet).",
       icon: "doc",
       action: async () => {
         report(await window.api.call("diag.report"));
@@ -1371,6 +1438,7 @@ async function renderSettings(root: HTMLElement): Promise<void> {
         ]
           .map(([v, l]) => `<option value="${v}" ${uiScalePref() === v ? "selected" : ""}>${l}</option>`)
           .join("")}</select></label>
+        <label class="check"><input type="checkbox" name="cardPayments" ${app.cardPayments !== false ? "checked" : ""}> Proposer le paiement par carte / sans contact (bouton « Carte » dans la vente)</label>
         <label class="check"><input type="checkbox" name="autoPrintReceipt" ${app.autoPrintReceipt ? "checked" : ""}> Imprimer le ticket automatiquement après chaque vente</label>
         <label>Méthode d'impression<select name="printMethod">${(
           [
@@ -1398,6 +1466,8 @@ async function renderSettings(root: HTMLElement): Promise<void> {
       </form></section>
 
     <section class="card card-wide"><div class="card-head"><h2>Fond de caisse</h2></div><div id="float-editor"></div></section>
+
+    <section class="card" id="upd-card"><div class="card-head"><h2>Mises à jour</h2></div><div id="upd-body" class="muted">…</div></section>
 
     <section class="card" id="lic-card"><div class="card-head"><h2>Licence</h2></div><div id="lic-body" class="muted">…</div></section>
 
@@ -1433,6 +1503,7 @@ async function renderSettings(root: HTMLElement): Promise<void> {
     });
   };
   void window.api.call<LicenseStatus>("license.status").then(renderLicense);
+  void window.api.call<UpdateState>("update.status").then((u) => renderUpdate($("#upd-body", root), u));
 
   $<HTMLSelectElement>("#ui-lang", root).addEventListener("change", (e) => setLang((e.currentTarget as HTMLSelectElement).value === "nl" ? "nl" : "fr"));
 
@@ -1506,6 +1577,7 @@ async function renderSettings(root: HTMLElement): Promise<void> {
     S.settings = await window.api.call<AppSettings>("settings.appSave", {
       ...(S.settings ?? app),
       autoPrintReceipt: !!v.autoPrintReceipt,
+      cardPayments: !!v.cardPayments,
       autoConnect: !!v.autoConnect,
       defaultFloatCents: Math.round(Number(v.defaultFloat || 0) * 100),
       autoLockMinutes: Number(v.autoLockMinutes || 0),

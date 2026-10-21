@@ -1,5 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain, nativeImage, net, shell } from "electron";
 import * as fs from "fs";
+import * as zlib from "zlib";
 import * as path from "path";
 import { IpcChannels } from "../shared/ipc-channels";
 import { HistoryStore } from "../core/history-store";
@@ -14,6 +15,7 @@ import { computeStats, localDayRange, transactionsCsv } from "../core/stats";
 import { aggregate, DenomLine, totalCents } from "../core/cash";
 import { Cashier } from "./cashier";
 import { printDocument, PaperFormat } from "./printing";
+import { Updater } from "./updater";
 import { LicenseManager, LicenseStatus } from "../core/license";
 import { describeDeviceError, isHelpPath } from "../core/device-errors";
 import { ProductStore, Product, cleanItems, itemsTotal } from "../core/products";
@@ -27,7 +29,8 @@ const ACTIVE_MODEL_ID = "CI-10";
 app.setName("MedaCash");
 // Le logiciel s'appelait « Glory FCC Client » : on garde son dossier de données
 // pour que la mise à jour conserve ventes, réglages, articles et licence.
-app.setPath("userData", path.join(app.getPath("appData"), "Glory FCC Client"));
+// (sauf dossier imposé au lancement par --user-data-dir).
+if (!app.commandLine.hasSwitch("user-data-dir")) app.setPath("userData", path.join(app.getPath("appData"), "Glory FCC Client"));
 
 // Version installée : pas d'outils de développement ni de débogage à distance
 // (sinon on pourrait inspecter ou piloter le logiciel de l'extérieur).
@@ -50,6 +53,7 @@ const history = new HistoryStore(path.join(DATA_DIR, "glory-client.db"));
 const ledger = new Ledger(path.join(DATA_DIR, "caisse.db"));
 let currentUser: PublicUser | null = null;
 const products = new ProductStore(DATA_DIR);
+const updater = new Updater((s) => send(IpcChannels.Update, s), (line) => log(line));
 const license = new LicenseManager(DATA_DIR, app.getVersion(), (url, init) => net.fetch(url, init));
 
 function send(channel: string, payload: unknown): void {
@@ -276,6 +280,33 @@ action("sale.start", "user", async (amountCents: number, rawItems?: unknown) => 
   return r;
 });
 
+/**
+ * Vente payée par carte bancaire / sans contact. Mode manuel : le montant est
+ * tapé sur le terminal de paiement et le caissier confirme ici que le
+ * paiement est accepté. Aucune espèce ne bouge dans la machine Glory.
+ */
+action("sale.card", "user", (amountCents: number, rawItems?: unknown, reference?: string) => {
+  const items = cleanItems(rawItems);
+  const due = items.length ? itemsTotal(items) : Math.round(Number(amountCents));
+  if (!Number.isInteger(due) || due <= 0) return { ok: false, message: "Montant invalide." };
+  if (items.length && due !== Math.round(Number(amountCents))) return { ok: false, message: "Le total du panier a changé : vérifiez le panier." };
+  const ref = String(reference ?? "").trim().slice(0, 40);
+  const id = ledger.add({
+    kind: "sale",
+    user: currentUser?.name ?? "",
+    dueCents: due,
+    inCents: 0,
+    outCents: 0,
+    ok: true,
+    result: 0,
+    items,
+    method: "card",
+    note: ref ? `Carte, réf. ${ref}` : "Carte",
+  });
+  products.consume(items);
+  return { ok: true, message: "Paiement par carte enregistré.", dueCents: due, inCents: 0, outCents: 0, inLines: [], outLines: [], transactionId: id, method: "card" };
+});
+
 // --- articles et scanner
 action("products.list", "user", () => products.list());
 action("products.categories", "user", () => products.categories());
@@ -418,7 +449,7 @@ action("history.exportCsv", "admin", async (fromYmd: string, toYmd: string) => {
 });
 
 // --- assistance / outils techniques
-action("diag.report", "user", () => {
+action("diag.report", "user", async () => {
   const cfg = fccConfig();
   const events = history.getAllEvents().filter((e) => e.ts >= APP_STARTED_AT);
   const r = generateDiagnosticReport(
@@ -433,8 +464,33 @@ action("diag.report", "user", () => {
     },
     events.slice(-2000)
   );
-  void shell.showItemInFolder(r.markdownPath);
-  return { ok: true, message: `Rapport créé (${r.eventCount} événements, ${r.errorCount} erreurs).`, path: r.markdownPath };
+  // Envoi automatique au support (PC activé, si internet) ; sinon le fichier reste sur ce PC.
+  const id = license.identity();
+  let sent = false;
+  if (id) {
+    try {
+      const gz = zlib.gzipSync(fs.readFileSync(r.markdownPath), { level: 9 });
+      const res = await net.fetch(id.serverUrl + "/reports", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ key: id.key, machineId: id.machineId, version: app.getVersion(), gzip: gz.toString("base64") }),
+        signal: AbortSignal.timeout(30_000),
+      });
+      sent = res.ok && ((await res.json()) as { ok?: boolean }).ok === true;
+    } catch {
+      sent = false;
+    }
+  }
+  history.record("app-lifecycle", "diag-report", { sent, events: r.eventCount, errors: r.errorCount });
+  if (!sent) void shell.showItemInFolder(r.markdownPath);
+  return {
+    ok: true,
+    sent,
+    message: sent
+      ? `Rapport envoyé au support (${r.eventCount} événements, ${r.errorCount} erreurs).`
+      : `Rapport créé sur ce PC (${r.eventCount} événements, ${r.errorCount} erreurs) : pas d'envoi possible (internet ?), envoyez le fichier par e-mail.`,
+    path: r.markdownPath,
+  };
 });
 action("diag.rendererError", "public", (context: string, message: string, stack?: string) => {
   log(`[ERREUR] (interface) ${context} : ${message}`);
@@ -473,6 +529,13 @@ action("tech.denomination", "admin", (cc: string, fv: string, devid: string, ena
   cashier.setDenomination(String(cc), String(fv), String(devid), !!enabled)
 );
 action("app.version", "public", () => app.getVersion());
+// --- mises à jour automatiques
+action("update.status", "public", () => updater.status());
+action("update.check", "user", () => updater.check());
+action("update.install", "user", () => {
+  if (cashier.isBusy()) return { ok: false, message: "Une opération est en cours sur le terminal : réessayez une fois terminée." };
+  return updater.installNow() ? { ok: true, message: "Installation de la mise à jour : le logiciel redémarre." } : { ok: false, message: "Aucune mise à jour prête." };
+});
 /** Recharge l'interface (changement de langue) : la page ne peut pas se recharger elle-même (navigation bloquée). */
 action("app.reload", "public", () => {
   setTimeout(() => mainWindow?.webContents.reload(), 50);
@@ -484,7 +547,7 @@ ipcMain.handle(IpcChannels.Call, async (_e, name: string, ...args: unknown[]) =>
   if (!a) return { ok: false, message: `Action inconnue : ${name}` };
   // Sans licence valide, seul l'écran d'activation fonctionne (vérifié ici,
   // pas seulement dans l'interface).
-  if (!name.startsWith("license.") && name !== "diag.rendererError" && name !== "app.reload" && name !== "fcc.state" && !license.isLicensed()) {
+  if (!name.startsWith("license.") && name !== "diag.rendererError" && name !== "app.reload" && name !== "fcc.state" && !name.startsWith("update.") && !license.isLicensed()) {
     return { ok: false, licenseRequired: true, message: "Licence requise." };
   }
   if (a.access !== "public" && !currentUser) return { ok: false, message: "Session expirée. Reconnectez-vous." };
@@ -532,6 +595,7 @@ history.record("app-lifecycle", "start", { appStartedAt: APP_STARTED_AT, version
 app.whenReady().then(() => {
   createWindow();
   void licenseCheck();
+  updater.start();
 });
 
 /**

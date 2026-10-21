@@ -20,6 +20,9 @@ contextBridge.exposeInMainWorld("api", {
   onLicense: (cb: (s: unknown) => void) => {
     ipcRenderer.on(IpcChannels.License, (_e, s: unknown) => cb(s));
   },
+  onUpdate: (cb: (s: unknown) => void) => {
+    ipcRenderer.on(IpcChannels.Update, (_e, s: unknown) => cb(s));
+  },
   /** Mise à l'échelle de toute l'interface (comme le zoom d'un navigateur). */
   setZoom: (factor: number) => {
     const f = Number(factor);

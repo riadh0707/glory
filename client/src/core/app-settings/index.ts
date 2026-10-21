@@ -18,6 +18,8 @@ export interface AppSettings {
    * utilise seulement le montant defaultFloatCents.
    */
   floatComposition: Record<string, number>;
+  /** Bouton « Carte » (paiement par carte / sans contact) dans la vente. */
+  cardPayments: boolean;
   /** Codes-barres à prix intégré (étiquettes de balance). */
   scanEmbeddedPrice: boolean;
   /** Préfixes des codes à prix intégré, ex. « 21 22 23 24 ». */
@@ -31,6 +33,7 @@ const DEFAULTS: AppSettings = {
   autoConnect: true,
   printMethod: "browser",
   floatComposition: {},
+  cardPayments: true,
   scanEmbeddedPrice: true,
   scanPricePrefixes: "20 21 22 23 24 25 26 27 28 29",
 };
@@ -53,6 +56,7 @@ export function loadAppSettings(dir: string): AppSettings {
       autoConnect: typeof s.autoConnect === "boolean" ? s.autoConnect : DEFAULTS.autoConnect,
       printMethod: cleanMethod(s.printMethod),
       floatComposition: cleanComposition(s.floatComposition),
+      cardPayments: typeof s.cardPayments === "boolean" ? s.cardPayments : DEFAULTS.cardPayments,
       // v1.9.0 enregistrait « prix intégré : désactivé » par défaut, ce qui
       // empêchait les étiquettes du client de fonctionner : on le réactive une fois.
       scanEmbeddedPrice: old ? DEFAULTS.scanEmbeddedPrice : typeof s.scanEmbeddedPrice === "boolean" ? s.scanEmbeddedPrice : DEFAULTS.scanEmbeddedPrice,
@@ -78,6 +82,7 @@ function loadAppSettingsFrom(s: Partial<AppSettings>): AppSettings {
     autoConnect: s.autoConnect !== false,
     printMethod: cleanMethod(s.printMethod),
     floatComposition: cleanComposition(s.floatComposition),
+    cardPayments: s.cardPayments !== false,
     scanEmbeddedPrice: !!s.scanEmbeddedPrice,
     scanPricePrefixes: cleanPrefixes(s.scanPricePrefixes),
   };

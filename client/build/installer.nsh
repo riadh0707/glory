@@ -6,9 +6,14 @@
 ; L'ancienne règle « Glory FCC Client » (ancien nom du logiciel) est retirée.
 
 !macro customInstall
+  ; Mise à jour automatique : la règle (même programme, même dossier) existe déjà.
+  ${ifNot} ${isUpdated}
   ExecShellWait "runas" "$SYSDIR\cmd.exe" '/c netsh advfirewall firewall delete rule name="Glory FCC Client" & netsh advfirewall firewall delete rule name="MedaCash" & netsh advfirewall firewall add rule name="MedaCash" dir=in action=allow program="$INSTDIR\${APP_EXECUTABLE_FILENAME}" enable=yes profile=any' SW_HIDE
+  ${endIf}
 !macroend
 
 !macro customUnInstall
+  ${ifNot} ${isUpdated}
   ExecShellWait "runas" "$SYSDIR\cmd.exe" '/c netsh advfirewall firewall delete rule name="MedaCash" & netsh advfirewall firewall delete rule name="Glory FCC Client"' SW_HIDE
+  ${endIf}
 !macroend
