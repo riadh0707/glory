@@ -53,7 +53,9 @@ if (local) {
   dir = mkdtempSync(path.join(tmpdir(), "medacash-"));
   const zip = path.join(dir, "windows.zip");
   writeFileSync(zip, Buffer.from(await (await gh("GET", win.archive_download_url)).arrayBuffer()));
-  execSync(`tar -xf "${zip}" -C "${dir}"`);
+  // tar de Windows (le tar de Git Bash ne comprend pas les chemins « C:… »).
+  const tar = process.platform === "win32" ? `"${path.join(process.env.SystemRoot || "C:\\Windows", "System32", "tar.exe")}"` : "tar";
+  execSync(`${tar} -xf "${zip}" -C "${dir}"`);
 }
 const exe = `MedaCash-Setup-${version}.exe`;
 const files = [exe, `${exe}.blockmap`, "latest.yml"].map((f) => path.join(dir, f));
