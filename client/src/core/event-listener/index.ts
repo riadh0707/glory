@@ -26,6 +26,8 @@ export interface EventListenerConfig {
 
 export class EventListener {
   private server: net.Server | null = null;
+  /** Connexions ouvertes par le terminal (le CI-10 en garde une en permanence). */
+  private readonly sockets = new Set<net.Socket>();
   private readonly config: EventListenerConfig;
 
   constructor(config: EventListenerConfig) {
@@ -49,6 +51,7 @@ export class EventListener {
     await new Promise<void>((resolve, reject) => {
       const server = net.createServer((socket) => {
         const peer = `${socket.remoteAddress}:${socket.remotePort}`;
+        this.sockets.add(socket);
         this.config.logger(peer, `[connexion ouverte]`);
         socket.on("data", (chunk) => {
           // Aucun parsing fin à ce stade — objectif du sprint : prouver que
@@ -61,6 +64,7 @@ export class EventListener {
           this.config.logger(peer, `utf8="${utf8}" hex=${hex}`, chunk.toString("utf8"));
         });
         socket.on("close", () => {
+          this.sockets.delete(socket);
           this.config.logger(peer, `[connexion fermée]`);
         });
         socket.on("error", (err) => {
@@ -79,7 +83,14 @@ export class EventListener {
     if (!this.server) {
       return;
     }
-    await new Promise<void>((resolve) => this.server!.close(() => resolve()));
+    // close() attend que toutes les connexions soient fermées : le terminal
+    // garde la sienne ouverte en permanence, l'arrêt ne se terminait donc
+    // jamais (déconnexion bloquée). On coupe nous-mêmes les connexions.
+    const server = this.server;
     this.server = null;
+    const closed = new Promise<void>((resolve) => server.close(() => resolve()));
+    for (const s of this.sockets) s.destroy();
+    this.sockets.clear();
+    await Promise.race([closed, new Promise<void>((r) => setTimeout(r, 2000))]);
   }
 }

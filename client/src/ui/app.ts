@@ -123,7 +123,10 @@ window.addEventListener("DOMContentLoaded", () => {
   window.api.onState((s) => {
     if (s.connection !== "connected") S.lastHeartbeat = 0;
     const wasConnected = S.cashier.connection === "connected";
+    const wasUnreachable = !!S.cashier.unreachable;
     S.cashier = s;
+    if (s.connection === "connected" && !wasUnreachable && s.unreachable) toast("La machine ne répond plus (réseau). MedaCash réessaie automatiquement.", "error");
+    if (s.connection === "connected" && wasUnreachable && !s.unreachable) toast("La machine répond de nouveau : vous pouvez encaisser.", "info");
     renderStatusChip();
     // Connexion établie (ex. connexion automatique au démarrage) : l'écran qui
     // affichait « Terminal non connecté » se met à jour tout seul.
@@ -533,6 +536,10 @@ function renderStatusChip(): void {
     if (m && (m.status === 13 || m.status === 30)) cls = "chip chip-err";
     if (isSignalLost()) {
       text = "Pas de signal du terminal";
+      cls = "chip chip-err";
+    }
+    if (c.unreachable && !c.busy) {
+      text = "Terminal injoignable (réseau)";
       cls = "chip chip-err";
     }
     const err = [...deviceErrors.values()][0];

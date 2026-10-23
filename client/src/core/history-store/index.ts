@@ -61,6 +61,8 @@ export class HistoryStore {
   }
 
   record(kind: HistoryEventKind, operation: string | null, payload: unknown): void {
+    // Base fermée (fin de fermeture du logiciel) : on ignore au lieu de planter.
+    if (!this.db.isOpen) return;
     const stmt = this.db.prepare(
       "INSERT INTO session_events (ts, kind, operation, payload) VALUES (?, ?, ?, ?)"
     );

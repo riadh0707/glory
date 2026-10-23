@@ -65,6 +65,7 @@ interface CashierState {
   sessionMode: boolean;
   occupyMode: boolean;
   busy: string | null;
+  unreachable?: boolean;
 }
 
 interface FccConnectionConfig {

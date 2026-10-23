@@ -1,3 +1,4 @@
+import * as net from "net";
 import { FccSoapClient, SimpleResult, CollectDenomination } from "../core/soap-client";
 import { EventListener } from "../core/event-listener";
 import { HistoryStore } from "../core/history-store";
@@ -33,6 +34,11 @@ function friendlyNetworkError(raw: string, cfg: FccConnectionConfig): string {
 
 export type ConnectionState = "disconnected" | "connecting" | "connected";
 
+/** Erreur réseau (le terminal ne répond plus), par opposition à un refus du terminal. */
+export function isNetworkError(raw: string): boolean {
+  return /ETIMEDOUT|ECONNREFUSED|EHOSTUNREACH|ENETUNREACH|ENETDOWN|ECONNRESET|ECONNABORTED|EPIPE|socket hang up|timeout of \d+ms exceeded/i.test(raw);
+}
+
 export interface OpResult {
   ok: boolean;
   message: string;
@@ -52,7 +58,9 @@ export interface MoneyResult extends OpResult {
 export interface CashierHooks {
   log(line: string): void;
   event(e: FccEvent): void;
-  state(s: { connection: ConnectionState; sessionMode: boolean; occupyMode: boolean; busy: string | null }): void;
+  state(s: { connection: ConnectionState; sessionMode: boolean; occupyMode: boolean; busy: string | null } & { unreachable: boolean }): void;
+  /** Le terminal vient de devenir injoignable (diagnostic réseau à relever). */
+  unreachable?(host: string, port: number, raw: string): void;
 }
 
 /**
@@ -73,6 +81,10 @@ export class Cashier {
   private callback: { ip: string; port: number } | null = null;
   private busy: string | null = null;
   private connection: ConnectionState = "disconnected";
+  /** Connecté, mais la dernière commande n'a pas pu joindre le terminal. */
+  private unreachable = false;
+  private probeTimer: NodeJS.Timeout | null = null;
+  private target: { host: string; port: number } | null = null;
   user = "";
 
   constructor(
@@ -91,8 +103,8 @@ export class Cashier {
   }
 
   /** État actuel (pour une interface qui vient d'être rechargée). */
-  state(): { connection: string; sessionMode: boolean; occupyMode: boolean; busy: string | null } {
-    return { connection: this.connection, sessionMode: this.sessionMode, occupyMode: this.occupyMode, busy: this.busy };
+  state(): { connection: string; sessionMode: boolean; occupyMode: boolean; busy: string | null; unreachable: boolean } {
+    return { connection: this.connection, sessionMode: this.sessionMode, occupyMode: this.occupyMode, busy: this.busy, unreachable: this.unreachable };
   }
 
   private emitState(): void {
@@ -101,7 +113,54 @@ export class Cashier {
       sessionMode: this.sessionMode,
       occupyMode: this.occupyMode,
       busy: this.busy,
+      unreachable: this.unreachable,
     });
+  }
+
+  /**
+   * Coupure réseau constatée sur une commande : on le signale (au lieu
+   * d'afficher « Terminal prêt ») et on teste la liaison toutes les 10 s
+   * jusqu'à ce que le terminal réponde de nouveau.
+   */
+  private markUnreachable(raw: string): void {
+    if (this.unreachable || this.connection !== "connected") return;
+    this.unreachable = true;
+    this.log(`[ERREUR] Terminal injoignable par le réseau (${raw}). Nouvel essai automatique toutes les 10 s.`);
+    this.emitState();
+    if (this.target) this.hooks.unreachable?.(this.target.host, this.target.port, raw);
+    this.probeTimer = setInterval(() => void this.probe(), 10_000);
+  }
+
+  private markReachable(): void {
+    if (!this.unreachable) return;
+    this.unreachable = false;
+    if (this.probeTimer) clearInterval(this.probeTimer);
+    this.probeTimer = null;
+    this.log("Terminal de nouveau joignable.");
+    this.emitState();
+  }
+
+  private probing = false;
+  private async probe(): Promise<void> {
+    if (this.probing || !this.target || !this.client || this.sessionId === undefined) return;
+    this.probing = true;
+    try {
+      const t = this.target;
+      const tcpOk = await new Promise<boolean>((resolve) => {
+        const s = net.connect({ host: t.host, port: t.port, timeout: 5000 }, () => {
+          s.destroy();
+          resolve(true);
+        });
+        s.on("timeout", () => (s.destroy(), resolve(false)));
+        s.on("error", () => resolve(false));
+      });
+      if (!tcpOk) return;
+      // La liaison répond : on confirme avec une vraie commande (met aussi le voyant à jour).
+      const r = await this.status();
+      if (r.ok) this.markReachable();
+    } finally {
+      this.probing = false;
+    }
   }
 
   private log(line: string): void {
@@ -130,9 +189,20 @@ export class Cashier {
       this.emitState();
     }
     try {
-      return await fn(this.client, this.sessionId);
+      const r = await fn(this.client, this.sessionId);
+      this.markReachable();
+      return r;
     } catch (err) {
-      return this.fail(`${label} : ${err instanceof Error ? err.message : String(err)}`);
+      const raw = err instanceof Error ? err.message : String(err);
+      if (isNetworkError(raw)) {
+        this.markUnreachable(raw);
+        this.log(`[ERREUR] ${label} : ${raw}`);
+        return {
+          ok: false,
+          message: `${label} impossible : la machine ne répond plus (réseau). Vérifiez qu'elle est allumée et branchée ; MedaCash réessaie tout seul et vous préviendra dès qu'elle répond.`,
+        };
+      }
+      return this.fail(`${label} : ${raw}`);
     } finally {
       if (exclusive) {
         this.busy = null;
@@ -268,6 +338,12 @@ export class Cashier {
       }
 
       this.callback = { ip: cfg.callbackIp, port };
+      try {
+        const u = new URL(cfg.soapEndpoint);
+        this.target = { host: u.hostname, port: Number(u.port) || (u.protocol === "https:" ? 443 : 80) };
+      } catch {
+        this.target = null;
+      }
       const reg = await this.client.registerEvent({ sessionId: this.sessionId, url: cfg.callbackIp, port });
       this.eventRegistered = reg.result === 0;
       this.log(`RegisterEvent → ${reg.resultDescription}`);
@@ -320,7 +396,8 @@ export class Cashier {
         this.log(`[ERREUR] ${label} : ${err instanceof Error ? err.message : String(err)}`);
       }
     };
-    if (c && sid !== undefined) {
+    // Terminal injoignable : inutile d'attendre 20 s par commande de fin.
+    if (c && sid !== undefined && !this.unreachable) {
       if (this.occupyMode) await step("Release", () => c.release(sid));
       if (this.eventRegistered && this.callback) {
         const cb = this.callback;
@@ -341,6 +418,10 @@ export class Cashier {
     this.eventRegistered = false;
     this.callback = null;
     this.busy = null;
+    if (this.probeTimer) clearInterval(this.probeTimer);
+    this.probeTimer = null;
+    this.unreachable = false;
+    this.target = null;
     this.connection = "disconnected";
     this.emitState();
     this.history.record("state-transition", null, { state: "disconnected" });

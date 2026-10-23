@@ -1,4 +1,5 @@
 import { app, BrowserWindow, dialog, ipcMain, nativeImage, net, shell } from "electron";
+import { execFile } from "child_process";
 import * as fs from "fs";
 import * as zlib from "zlib";
 import * as path from "path";
@@ -76,6 +77,7 @@ const cashier = new Cashier(
       send(IpcChannels.FccEvent, e);
     },
     state: (s) => send(IpcChannels.State, s),
+    unreachable: (host, port, raw) => void networkDiagnostic(host, port, raw),
   },
   history,
   ledger
@@ -90,6 +92,43 @@ process.on("unhandledRejection", (reason) => {
   log(`[ERREUR] Promesse rejetée non gérée : ${message}`);
   history.record("error", "unhandledRejection", { message, stack: reason instanceof Error ? reason.stack : undefined });
 });
+
+/**
+ * Relevé réseau pris au moment où le terminal ne répond plus (au plus une
+ * fois toutes les 10 min), enregistré dans l'historique et donc dans le
+ * rapport d'assistance : carte réseau, table ARP (adresse matérielle qui
+ * répond pour l'IP du terminal : un autre appareil sur la même IP se voit
+ * ici), routes, connexions ouvertes vers le terminal, ping, antivirus.
+ * Commandes Windows de consultation uniquement, rien n'est modifié.
+ */
+let lastNetDiag = 0;
+async function networkDiagnostic(host: string, port: number, raw: string): Promise<void> {
+  if (process.platform !== "win32" || !/^[\w.:-]+$/.test(host) || Date.now() - lastNetDiag < 10 * 60_000) return;
+  lastNetDiag = Date.now();
+  // PowerShell lit la sortie des commandes dans l'encodage de la console
+  // (accents corrects), puis la renvoie en UTF-8.
+  const ps = (script: string) =>
+    new Promise<string>((resolve) =>
+      execFile(
+        "powershell.exe",
+        ["-NoProfile", "-NonInteractive", "-Command", `$r = (${script}) 2>&1 | Out-String -Width 200; [Console]::OutputEncoding = [Text.Encoding]::UTF8; $r`],
+        { timeout: 25_000, windowsHide: true, maxBuffer: 2 * 1024 * 1024 },
+        (err, out, errOut) => resolve((String(out || "") + String(errOut || "")).trim() || (err ? `(échec : ${err.message})` : ""))
+      )
+    );
+  const [arp, ping, tcp, route, ipconfig, conns, antivirus, firewall] = await Promise.all([
+    ps("arp -a"),
+    ps(`ping -n 3 -w 1000 ${host}`),
+    ps(`Test-NetConnection -ComputerName ${host} -Port ${port} -InformationLevel Detailed`),
+    ps("route print -4"),
+    ps("ipconfig /all"),
+    ps(`netstat -ano -p tcp | Select-String '${host}'`),
+    ps("Get-CimInstance -Namespace root/SecurityCenter2 -ClassName AntiVirusProduct | Select-Object displayName,productState"),
+    ps("Get-CimInstance -Namespace root/SecurityCenter2 -ClassName FirewallProduct | Select-Object displayName"),
+  ]);
+  history.record("error", "network-diagnostic", { host, port, error: raw, arp, ping, tcp, connections: conns, route, ipconfig, antivirus, firewall });
+  log(`Relevé réseau enregistré pour l'assistance (terminal ${host} injoignable).`);
+}
 
 function modelDefaults(): FccConnectionConfig {
   const m = getModelConfig(ACTIVE_MODEL_ID);
@@ -451,7 +490,12 @@ action("history.exportCsv", "admin", async (fromYmd: string, toYmd: string) => {
 // --- assistance / outils techniques
 action("diag.report", "user", async () => {
   const cfg = fccConfig();
-  const events = history.getAllEvents().filter((e) => e.ts >= APP_STARTED_AT);
+  // Dernières 24 h, lancements précédents compris : un client relance souvent
+  // le logiciel après un blocage, avant de créer le rapport. Les battements
+  // de cœur seuls (toutes les 20 s) sont retirés pour garder la place.
+  const since = new Date(Date.now() - 24 * 3600_000).toISOString();
+  const heartbeatOnly = (p: unknown) => typeof p === "string" && p.includes("<HeartBeatEvent>") && p.split("<BbxEventRequest>").length === 2;
+  const events = history.getAllEvents().filter((e) => e.ts >= since && !(e.kind === "raw-tcp-event" && heartbeatOnly(e.payload)));
   const r = generateDiagnosticReport(
     path.join(DATA_DIR, "reports"),
     {
@@ -462,7 +506,7 @@ action("diag.report", "user", async () => {
       platform: `${process.platform} ${process.arch}, v${app.getVersion()}`,
       nodeVersion: process.version,
     },
-    events.slice(-2000)
+    events.slice(-20000)
   );
   // Envoi automatique au support (PC activé, si internet) ; sinon le fichier reste sur ce PC.
   const id = license.identity();
@@ -607,12 +651,18 @@ app.on("before-quit", (event) => {
   if (quitting || !cashier.isConnected()) return;
   event.preventDefault();
   quitting = true;
-  void cashier.disconnect().finally(() => app.quit());
+  // Au plus 8 s : un terminal injoignable ne doit pas empêcher de fermer.
+  void Promise.race([cashier.disconnect().catch(() => undefined), new Promise((r) => setTimeout(r, 8000))]).finally(() => app.quit());
 });
 
 app.on("window-all-closed", () => {
+  if (process.platform !== "darwin") app.quit();
+});
+
+// Bases fermées en tout dernier (avant : fermées avant la déconnexion, qui
+// plantait alors et n'envoyait jamais UnRegisterEvent / Close au terminal).
+app.on("will-quit", () => {
   history.record("app-lifecycle", "stop", { ts: new Date().toISOString() });
   history.close();
   ledger.close();
-  if (process.platform !== "darwin") app.quit();
 });

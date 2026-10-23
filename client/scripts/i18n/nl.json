@@ -860,5 +860,9 @@
   "Volet de sortie des billets bloqué": "Uitvoerklep van de biljetten geblokkeerd",
   "Vous ne pouvez pas supprimer votre propre compte.": "U kunt uw eigen account niet verwijderen.",
   "Windows refuse l'ouverture du port": "Windows weigert het openen van poort",
-  "Windows refuse l'ouverture du port {0} : choisissez un autre port dans Réglages.": "Windows weigert het openen van poort {0}: kies een andere poort in Instellingen."
+  "Windows refuse l'ouverture du port {0} : choisissez un autre port dans Réglages.": "Windows weigert het openen van poort {0}: kies een andere poort in Instellingen.",
+  "Terminal injoignable (réseau)": "Terminal onbereikbaar (netwerk)",
+  "La machine ne répond plus (réseau). MedaCash réessaie automatiquement.": "Het toestel reageert niet meer (netwerk). MedaCash probeert het automatisch opnieuw.",
+  "La machine répond de nouveau : vous pouvez encaisser.": "Het toestel reageert opnieuw: u kunt afrekenen.",
+  "{0} impossible : la machine ne répond plus (réseau). Vérifiez qu'elle est allumée et branchée ; MedaCash réessaie tout seul et vous préviendra dès qu'elle répond.": "{0} onmogelijk: het toestel reageert niet meer (netwerk). Controleer of het aanstaat en aangesloten is; MedaCash probeert het zelf opnieuw en verwittigt u zodra het reageert."
 }
